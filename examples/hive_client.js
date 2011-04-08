@@ -1,7 +1,6 @@
 var thrift = require('thrift'),
     ttransport = require('thrift/transport'),
-    ThriftHive = require('./gen-nodejs/ThriftHive'),
-    ttypes = require('./gen-nodejs/hive_service_types');
+    ThriftHive = require('./gen-nodejs/ThriftHive');
 
 var connection = thrift.createConnection("localhost", 10000, {transport: ttransport.TBufferedTransport, timeout: 600*1000}),
     client = thrift.createClient(ThriftHive, connection);
