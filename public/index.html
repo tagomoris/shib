@@ -1,1 +1,29 @@
-<html><body>hello, node.</body></html>
+<html>
+<head>
+  <title>shib: enjoy spotlighting!</title>
+  <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="js/jquery.form.js"></script>
+  <script type="text/javascript" src="js/shib.ui.js"></script>
+</head>
+<body>
+  <h2>hello, node.</h2>
+  <div id="inputarea">
+    <form id="queryeditor" name="queryeditor" action="/execute" method="POST">
+      <div id="queryarea">
+        <textarea name="query" rows="5" cols="50"></textarea>
+      </div>
+      <div id="operationarea">
+        <input type="submit" value="実行">
+      </div>
+    </form>
+  </div>
+  <div id="displayarea">
+    <div id="queryid"></div>
+    <div id="result">
+      <pre id="dumparea">
+        dumped.
+      </pre>
+    </div>
+  </div>
+</body>
+</html>
