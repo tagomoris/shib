@@ -37,6 +37,7 @@ app.get('/', function(req, res){
 });
 
 app.post('/execute', function(req, res){
+  //TODO fix here!: createQuery()
   shib.client().createQuery(req.servicename, req.querystring, function(err, query){
     //TODO: double-executed registration
     res.send(query.queryid);
