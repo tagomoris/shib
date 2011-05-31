@@ -8,7 +8,7 @@ var config = {
   },
   kyototycoon: {
     host: 'localhost',
-    port: 3000 // dakke?
+    port: 1978
   }
 };
 
