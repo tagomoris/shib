@@ -1,71 +1,36 @@
 /*demo page css*/
-body{ font: 62.5% "Trebuchet MS", sans-serif; margin: 50px;}
-.demoHeaders { margin-top: 2em; }
+body {font: 62.5% "Trebuchet MS", sans-serif; margin: 50px;}
 #dialog_link {padding: .4em 1em .4em 20px;text-decoration: none;position: relative;}
 #dialog_link span.ui-icon {margin: 0 5px 0 0;position: absolute;left: .2em;top: 50%;margin-top: -8px;}
 ul#icons {margin: 0; padding: 0;}
 ul#icons li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
 ul#icons span.ui-icon {float: left; margin: 0 4px;}
+ul#icons2 {margin: 0; padding: 0;}
+ul#icons2 li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
+ul#icons2 span.ui-icon {float: left; margin: 0 4px;}
 
-#titlearea {
-    position: relative;
-    max-width: 1000px;
-    min-width: 540px;
-    margin-top: 50px;
-    margin-left: 50px;
-    margin-right: 50px;
-}
+#titlearea {position: relative; max-width: 1000px; min-width: 540px; margin-top: 50px; margin-left: 50px; margin-right: 50px;}
 
 #title {
-    font-family: 'Artifika', serif;
-    font-size: 40px;
-    font-style: normal;
-    font-weight: 400;
-    text-align: center;
-    text-shadow: none;
-    text-decoration: none;
-    text-transform: none;
-    letter-spacing: 0em;
-    word-spacing: 0em;
-    line-height: 1.2;
+    font-family: 'Artifika', serif; font-size: 40px; font-style: normal; font-weight: 400;
+    text-align: center; text-shadow: none; text-decoration: none; text-transform: none;
+    letter-spacing: 0em; word-spacing: 0em; line-height: 1.2;
 }
 
 #subtitle {
-    font-family: 'Artifika', serif;
-    font-size: 18px;
-    font-style: normal;
-    font-weight: 400;
-    text-align:center;
-    text-shadow: none;
-    text-decoration: none;
-    text-transform: none;
-    letter-spacing: 0em;
-    word-spacing: 0em;
-    line-height: 1.2;
+    font-family: 'Artifika', serif; font-size: 18px; font-style: normal; font-weight: 400;
+    text-align:center; text-shadow: none; text-decoration: none; text-transform: none;
+    letter-spacing: 0em; word-spacing: 0em; line-height: 1.2;
 }
 
-#noticearea {
-    width: 50%;
-    height: 5em;
-    margin-left: 25%;
-}
+#noticearea {width: 50%; height: 5em; margin-left: 25%;}
+#mainarea {position: absolute; max-width: 1000px; min-width: 540px; margin: 50px; top: 13em;}
+#mainview {float: left; max-width: 725px; min-width: 290px; width: 725px;}
+#tabview {float: right; width: 250px; margin-left: 25px;}
 
-#mainarea {
-    position: absolute;
-    max-width: 1000px;
-    min-width: 540px;
-    margin: 50px;
-    top: 13em;
-}
+#querybox {}
+#queryeditor {min-width: 40%; max-width: 100%; border-style: solid; border-width: 1px;}
 
-#mainview {
-    float: left;
-    max-width: 750px;
-    min-width: 290px;
-    width: 750px;
-}
-
-#tabview {
-    float: right;
-    width: 250px;
-}
+#editbox {}
+#graphbox {}
+#controlbox {}
