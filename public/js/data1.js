@@ -1773,7 +1773,7 @@ var shib_test_data1_full = [
   ['20110530','d_bantyou_h','16739794095'],
   ['20110530','akakb','16380735593'],
   ['20110530','kokovip','16289167754'],
-  ['20110530','gundam2ch','16063889613'],0
+  ['20110530','gundam2ch','16063889613'],
   ['20110530','doujing','15913908563'],
   ['20110530','dochnomizugi','15602034517'],
   ['20110530','nikonikoblog','15531804285'],
@@ -1821,17 +1821,20 @@ shib_test_data1_full.forEach(function(v){
 var shib_test_data1_top10list = [];
 shib_test_data1_datelist.forEach(function(d){
   shib_test_data1_daily[d].slice(0,10).forEach(function(n){
-    if (shib_test_data1_top10list.indexOf(n) < 0)
-      shib_test_data1_top10list.push(n);
+    if (shib_test_data1_top10list.indexOf(n[0]) < 0)
+      shib_test_data1_top10list.push(n[0]);
   });
 });
 
-var shib_test_data1_columns = ['date'] + shib_test_data1_top10list;
+var shib_test_data1_columns = [{name:'date', type:'string'}].concat(shib_test_data1_top10list.map(function(b){return {name:b, type:'number'};}));
 var shib_test_data1 = [];
 shib_test_data1_datelist.forEach(function(d){
   var nums = [];
   shib_test_data1_top10list.forEach(function(blogname){
-    nums.push(shib_test_data1_blognames[blogname][d]);
+    if (shib_test_data1_blognames[blogname] && shib_test_data1_blognames[blogname][d])
+      nums.push(shib_test_data1_blognames[blogname][d]);
+    else
+      nums.push(0);
   });
-  shib_test_data1.push([d] + nums);
+  shib_test_data1.push([d].concat(nums));
 });

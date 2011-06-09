@@ -1,0 +1,38 @@
+!!! html
+html
+  head
+    meta(http-equiv="Content-Type", content="text/html", charset="utf-8")
+    title shib - Query your Hive!
+    link(type="text/css", href="css/redmond/jquery-ui-1.8.13.custom.css", rel="stylesheet")
+    link(type="text/css", href="css/shib.css", rel="stylesheet")
+    link(type="text/css", href="http://fonts.googleapis.com/css?family=Artifika:regular", rel="stylesheet")
+    script(type="text/javascript", src="js/jquery-1.5.1.min.js")
+    script(type="text/javascript", src="js/jquery-ui-1.8.13.custom.min.js")
+    script(type="text/javascript", src="https://www.google.com/jsapi")
+    script(type="text/javascript", src="js/data1.js")
+    script(type="text/javascript", src="js/data2.js")
+    script(type="text/javascript", src="js/shib.graphtest.js")
+    script(type="text/javascript", src="js/shib.js")
+  body
+    #title shib
+    #subtitle "Spotlight for Hidden Inbound request Behaviors"
+    #noticearea
+      .ui-widget#infoarea(style="display: none;")
+        .ui-state-highlight.ui-corner-all(style="margin-top: 10px; padding: 0 .7em;")
+          p
+            span.ui-icon.ui-icon-info(style="float: left; margin-right: .3em;")
+            strong TITLE
+            | Highlighted Message
+      .ui-widget#errorarea(style="display: none;")
+        .ui-state-error.ui-corner-all(style="margin-top: 10px; padding: 0 .7em;")
+          p
+            span.ui-icon.ui-icon-alert(style="float: left; margin-right: .3em;")
+            strong Alert
+            | Error Message
+    #mainarea
+      #viewarea
+        table(border="none")
+          tr
+            td hoge
+      #tabarea
+        | hoge
