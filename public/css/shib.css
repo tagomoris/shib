@@ -7,6 +7,15 @@ ul#icons {margin: 0; padding: 0;}
 ul#icons li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
 ul#icons span.ui-icon {float: left; margin: 0 4px;}
 
+#titlearea {
+    position: relative;
+    max-width: 1000px;
+    min-width: 540px;
+    margin-top: 50px;
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
 #title {
     font-family: 'Artifika', serif;
     font-size: 40px;
@@ -47,4 +56,16 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
     min-width: 540px;
     margin: 50px;
     top: 13em;
+}
+
+#mainview {
+    float: left;
+    max-width: 750px;
+    min-width: 290px;
+    width: 750px;
+}
+
+#tabview {
+    float: right;
+    width: 250px;
 }
