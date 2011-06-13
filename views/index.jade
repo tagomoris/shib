@@ -47,16 +47,16 @@ html
               | re-run
             li#display_full_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-newwin
-              | show full result
+              | result(full)
             li#display_head_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-newwin
-              | show head of result
+              | result(head)
             li#download_tsv_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-arrowthickstop-1-s
-              | tsv download
+              | download(tsv)
             li#download_csv_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-arrowthickstop-1-s
-              | csv download
+              | download(csv)
           #statusview
             span
               | Query Status:
@@ -77,14 +77,18 @@ html
                 span.ui-icon.ui-icon-eject
               li#test_status_change_rerunning.ui-state-default.ui-corner-all(title="status re-running")
                 span.ui-icon.ui-icon-seek-next
+              li#test_show_notice_bar.ui-state-default.ui-corner-all(title="show notice bar")
+                span.ui-icon.ui-icon-lightbulb
+              li#test_show_error_bar.ui-state-default.ui-corner-all(title="show error bar")
+                span.ui-icon.ui-icon-power
         #graphbox
           #chart_div
             #graphboxdummy ...
         #controlbox
           ul#icons2.ui-widget.ui-helper-clearfix
-            li#graph_render_execute_1.ui-state-default.ui-corner-all(title=".ui-icon-carat-1-n")
+            li#graph_render_execute_1.ui-state-default.ui-corner-all(title="render test graph 1")
               span.ui-icon.ui-icon-carat-1-n
-            li#graph_render_execute_2.ui-state-default.ui-corner-all(title=".ui-icon-carat-1-ne")
+            li#graph_render_execute_2.ui-state-default.ui-corner-all(title="render test graph 2")
               span.ui-icon.ui-icon-carat-1-ne
       #tabview
         #listSelector
