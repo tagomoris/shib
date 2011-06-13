@@ -23,6 +23,8 @@ $(function(){
   $('#test_status_change_executed').click(function(event){shib_test_status_change("executed");});
   $('#test_status_change_error').click(function(event){shib_test_status_change("error");});
   $('#test_status_change_rerunning').click(function(event){shib_test_status_change("rerunning");});
+  $('#test_show_notice_bar').click(function(event){$('#infoarea').toggle();});
+  $('#test_show_error_bar').click(function(event){$('#errorarea').toggle();});
   /* **** **** */
 
   // Grapharea
