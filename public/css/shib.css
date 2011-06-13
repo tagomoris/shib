@@ -43,7 +43,7 @@ span.status_rerunning {font-weight: bold; color: orange;}
 
 #querybox {}
 #queryeditor {
-    width: 100%; border-style: solid; border-width: 1px;
+    width: 100%; border: 1px solid #c0c0f8;
     font-family: 'Anonymous Pro', serif;
     font-size: 18px;
     font-style: normal;
