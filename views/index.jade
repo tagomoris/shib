@@ -117,9 +117,11 @@ html
               h3
                 a(href="#") 2011/06
               div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
+                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
             div
               h3
                 a(href="#") 2011/05
