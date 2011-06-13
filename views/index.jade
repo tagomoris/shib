@@ -6,6 +6,11 @@ html
     link(type="text/css", href="css/redmond/jquery-ui-1.8.13.custom.css", rel="stylesheet")
     link(type="text/css", href="css/shib.css", rel="stylesheet")
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Artifika:regular", rel="stylesheet")
+    // tested fonts
+    link(type="text/css", href="http://fonts.googleapis.com/css?family=Anonymous+Pro:regular,italic,bold,bolditalic", rel="stylesheet")
+    link(type="text/css", href="http://fonts.googleapis.com/css?family=Cousine:regular,italic,bold,bolditalic", rel="stylesheet")
+    link(type="text/css", href="http://fonts.googleapis.com/css?family=Inconsolata:regular", rel="stylesheet")
+    link(type="text/css", href="http://fonts.googleapis.com/css?family=Ubuntu:300,300italic,regular,italic,500,500italic,bold,bolditalic", rel="stylesheet")
     script(type="text/javascript", src="js/jquery-1.5.1.min.js")
     script(type="text/javascript", src="js/jquery-ui-1.8.13.custom.min.js")
     script(type="text/javascript", src="https://www.google.com/jsapi")
@@ -33,10 +38,15 @@ html
     #mainarea
       #mainview
         #querybox
-          textarea#queryeditor
-            SELECT field1,field2,field3 FROM table_hoge
-                WHERE x=1, y="hoge" GROUP BY field4
-                SORT BY field5 LIMIT 10
+          textarea#queryeditor(rows="10")
+            SELECT
+              (split(fullpath, '\/'))[0] AS dirname,
+              referrer,
+              bytes
+              FROM parsed_log
+              WHERE service='blog' AND yyyymmdd='20110512'
+              GROUP BY dirname SORT BY dirname
+              LIMIT 10;
         #editbox.ui-corner-all
           ul.operationitems.ui-widget.ui-helper-clearfix
             li#execute_button.ui-state-default.ui-corner-all

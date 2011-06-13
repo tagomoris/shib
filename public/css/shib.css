@@ -42,7 +42,18 @@ span.status_rerunning {font-weight: bold; color: orange;}
 #tabview {float: right; width: 325px; margin-left: 25px;}
 
 #querybox {}
-#queryeditor {width: 100%; border-style: solid; border-width: 1px;}
+#queryeditor {
+    width: 100%; border-style: solid; border-width: 1px;
+    font-family: 'Anonymous Pro', serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: none;
+    letter-spacing: 0em;
+    word-spacing: 0em;
+    line-height: 1.2;
+}
 
 #editbox {width: 99%; padding: .5em; border: 1px solid #c0c0f8; background-color: #f8f8ff;}
 #statusview {margin: 10px; font-size: small;}
