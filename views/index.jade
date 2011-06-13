@@ -33,7 +33,10 @@ html
     #mainarea
       #mainview
         #querybox
-          textarea#queryeditor SELECT field1,field2,field3 FROM table_hoge WHERE x=1, y="hoge" GROUP BY field4 SORT BY field5 LIMIT 10
+          textarea#queryeditor
+            SELECT field1,field2,field3 FROM table_hoge
+                WHERE x=1, y="hoge" GROUP BY field4
+                SORT BY field5 LIMIT 10
         #editbox.ui-corner-all
           ul.operationitems.ui-widget.ui-helper-clearfix
             li#execute_button.ui-state-default.ui-corner-all
@@ -41,22 +44,22 @@ html
               | execute
             li#pause_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-pause
-              | please wait ...
+              | waiting
             li#rerun_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-play
               | re-run
             li#display_full_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-newwin
-              | result(full)
+              | show full
             li#display_head_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-newwin
-              | result(head)
+              | show head
             li#download_tsv_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-arrowthickstop-1-s
-              | download(tsv)
+              | tsv
             li#download_csv_button.ui-state-default.ui-corner-all(style="display: none;")
               span.ui-icon.ui-icon-arrowthickstop-1-s
-              | download(csv)
+              | csv
           #statusview
             span
               | Query Status:
