@@ -1,7 +1,7 @@
 /* overwrite jquery-ui style */
 .ui-tabs .ui-tabs-panel {padding: 1px;}
 
-body {font: 62.5% "Trebuchet MS", sans-serif; width: 980px;}
+body {font: 62.5% "Trebuchet MS", sans-serif; min-width: 980px; width: 98%;}
 
 /* css for test */
 ul#icons1 {margin: 0; padding: 0;}
@@ -24,7 +24,7 @@ span.status_error {font-weight: bold; color: red;}
 span.status_rerunning {font-weight: bold; color: orange;}
 
 /* #titlearea {position: relative; width: 1024px; margin-top: 50px; margin-left: 50px;} */
-#titlearea {position: relative; width: 980px; margin-top: 50px;}
+#titlearea {position: relative; min-width: 980px; width: 98%; margin-top: 50px; text-align: center;}
 #title {
     font-family: 'Artifika', serif; font-size: 40px; font-style: normal; font-weight: 400;
     text-align: center; text-shadow: none; text-decoration: none; text-transform: none;
@@ -36,10 +36,10 @@ span.status_rerunning {font-weight: bold; color: orange;}
     letter-spacing: 0em; word-spacing: 0em; line-height: 1.2;
 }
 
-#noticearea {width: 50%; height: 5em; margin-left: 25%;}
-#mainarea {position: absolute; max-width: 980px; min-width: 550px; margin: 50px; top: 13em;}
-#mainview {float: left; width: 550px;}
-#tabview {float: right; width: 325px; margin-left: 25px;}
+#noticearea {width: 50%; height: 5em; margin: 15px auto 15px auto;}
+#mainarea {position: relative; max-width: 980px; min-width: 550px; margin: 25px auto; }
+#mainview {float: left; width: 550px; margin-right: 0px;}
+#tabview {float: right; width: 420px; margin-left: 0px;}
 
 #querybox {}
 #queryeditor {
