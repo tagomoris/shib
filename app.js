@@ -2,19 +2,9 @@ var express = require('express'),
     jade = require('jade'),
     app = express.createServer();
 
-var config = {
-  hiveserver: {
-    host: 'localhost',
-    port: 10000
-  },
-  kyototycoon: {
-    host: 'localhost',
-    port: 1978
-  }
-};
-
-var shib = require('shib');
-shib.init(config);
+var shib = require('shib'),
+    servers = require('./config').servers;
+shib.init(servers);
 
 app.configure(function(){
   app.use(express.methodOverride());
@@ -38,8 +28,14 @@ app.get('/', function(req, res){
   res.render(__dirname + '/views/index.jade', {layout: false});
 });
 
+app.get('/q/:queryid', function(req, res){
+  // Only this request handler is for permalink request from browser URL bar.
+});
+
 app.post('/execute', function(req, res){
-  shib.client().createQuery(req.querystring, req.keywords, function(err, query){
+  /* */
+  var keywords = req.keywords.split(',');
+  shib.client().createQuery(req.querystring, keywords, function(err, query){
     res.send(query.queryid);
     this.execute(query);
   });
@@ -53,7 +49,13 @@ app.post('/refresh', function(req, res){
 });
 
 app.get('/keywords', function(req, res){
-  /* */
+  shib.client().getKeywords(function(err, data){
+    if (err) {
+      res.send(err);
+      return;
+    }
+    res.send(data); /* **** */
+  });
 });
 
 app.get('/keyword/:label', function(req, res){
@@ -88,6 +90,7 @@ app.get('/lastresult/:queryid', function(req, res){
 });
 
 app.get('/result/:resultid', function(req, res){
+  /* */
   shib.client().getQuery();
 });
 
