@@ -23,7 +23,7 @@ span.status_executed {font-weight: bold; color: green;}
 span.status_error {font-weight: bold; color: red;}
 span.status_rerunning {font-weight: bold; color: orange;}
 
-#titlearea {position: relative; min-width: 980px; width: 98%; margin-top: 50px; text-align: center;}
+#titlearea {position: relative; min-width: 980px; width: 98%; margin-top: 15px; text-align: center;}
 #title {
     font-family: 'Artifika', serif; font-size: 40px; font-style: normal; font-weight: 400;
     text-align: center; text-shadow: none; text-decoration: none; text-transform: none;
@@ -36,7 +36,7 @@ span.status_rerunning {font-weight: bold; color: orange;}
 }
 
 #noticearea {width: 50%; height: 5em; margin: 15px auto 15px auto;}
-#mainarea {position: relative; max-width: 980px; min-width: 550px; margin: 25px auto; }
+#mainarea {position: relative; max-width: 980px; min-width: 550px; margin: -15px auto; }
 #mainview {float: left; width: 550px; margin-right: 0px;}
 #tabview {float: right; width: 420px; margin-left: 0px;}
 
