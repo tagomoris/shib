@@ -23,7 +23,6 @@ span.status_executed {font-weight: bold; color: green;}
 span.status_error {font-weight: bold; color: red;}
 span.status_rerunning {font-weight: bold; color: orange;}
 
-/* #titlearea {position: relative; width: 1024px; margin-top: 50px; margin-left: 50px;} */
 #titlearea {position: relative; min-width: 980px; width: 98%; margin-top: 50px; text-align: center;}
 #title {
     font-family: 'Artifika', serif; font-size: 40px; font-style: normal; font-weight: 400;
@@ -41,6 +40,7 @@ span.status_rerunning {font-weight: bold; color: orange;}
 #mainview {float: left; width: 550px; margin-right: 0px;}
 #tabview {float: right; width: 420px; margin-left: 0px;}
 
+/* for main view (left pane) */
 #querybox {}
 #queryeditor {
     width: 100%; border: 1px solid #c0c0f8;
@@ -61,3 +61,32 @@ span.status_rerunning {font-weight: bold; color: orange;}
 #graphbox {margin-top: .5em; margin-bottom: .5em;}
 #graphboxdummy {width: 100%; border: 1px dotted gray;}
 #controlbox {width: 99%; padding: .5em; border: 1px solid #c0c0f8; background-color: #f8f8ff;}
+
+/* *** */
+
+/* for tab view (right pane) */
+.queryitem {padding-bottom: 2px; margin-bottom: 3px; border-bottom: 1px dotted;}
+.queryitem_selected {background-color: #fdfdf0;}
+.queryitem_information {width: 100%; font-weight: bold; background-color: #e8e8ef;}
+
+.queryitem_statement {
+  font-family: 'Inconsolata', serif;
+  /*
+  font-family: 'Allerta', serif;
+  font-family: 'Anonymous Pro', serif;
+  font-family: 'Cousine', serif;
+  */
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  text-shadow: none;
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: 0em;
+  word-spacing: 0em;
+  line-height: 1.2;
+}
+.queryitem_status {font-weight: bold;}
+span.queryitem_etc {padding-left: 5px;}
+
+/* *** */

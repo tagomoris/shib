@@ -6,11 +6,13 @@ html
     link(type="text/css", href="css/redmond/jquery-ui-1.8.13.custom.css", rel="stylesheet")
     link(type="text/css", href="css/shib.css", rel="stylesheet")
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Artifika:regular", rel="stylesheet")
-    // tested fonts
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Anonymous+Pro:regular,italic,bold,bolditalic", rel="stylesheet")
+    // testing fonts ...
+    link(type="text/css", href="http://fonts.googleapis.com/css?family=Allerta:regular", rel="stylesheet")
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Cousine:regular,italic,bold,bolditalic", rel="stylesheet")
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Inconsolata:regular", rel="stylesheet")
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Ubuntu:300,300italic,regular,italic,500,500italic,bold,bolditalic", rel="stylesheet")
+    // *****
     script(type="text/javascript", src="js/jquery-1.5.1.min.js")
     script(type="text/javascript", src="js/jquery-ui-1.8.13.custom.min.js")
     script(type="text/javascript", src="https://www.google.com/jsapi")
@@ -107,79 +109,183 @@ html
         #listSelector
           ul
             li
+              a(href="#tab-yours") yours
+            li
               a(href="#tab-history") history
             li
               a(href="#tab-keywords") keywords
-            li
-              a(href="#tab-yours") yours
+          #tab-yours
+            div
+              h3
+                a(href="#") from your browser
+              div
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem.queryitem_selected
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
           #tab-history
             div
               h3
                 a(href="#") 2011/06
               div
-                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
-                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
-                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
-                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
-                div SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='blog' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
             div
               h3
                 a(href="#") 2011/05
               div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
             div
               h3
                 a(href="#") 2011/04
               div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
           #tab-keywords
             div
               h3
                 a(href="#") blog
               div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
             div
               h3
                 a(href="#") blogimg
               div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
             div
               h3
                 a(href="#") news
               div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-          #tab-yours
-            div
-              h3
-                a(href="#") 2011/06
-              div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-            div
-              h3
-                a(href="#") 2011/05
-              div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-            div
-              h3
-                a(href="#") 2011/04
-              div
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
-                div SELECT hoge, pos FROM access_log WHERE ...
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
+                .queryitem
+                  .queryitem_information 2011/06/14, blog
+                  .queryitem_statement SELECT (split(fullpath, '\/'))[0] AS dirname, referrer, bytes FROM parsed_log WHERE service='__KEY__' AND yyyymmdd='20110512' GROUP BY dirname SORT BY dirname LIMIT 10;
+                  .queryitem_status
+                    span.status_executed executed
+                    span.queryitem_etc 5131700 bytes, 10117 lines
