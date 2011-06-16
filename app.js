@@ -1,30 +1,11 @@
 var express = require('express'),
     jade = require('jade'),
+    async = require('async'),
     app = express.createServer();
 
 var shib = require('shib'),
     servers = require('./config').servers;
 shib.init(servers);
-
-var complete_callback = function(list, callback){
-  var waiting_callbacks = list;
-  var errors = [];
-  var position = {};
-  waiting_callbacks.forEach(function(k){position[k] = false;});
-  return function(type, err){
-    if (err)
-      errors.push(err);
-    position[type] = true;
-    for(var i = 0; i < waiting_callbacks.length; i++) {
-      if (! position[waiting_callbacks[i]])
-        return;
-    }
-    if (errors.length > 0)
-      callback(errors);
-    else
-      callback();
-  };
-};
 
 app.configure(function(){
   app.use(express.methodOverride());
@@ -56,47 +37,57 @@ app.get('/q/:queryid', function(req, res){
 //TODO: set error status into error handler responses
 
 app.get('/summary_bulk', function(req, res){
-  // keyword-list, keyword-ids list, history, yyyymm-ids list, uniqueue query id list
-  var history = null;
-  var history_ids = {};
-  var keywords = null;
-  var keyword_ids = {};
-  var summary_bulk_callback = complete_callback(['history_idlist', 'keyword_idlist'], function(errors){
-    // create query_id_unique list
+  var correct_history = function(callback){
+    shib.client().getHistories(function(err, list){
+      if (err) {callback(err); return;}
+      this.getHistoryBulk(list, function(err, idlist){
+        if (err) {callback(err); return;}
+        var idmap = {};
+        var ids = [];
+        for (var x = 0; x < list.length; x++) {
+          idmap[list[x]] = idlist[x];
+          ids.concat(idlist[x]);
+        }
+        callback(null, {history:list, history_ids:idmap, ids:ids});
+      });
+    });
+  };
+  var correct_keywords = function(callback){
+    shib.client().getKeywords(function(err, list){
+      if (err) {callback(err); return;}
+      this.getKeywordBulk(list, function(err, idlist){
+        if (err) {callback(err); return;}
+        var idmap = {};
+        var ids = [];
+        for (var y = 0; y < list.length; y++) {
+          idmap[list[y]] = idlist[y];
+          ids.concat(idlist[y]);
+        }
+        callback(null, {keywords:list, keyword_ids:idmap, ids:ids});
+      });
+    });
+  };
+
+  async.parallel([correct_history, correct_keywords], function(err, results){
+    if (err) {
+      //TODO: error handle...
+    }
     var response_obj = {
-      history: history,
-      history_ids: history_ids,
-      keywords: keywords,
-      keyword_ids: keyword_ids,
-      query_ids: query_ids
+      history: (results[0].history || results[1].history),
+      history_ids: (results[0].history_ids || results[1].history_ids),
+      keywords: (results[0].keywords || results[1].keywords),
+      keyword_ids: (results[0].keyword_ids || results[1].keyword_ids)
     };
-    //TODO: if errors && errors.length > 0 ...
+    var exist_ids = {};
+    response_obj.query_ids = results[0].ids.concat(results[1].ids).filter(function(v){
+      if (exist_ids[v]) return false;
+      exist_ids[v] = true;
+      return true;
+    });
     res.send(response_obj); // serialize!
   });
-  shib.client().getHistories(function(err, list){
-    if (err) {summary_bulk_callback('history_idlist', err); return;}
-    history = list;
-    this.getHistoryBulk(list, function(err, idlist){
-      if (err) {summary_bulk_callback('history_idlist', err); return;}
-      for (var x = 0; x < history.length; x++) {
-        history_ids[history[x]] = idlist[x];
-      }
-      summary_bulk_callback('history_idlist');
-    });
-  });
-  shib.client().getKeywords(function(err, list){
-    if (err) {summary_bulk_callback('keyword_idlist', err); return;}
-    keywords = list;
-    this.getKeywordBulk(list, function(err, idlist){
-      if (err) {summary_bulk_callback('keyword_idlist', err); return;}
-      for (var y = 0; y < keywords.length; y++) {
-        keyword_ids[keywords[y]] = idlist[y];
-      }
-      summary_bulk_callback('keyword_idlist');
-    });
-  });
 });
-
+  
 app.post('/execute', function(req, res){
   var keywords = req.keywords.split(',');
   shib.client().createQuery(req.querystring, keywords, function(err, query){
