@@ -39,8 +39,6 @@ app.get('/q/:queryid', function(req, res){
   res.render(__dirname + '/views/index.jade', {layout: false});
 });
 
-//TODO: set error status into error handler responses
-
 app.get('/summary_bulk', function(req, res){
   var correct_history = function(callback){
     shib.client().getHistories(function(err, list){
@@ -51,7 +49,7 @@ app.get('/summary_bulk', function(req, res){
         var ids = [];
         for (var x = 0; x < list.length; x++) {
           idmap[list[x]] = idlist[x];
-          ids.concat(idlist[x]);
+          ids = ids.concat(idlist[x]);
         }
         callback(null, {history:list, history_ids:idmap, ids:ids});
       });
@@ -66,7 +64,7 @@ app.get('/summary_bulk', function(req, res){
         var ids = [];
         for (var y = 0; y < list.length; y++) {
           idmap[list[y]] = idlist[y];
-          ids.concat(idlist[y]);
+          ids = ids.concat(idlist[y]);
         }
         callback(null, {keywords:list, keyword_ids:idmap, ids:ids});
       });
