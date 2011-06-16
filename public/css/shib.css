@@ -20,6 +20,7 @@ ul.operationitems span.ui-icon {float: left; margin: 0 4px;}
 span.status_not_executed {font-weight: bold; color: orange;}
 span.status_running {font-weight: bold; color: navy;}
 span.status_executed {font-weight: bold; color: green;}
+span.status_done {font-weight: bold; color: green;}
 span.status_error {font-weight: bold; color: red;}
 span.status_rerunning {font-weight: bold; color: orange;}
 
