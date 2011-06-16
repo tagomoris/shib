@@ -95,7 +95,7 @@ app.get('/summary_bulk', function(req, res){
 app.post('/execute', function(req, res){
   var keywords = req.body.keywords.split(',');
   shib.client().createQuery(req.body.querystring, keywords, function(err, query){
-    if (err) {res.send(err); return;}
+    if (err) { error_handle(req, res, err); return; }
     res.send(query.queryid);
     this.execute(query);
   });
@@ -103,48 +103,51 @@ app.post('/execute', function(req, res){
 
 app.post('/refresh', function(req, res){
   shib.client().query(req.body.queryid, function(err, query){
-    if (err) {res.send(err); return;}
+    if (err) { error_handle(req, res, err); return; }
     this.refresh(query);
   });
 });
 
 app.get('/keywords', function(req, res){
   shib.client().getKeywords(function(err, keywords){
-    if (err) {res.send(err); return;}
+    if (err) { error_handle(req, res, err); return; }
     res.send(keywords); /* **** */
   });
 });
 
 app.get('/keyword/:label', function(req, res){
   shib.client().getKeyword(req.params.label, function(err, idlist){
-    if (err) {res.send(err); return;}
+    if (err) { error_handle(req, res, err); return; }
     res.send(idlist); /* **** */
   });
 });
 
 app.get('/histories', function(req, res){
   shib.client().getHistories(function(err, histories){
-    if (err) {res.send(err); return;}
+    if (err) { error_handle(req, res, err); return; }
     res.send(histories); /* *** */
   });
 });
 
 app.get('/history/:label', function(req, res){
   shib.client().getHistory(req.params.label, function(err, idlist){
-    if (err) {res.send(err); return;}
+    if (err) { error_handle(req, res, err); return; }
     res.send(idlist); /* **** */
   });
 });
 
 app.get('/query/:queryid', function(req, res){
   shib.client().getQuery(req.params.queryid, function(err, query){
-    if (err) {res.send(err); return;}
+    if (err) { error_handle(req, res, err); return; }
     res.send(query); /* *** */
   });
 });
 
 app.post('/queries', function(req, res){
-  /* */
+  shib.client().queries(req.body.ids, function(err, queries){
+    if (err) { error_handle(req, res, err); return; }
+    res.send({queries: queries});
+  });
 });
 
 app.get('/status/:queryid', function(req, res){
@@ -165,6 +168,13 @@ app.get('/lastresult/:queryid', function(req, res){
 app.get('/result/:resultid', function(req, res){
   /* */
   shib.client().getQuery();
+});
+
+app.post('/results', function(req, res){
+  shib.client().results(req.body.ids, function(err, results){
+    if (err) { error_handle(req, res, err); return; }
+    res.send({results: results});
+  });
 });
 
 app.get('/rawresult/:resultid', function(req, res){
