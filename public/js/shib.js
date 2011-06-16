@@ -1,17 +1,54 @@
 google.load("visualization", "1", {packages:["corechart"]});
 
+var shibdata = {};
+
 $(function(){
-  $("#tab-history").accordion({header:"h3"});
-  $("#tab-keywords").accordion({header:"h3"});
-  $("#tab-yours").accordion({header:"h3"});
-  $("#listSelector").tabs();
+  $.getJSON('/summary_bulk', function(data){
+    shibdata.history = data.history;
+    shibdata.keywords = data.keywords;
+    shibdata.history_ids = data.history_ids;
+    shibdata.keyword_ids = data.keyword_ids;
+    shibdata.query_cache = {};
+    shibdata.result_cache = {};
+    $.ajax({
+      url: '/queries',
+      type: 'POST',
+      dataType: 'json',
+      data: {ids: data.query_ids},
+      success: function(data){
+        var resultids = [];
+        data.queries.forEach(function(v){
+          shibdata.query_cache[v.queryid] = v;
+          if (v.results && v.results.length > 0)
+            resultids = resultids.concat(v.results.map(function(r){return r.resultid;}));
+        });
+        $.ajax({
+          url: '/results',
+          type: 'POST',
+          dataType: 'json',
+          data: {ids: resultids},
+          success: function(data){
+            data.results.forEach(function(r){
+              shibdata.result_cache[r.resultid] = r;
+            });
+            update_history_tab();
+            update_keywords_tab();
+        
+            $("#tab-history").accordion({header:"h3"});
+            $("#tab-keywords").accordion({header:"h3"});
+            $("#tab-yours").accordion({header:"h3"});
+            $("#listSelector").tabs();
+          }
+        });
+      }
+    });
+  });
 
   //hover states on the static widgets
   $('ul.operationitems li').hover(
     function() { $(this).addClass('ui-state-hover'); }, 
     function() { $(this).removeClass('ui-state-hover'); }
   );
-
 
   /* **** effects, and events for tests **** */
   $('ul#icons1 li, ul#icons2 li').hover(
@@ -37,6 +74,54 @@ $(function(){
     return false;
   });
 });
+
+$.template("queryItemTemplate",
+           '<div><div class="queryitem" id="query_${QueryId}">' +
+           '  <div class="queryitem_information">${Information}</div>' +
+           '  <div class="queryitem_statement">${Statement}</div>' +
+           '  <div class="queryitem_status">' +
+           '    <span class="status_${Status}">${Status}</span>' +
+           '    <span class="queryitem_etc">${Etc}</span>' +
+           '  </div>' +
+           '</div></div>');
+
+function create_queryitem_object(queryid, id_prefix){
+  var query = shibdata.query_cache[queryid];
+  if (! query)
+    return '';
+  var lastresult = (query.results && query.results.length > 0 && query.results[query.results.length - 1]) || null;
+  var lastresultobj = (lastresult && shibdata.result_cache[lastresult.resultid]) || null;
+  var executed_at = (lastresult && lastresult.executed_at) || '-';
+  var keyword_primary = (query.keywords && query.keywords.length > 0 && query.keywords[0]) || '-';
+  return {
+    QueryId: (id_prefix || '') + query.queryid,
+    Information: executed_at + ', ' + keyword_primary,
+    Statement: query.querystring,
+    Status: (lastresultobj && lastresultobj.status) || 'running',
+    Etc: (lastresultobj && lastresultobj.bytes && lastresultobj.lines &&
+          (lastresultobj.bytes + ' bytes, ' + lastresultobj.lines + ' lines')) || ''
+  };
+};
+
+function update_history_tab(){
+  $('#tab-history').empty().html(
+    shibdata.history.map(function(v){
+      var itemsHtml = $.tmpl("queryItemTemplate", shibdata.history_ids[v].map(function(id){
+        return create_queryitem_object(id, 'history_');}));
+      return '<div><h3><a href="#">' + v + '</a></h3><div>' + itemsHtml.html() + '</div></div>';
+    }).join('')
+  );
+};
+
+function update_keywords_tab(){
+  $('#tab-keywords').empty().html(
+    shibdata.keywords.map(function(k){
+      var itemsHtml = $.tmpl("queryItemTemplate", shibdata.history_ids[v].map(function(id){
+        return create_queryitem_object(id, 'keyword_');}));
+      return '<div><h3><a href="#">' + v + '</a></h3><div>' + itemsHtml.html() + '</div></div>';
+    }).join('')
+  );
+};
 
 function shib_test_status_change(next_state) {
   if (next_state == 'not executed'){
