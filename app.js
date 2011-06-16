@@ -7,6 +7,11 @@ var shib = require('shib'),
     servers = require('./config').servers;
 shib.init(servers);
 
+function error_handle(req, res, err){
+  console.log({time: (new Date()), request:req, error:err});
+  res.send(err, 500);
+};
+
 app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.bodyParser());
@@ -70,7 +75,8 @@ app.get('/summary_bulk', function(req, res){
 
   async.parallel([correct_history, correct_keywords], function(err, results){
     if (err) {
-      //TODO: error handle...
+      error_handle(req, res, err);
+      return;
     }
     var response_obj = {
       history: (results[0].history || results[1].history),
@@ -84,13 +90,13 @@ app.get('/summary_bulk', function(req, res){
       exist_ids[v] = true;
       return true;
     });
-    res.send(response_obj); // serialize!
+    res.send(response_obj);
   });
 });
   
 app.post('/execute', function(req, res){
-  var keywords = req.keywords.split(',');
-  shib.client().createQuery(req.querystring, keywords, function(err, query){
+  var keywords = req.body.keywords.split(',');
+  shib.client().createQuery(req.body.querystring, keywords, function(err, query){
     if (err) {res.send(err); return;}
     res.send(query.queryid);
     this.execute(query);
@@ -98,7 +104,7 @@ app.post('/execute', function(req, res){
 });
 
 app.post('/refresh', function(req, res){
-  shib.client().query(req.queryid, function(err, query){
+  shib.client().query(req.body.queryid, function(err, query){
     if (err) {res.send(err); return;}
     this.refresh(query);
   });
