@@ -7,10 +7,10 @@ var Query = require('shib/query').Query,
     Result = require('shib/result').Result;
 
 var save_data = {
-  query: 'SELECT (split(fullpath, "\/"))[1] as dirname,count(dirname) AS cnt FROM __KEY__ WHERE date LIKE "2011/06/%" GROUP BY dirname SORT BY cnt DISC LIMIT 200',
-  keywords: ['accesslog'],
-  schema: [{name:'dirname', type:'string'}, {name:'cnt', type:'bigint'}],
-  executed_at: 'Tue Jun 16 2011 19:11:05 GMT+0900 (JST)',
+  query: "SELECT\n  hoge, pos\n  FROM moge_table WHERE key=__KEY__ AND query LIKE '%<script>alert(1)</script>%'",
+  keywords: ['whatsup'],
+  schema: [{name:'hoge', type:'string'}, {name:'pos', type:'bigint'}],
+  executed_at: 'Tue Jun 17 2011 17:23:00 GMT+0900 (JST)',
   data: ["new1\t700","top\t500","img\t130","api\t93","css\t91","js\t90","touch\t51"],
   lines: 7,
   bytes: 55,
