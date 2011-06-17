@@ -2,7 +2,8 @@ google.load("visualization", "1", {packages:["corechart"]});
 
 var shibnotifications = [];
 var shibdata = {};
-var shibcurrent = {};
+var shibselectedquery = null;
+var shibselectedquery_dom = null;
 
 var shib_NOTIFICATION_CHECK_INTERVAL = 100;
 var shib_NOTIFICATION_LAST_DURATION_COUNT = 200;
@@ -43,6 +44,8 @@ $(function(){
             $("#tab-keywords").accordion({header:"h3"});
             $("#tab-yours").accordion({header:"h3"});
             $("#listSelector").tabs();
+
+            $('.queryitem').click(select_queryitem);
 
             setInterval(show_notification, shib_NOTIFICATION_CHECK_INTERVAL);
           }
@@ -130,7 +133,7 @@ function show_error(title, message){
 
 
 $.template("queryItemTemplate",
-           '<div><div class="queryitem" id="query_${QueryId}">' +
+           '<div><div class="queryitem" id="query-${QueryId}">' +
            '  <div class="queryitem_information">${Information}</div>' +
            '  <div class="queryitem_statement">${Statement}</div>' +
            '  <div class="queryitem_status">' +
@@ -165,7 +168,7 @@ function update_history_tab(){
     $('#tab-history').append('<div><h3><a href="#">' + history1 + '</a></h3><div id="' + historyitemlistid + '"></div></div>');
     $.tmpl("queryItemTemplate",
            shibdata.history_ids[history1].map(function(id){
-             return create_queryitem_object(id, 'history_');})
+             return create_queryitem_object(id, 'history-');})
           ).appendTo('#tab-history div div#' + historyitemlistid);
     history_num += 1;
   });
@@ -179,23 +182,50 @@ function update_keywords_tab(){
     $('#tab-keywords').append('<div><h3><a href="#">' + keyword1 + '</a></h3><div id="' + keyworditemlistid + '"></div></div>');
     $.tmpl("queryItemTemplate",
            shibdata.keyword_ids[keyword1].map(function(id){
-             return create_queryitem_object(id, 'keyword_');})
+             return create_queryitem_object(id, 'keyword-');})
           ).appendTo('#tab-keywords div div#' + keyworditemlistid);
     keyword_num += 1;
   });
 };
 
-function select_queryitem(event){
-  var target_dom_id = $(event.target).attr('id');
-  var dom_id_regex = /^.*-idlist-([0-9]+)$/;
-  var match_result = dom_id_regex.exec(target_dom_id);
-  if (match_result === null)
+function set_selected_query(query, dom){
+  release_selected_query();
+  $(dom).addClass('queryitem_selected');
+  shibselectedquery_dom = dom;
+  shibselectedquery = query;
+};
+
+function release_selected_query(){
+  if (! shibselectedquery)
     return;
-  /* */
+  $(shibselectedquery_dom).removeClass('queryitem_selected');
+  shibselectedquery_dom = null;
+  shibselectedquery = null;
+};
+
+function select_queryitem(event){
+  var target_dom = $(event.target).closest('.queryitem');
+  var target_dom_id = target_dom.attr('id');
+  var dom_id_regex = /^query-(keyword|history)-([0-9a-f]+)$/;
+  var match_result = dom_id_regex.exec(target_dom_id);
+  if (match_result === null) {
+    show_error("UI Bug", "Selected DOM id invalid:" + target_dom_id);
+    return;
+  }
+  var query = shibdata.query_cache[match_result[2]];
+  if (! query) {
+    show_error("UI Bug", "Selected query not loaded on browser:" + match_result[2]);
+    return;
+  }
+  
+  set_selected_query(query, target_dom);
+  update_mainview(query);
 };
 
 function update_mainview(query){
-  
+  shibselectedquery = query;
+  $('#queryeditor').text(query.querystring);
+  /*TODO: write!!! */
 };
 
 function shib_test_status_change(next_state) {
