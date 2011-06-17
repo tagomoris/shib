@@ -17,10 +17,10 @@ $(function(){
       data: {ids: data.query_ids},
       success: function(data){
         var resultids = [];
-        data.queries.forEach(function(v){
-          shibdata.query_cache[v.queryid] = v;
-          if (v.results && v.results.length > 0)
-            resultids = resultids.concat(v.results.map(function(r){return r.resultid;}));
+        data.queries.forEach(function(query1){
+          shibdata.query_cache[query1.queryid] = query1;
+          if (query1.results && query1.results.length > 0)
+            resultids = resultids.concat(query1.results.map(function(r){return r.resultid;}));
         });
         $.ajax({
           url: '/results',
@@ -28,8 +28,8 @@ $(function(){
           dataType: 'json',
           data: {ids: resultids},
           success: function(data){
-            data.results.forEach(function(r){
-              shibdata.result_cache[r.resultid] = r;
+            data.results.forEach(function(result1){
+              shibdata.result_cache[result1.resultid] = result1;
             });
             update_history_tab();
             update_keywords_tab();
@@ -97,30 +97,38 @@ function create_queryitem_object(queryid, id_prefix){
     QueryId: (id_prefix || '') + query.queryid,
     Information: executed_at + ', ' + keyword_primary,
     Statement: query.querystring,
-    Status: (lastresultobj && lastresultobj.status) || 'running',
+    Status: (lastresultobj && lastresultobj.state) || 'running',
     Etc: (lastresultobj && lastresultobj.bytes && lastresultobj.lines &&
           (lastresultobj.bytes + ' bytes, ' + lastresultobj.lines + ' lines')) || ''
   };
 };
 
 function update_history_tab(){
-  $('#tab-history').empty().html(
-    shibdata.history.map(function(v){
-      var itemsHtml = $.tmpl("queryItemTemplate", shibdata.history_ids[v].map(function(id){
-        return create_queryitem_object(id, 'history_');}));
-      return '<div><h3><a href="#">' + v + '</a></h3><div>' + itemsHtml.html() + '</div></div>';
-    }).join('')
-  );
+  var history_num = 1;
+  $('#tab-history').empty();
+  shibdata.history.forEach(function(history1){
+    var historyitemlistid = 'history-idlist-' + history_num;
+    $('#tab-history').append('<div><h3><a href="#">' + history1 + '</a></h3><div id="' + historyitemlistid + '"></div></div>');
+    $.tmpl("queryItemTemplate",
+           shibdata.history_ids[history1].map(function(id){
+             return create_queryitem_object(id, 'history_');})
+          ).appendTo('#tab-history div div#' + historyitemlistid);
+    history_num += 1;
+  });
 };
 
 function update_keywords_tab(){
-  $('#tab-keywords').empty().html(
-    shibdata.keywords.map(function(k){
-      var itemsHtml = $.tmpl("queryItemTemplate", shibdata.history_ids[v].map(function(id){
-        return create_queryitem_object(id, 'keyword_');}));
-      return '<div><h3><a href="#">' + v + '</a></h3><div>' + itemsHtml.html() + '</div></div>';
-    }).join('')
-  );
+  var keyword_num = 1;
+  $('#tab-keywords').empty();
+  shibdata.keywords.forEach(function(keyword1){
+    var keyworditemlistid = 'keyword-idlist-' + keyword_num;
+    $('#tab-keywords').append('<div><h3><a href="#">' + keyword1 + '</a></h3><div id="' + keyworditemlistid + '"></div></div>');
+    $.tmpl("queryItemTemplate",
+           shibdata.keyword_ids[keyword1].map(function(id){
+             return create_queryitem_object(id, 'keyword_');})
+          ).appendTo('#tab-keywords div div#' + keyworditemlistid);
+    keyword_num += 1;
+  });
 };
 
 function shib_test_status_change(next_state) {
