@@ -3,6 +3,8 @@ var express = require('express'),
     async = require('async'),
     app = express.createServer();
 
+var MAX_ACCORDION_SIZE = 20;
+
 var shib = require('shib'),
     servers = require('./config').servers;
 shib.init(servers);
@@ -48,10 +50,10 @@ app.get('/summary_bulk', function(req, res){
         var idmap = {};
         var ids = [];
         for (var x = 0; x < list.length; x++) {
-          idmap[list[x]] = idlist[x];
-          ids = ids.concat(idlist[x]);
+          idmap[list[x]] = idlist[x].slice(0,MAX_ACCORDION_SIZE).reverse();
+          ids = ids.concat(idmap[list[x]]);
         }
-        callback(null, {history:list, history_ids:idmap, ids:ids});
+        callback(null, {history:list.reverse(), history_ids:idmap, ids:ids});
       });
     });
   };
@@ -63,8 +65,8 @@ app.get('/summary_bulk', function(req, res){
         var idmap = {};
         var ids = [];
         for (var y = 0; y < list.length; y++) {
-          idmap[list[y]] = idlist[y];
-          ids = ids.concat(idlist[y]);
+          idmap[list[y]] = idlist[y].slice(0,MAX_ACCORDION_SIZE).reverse();
+          ids = ids.concat(idmap[list[y]]);
         }
         callback(null, {keywords:list, keyword_ids:idmap, ids:ids});
       });
