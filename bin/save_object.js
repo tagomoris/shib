@@ -7,15 +7,17 @@ var Query = require('shib/query').Query,
     Result = require('shib/result').Result;
 
 var save_data = {
-  query: 'SELECT date,count(date) AS cnt FROM testtable WHERE date LIKE "2011/05/%" SORT BY date',
-  keywords: [],
-  schema: [{name:'date', type:'string'}, {name:'cnt', type:'bigint'}],
-  executed_at: 'Tue Jun 14 2011 19:11:05 GMT+0900 (JST)',
-  data: ["2011/05/01\t50","2011/05/02\t51","2011/05/03\t25","2011/05/04\t80","2011/05/05\t1"],
+  query: 'SELECT (split(fullpath, "\/"))[1] as dirname,count(dirname) AS cnt FROM __KEY__ WHERE date LIKE "2011/06/%" GROUP BY dirname SORT BY cnt DISC LIMIT 200',
+  keywords: ['accesslog'],
+  schema: [{name:'dirname', type:'string'}, {name:'cnt', type:'bigint'}],
+  executed_at: 'Tue Jun 16 2011 19:11:05 GMT+0900 (JST)',
+  data: ["new1\t700","top\t500","img\t130","api\t93","css\t91","js\t90","touch\t51"],
+  lines: 7,
+  bytes: 55,
   error: null
 };
-/*
 
+/*
  executed_at
  Tue Jun 14 2011 19:11:05 GMT+0900 (JST)
 
@@ -31,6 +33,8 @@ var save_data = {
   schema: [],
   executed_at: null,
   data: [],
+  lines: 0,
+  bytes: 0,
   error: null
 };
 */
@@ -40,9 +44,13 @@ var query_keywords = save_data.keywords;
 var result_schema = save_data.schema;
 var result_executed_at = save_data.executed_at;
 var result_data = save_data.data;
+var result_lines = save_data.lines;
+var result_bytes = save_data.bytes;
 var result_error = save_data.error;
 
 client.createQuery(query_string, query_keywords, function(err, query){
+  client.addHistory(query);
+  client.addKeyword(query);
   var result = new Result({queryid:query.queryid, executed_at:(result_executed_at || (new Date()).toLocaleString())});
   query.results.push({executed_at:result.executed_at, resultid:result.resultid});
   this.updateQuery(query, function(err){
@@ -50,12 +58,14 @@ client.createQuery(query_string, query_keywords, function(err, query){
       result.state = 'error';
       result.error = result_error;
     }
-    else if (result_data.length === 0){
+    else if (result_data.length == 0){
       result.state = 'running';
     }
     else {
       result.state = 'done';
       result.schema = result_schema;
+      result.lines = result_lines;
+      result.bytes = result_bytes;
     }
     this.setResult(result, function(e){
       this.appendResultData(result.resultid, result_data, function(e){
