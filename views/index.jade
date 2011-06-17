@@ -26,18 +26,18 @@ html
       #title shib
       #subtitle "Shib is a Hive Interface for Beginners"
     #noticearea
-      .ui-widget#infoarea(style="display: none;")
-        .ui-state-highlight.ui-corner-all(style="margin-top: 10px; padding: 0 .7em;")
-          p
-            span.ui-icon.ui-icon-info(style="float: left; margin-right: .3em;")
-            strong TITLE
-            | Highlighted Message
       .ui-widget#errorarea(style="display: none;")
         .ui-state-error.ui-corner-all(style="margin-top: 10px; padding: 0 .7em;")
           p
             span.ui-icon.ui-icon-alert(style="float: left; margin-right: .3em;")
-            strong Alert
-            | Error Message
+            strong#errortitle Alert
+            span#errormessage(style="margin-left: .7em;") Error Message
+      .ui-widget#infoarea(style="display: none;")
+        .ui-state-highlight.ui-corner-all(style="margin-top: 10px; padding: 0 .7em;")
+          p
+            span.ui-icon.ui-icon-info(style="float: left; margin-right: .3em;")
+            strong#infotitle TITLE
+            span#infomessage(style="margin-left: .7em;") Highlighted Message
     #mainarea
       #mainview
         #querybox

@@ -1,6 +1,11 @@
 google.load("visualization", "1", {packages:["corechart"]});
 
+var shibnotifications = [];
 var shibdata = {};
+var shibcurrent = {};
+
+var shib_NOTIFICATION_CHECK_INTERVAL = 100;
+var shib_NOTIFICATION_LAST_DURATION_COUNT = 200;
 
 $(function(){
   $.getJSON('/summary_bulk', function(data){
@@ -38,6 +43,8 @@ $(function(){
             $("#tab-keywords").accordion({header:"h3"});
             $("#tab-yours").accordion({header:"h3"});
             $("#listSelector").tabs();
+
+            setInterval(show_notification, shib_NOTIFICATION_CHECK_INTERVAL);
           }
         });
       }
@@ -74,6 +81,53 @@ $(function(){
     return false;
   });
 });
+
+var shib_current_notification = null;
+var shib_current_notification_counter = 0;
+function show_notification(){
+  if (shib_current_notification === null && shibnotifications.length == 0)
+    return;
+  if (shib_current_notification !== null && shibnotifications.length == 0){
+    shib_current_notification_counter += 1;
+    if (shib_current_notification_counter > shib_NOTIFICATION_LAST_DURATION_COUNT) {
+      shib_current_notification.fadeOut(100);
+      shib_current_notification_counter = 0;
+    }
+    return; 
+  }
+  var next = shibnotifications.shift();
+  shib_current_notification_counter = 0;
+  if (shib_current_notification) {
+    shib_current_notification.fadeOut(100, function(){
+      shib_current_notification = update_notification(next.type, next.title, next.message);
+      shib_current_notification.fadeIn(100);
+    });
+  }
+  else {
+    shib_current_notification = update_notification(next.type, next.title, next.message);
+    shib_current_notification.fadeIn(100);
+  }
+};
+
+function update_notification(type, title, message){
+  if (type === 'info') {
+    $('#infotitle').text(title);
+    $('#infomessage').text(message);
+    return $('#infoarea');
+  }
+  $('#errortitle').text(title);
+  $('#errormessage').text(message);
+  return $('#errorarea');
+};
+
+function show_info(title, message){
+  shibnotifications.push({type:'info', title:title, message:message});
+};
+
+function show_error(title, message){
+  shibnotifications.push({type:'error', title:title, message:message});
+};
+
 
 $.template("queryItemTemplate",
            '<div><div class="queryitem" id="query_${QueryId}">' +
@@ -129,6 +183,19 @@ function update_keywords_tab(){
           ).appendTo('#tab-keywords div div#' + keyworditemlistid);
     keyword_num += 1;
   });
+};
+
+function select_queryitem(event){
+  var target_dom_id = $(event.target).attr('id');
+  var dom_id_regex = /^.*-idlist-([0-9]+)$/;
+  var match_result = dom_id_regex.exec(target_dom_id);
+  if (match_result === null)
+    return;
+  /* */
+};
+
+function update_mainview(query){
+  
 };
 
 function shib_test_status_change(next_state) {
