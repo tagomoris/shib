@@ -74,6 +74,16 @@ $(function(){
   $('#test_show_error_bar').click(function(event){$('#errorarea').toggle();});
   /* **** **** */
 
+  // mainview controll box (textarea / status / switch buttons) updator
+  $('#queryeditor').keypress(function(event){
+    if (shibselectedquery && shibselectedquery.querystring !== $(event.target).text())
+      deselect_and_new_query();
+  });
+  $('#queryeditor').change(function(event){
+    if (shibselectedquery && shibselectedquery.querystring !== $(event.target).text())
+      deselect_and_new_query();
+  });
+
   // Grapharea
   $("#graph_render_execute_1").click(function(event){
     render_google_chart_api("chart_div", "Daily transferred bytes", shib_test_data1_columns, shib_test_data1, {width: 650, height: 450});
@@ -139,7 +149,6 @@ function show_error(title, message, duration){
   shibnotifications.push({type:'error', title:title, message:message, duration:duration});
 };
 
-
 $.template("queryItemTemplate",
            '<div><div class="queryitem" id="query-${QueryId}">' +
            '  <div class="queryitem_information">${Information}</div>' +
@@ -195,6 +204,12 @@ function update_keywords_tab(){
   });
 };
 
+function deselect_and_new_query(){
+  release_selected_query();
+  update_editbox(null);
+  show_info('', 'selected query released', 50);
+};
+
 function set_selected_query(query, dom){
   release_selected_query();
   $(dom).addClass('queryitem_selected');
@@ -231,12 +246,11 @@ function select_queryitem(event){
 
 function update_mainview(query){
   shibselectedquery = query;
-  $('#queryeditor').text(query.querystring);
+  $('#queryeditor').val(query.querystring);
   update_editbox(query);
 };
 
 function update_editbox(query, optional_state) {
-  console.log(query);
   var lastresult = last_result(query);
   var state = optional_state || (lastresult && lastresult.state) || null;
 
