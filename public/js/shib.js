@@ -236,8 +236,9 @@ function update_mainview(query){
 };
 
 function update_editbox(query, optional_state) {
-  var state = optional_state || (query && query.state) || null;
+  console.log(query);
   var lastresult = last_result(query);
+  var state = optional_state || (lastresult && lastresult.state) || null;
 
   switch (state) {
   case undefined:
