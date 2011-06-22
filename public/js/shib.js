@@ -6,8 +6,9 @@ var shibselectedquery = null;
 var shibselectedquery_dom = null;
 
 var shib_QUERY_STATUS_CHECK_INTERVAL = 5000;
+var shib_QUERY_EDITOR_WATCHER_INTERVAL = 500;
 var shib_NOTIFICATION_CHECK_INTERVAL = 100;
-var shib_NOTIFICATION_DEFAULT_DURATION_SECONDS = 20;
+var shib_NOTIFICATION_DEFAULT_DURATION_SECONDS = 10;
 
 $(function(){
   $.getJSON('/summary_bulk', function(data){
@@ -49,6 +50,7 @@ $(function(){
 
             $('.queryitem').click(select_queryitem);
 
+            setInterval(queryeditor_watcher(), shib_QUERY_EDITOR_WATCHER_INTERVAL);
             setInterval(check_running_query_state(), shib_QUERY_STATUS_CHECK_INTERVAL);
             setInterval(show_notification, shib_NOTIFICATION_CHECK_INTERVAL);
           }
@@ -77,15 +79,16 @@ $(function(){
   $('#test_show_error_bar').click(function(event){$('#errorarea').toggle();});
   /* **** **** */
 
-  // mainview controll box (textarea / status / switch buttons) updator
-  $('#queryeditor').keypress(function(event){
-    if (shibselectedquery && shibselectedquery.querystring !== $(event.target).text())
-      deselect_and_new_query();
-  });
-  $('#queryeditor').change(function(event){
-    if (shibselectedquery && shibselectedquery.querystring !== $(event.target).text())
-      deselect_and_new_query();
-  });
+  $('#new_button').click(initiate_mainview);
+  $('#copy_button').click(copy_selected_query);
+
+  $('#execute_button').click(execute_query);
+  $('#pause_button').click(function(){show_info('Stay tune!', 'Shib is waiting the end of this query...', 5);});
+  $('#rerun_button').click(rerun_query);
+  $('#display_full_button').click(function(){show_result_query({range:'full'});});
+  $('#display_head_button').click(function(){show_result_query({range:'head'});});
+  $('#download_tsv_button').click(function(){download_result_query({format:'tsv'});});
+  $('#download_csv_button').click(function(){download_result_query({format:'csv'});});
 
   // Grapharea
   $("#graph_render_execute_1").click(function(event){
@@ -116,7 +119,9 @@ function query_second_last_result(query) {
 };
 
 function query_current_state(query) {
-  if (! (query && query.queryid))
+  if (!query)
+    return null;
+  if (query && (! query.queryid))
     show_error('UI Bug', 'query id unknown', 5, query);
 
   if (shibdata.query_state_cache[query.queryid])
@@ -140,6 +145,34 @@ function query_current_state(query) {
 
   shibdata.query_state_cache[query.queryid] = state;
   return state;
+};
+
+function detect_keyword_placeholders(querystring) {
+  var q = querystring;
+  if (q.match(/__KEY__/) && q.match(/__KEY\d__/))
+    show_error('Query Error', 'Cannot use both default single placeholder __KEY__ and sequencial placeholders such as __KEY1__');
+  if (q.match(/__KEY\d{2,}__/))
+    show_error('Query Error', 'Cannot use 10 or more sequencial placeholders such as __KEY10__');
+
+  if (q.match(/__KEY\d__/)) {
+    var re = /__KEY(\d)__/g;
+    var matched;
+    var max_seq = 0;
+    var exists_seq = {};
+    while ((matched = re.exec(q)) != null) {
+      exists_seq[parseInt(matched[1])] = true;
+      if (matched[1] > max_seq)
+        max_seq = matched[1];
+    }
+    for (var i = 0; i <= max_seq; i++) {
+      if (! exists_seq[i])
+        show_error('Query Warning', 'Query has skipping sequencial placeholder number');
+    }
+    return parseInt(max_seq) + 1;
+  }
+  if (q.match(/__KEY__/))
+    return 1;
+  return 0;
 };
 
 /* notifications */
@@ -291,15 +324,88 @@ function select_queryitem(event){
 
 /* left pane view updates */
 
+function initiate_mainview(event) { /* event not used */
+  deselect_and_new_query();
+  update_queryeditor(true, '');
+  update_keywordbox(true, 0);
+  update_editbox(null, 'not executed');
+};
+
+function copy_selected_query(event) { /* event not used */
+  var querystring = shibselectedquery.querystring;
+  var keywordlist = shibselectedquery.keywords;
+  deselect_and_new_query();
+  update_queryeditor(true, querystring);
+  update_editbox(null, 'not executed');
+  update_keywordbox(true, detect_keyword_placeholders(querystring), keywordlist);
+};
+
 function update_mainview(query){
   shibselectedquery = query;
-  $('#queryeditor').val(query.querystring);
+  update_queryeditor(false, query.querystring);
+  update_keywordbox(false, query.keywords.length, query.keywords);
   update_editbox(query);
 };
 
-function update_editbox(query, optional_state) {
-  var state = optional_state || query_current_state(query);
+function queryeditor_watcher(){
+  var pre_querystring_value = '';
+  return function(){
+    if ($('#queryeditor').attr('readonly'))
+      return;
+    if (pre_querystring_value == $('#queryeditor').val())
+      return;
+    console.log('ok, detect');
+    pre_querystring_value = $('#queryeditor').val();
+    update_keywordbox(true, detect_keyword_placeholders($('#queryeditor').val()), []);
+  };
+};
 
+function update_queryeditor(editable, querystring) {
+  var editor = $('#queryeditor');
+  editor.val(querystring);
+  if (editable)
+    editor.attr('readonly', false).removeClass('readonly');
+  else
+    editor.attr('readonly', true).addClass('readonly');
+};
+
+function update_keywordbox(editable, keywords, keywordlist) {
+  if (keywords < 1) {
+    $('#keywordbox div input').val('').attr('readonly', true).addClass('readonly');
+    $('#keywordbox div .keywordname').hide();
+    $('#keywordbox div').hide();
+    $('#keywordbox').hide();
+    return;
+  }
+  $('#keywordbox').show();
+  if (! keywordlist)
+    keywordlist = [];
+  for(var i = 0; i < 10; i++) {
+    if (i < keywords) {
+      $('#keyword' + i + 'area').show();
+      $('#keyword' + i + 'area .keywordname').show();
+      var input = $('#keyword' + i);
+      input.show();
+      if (keywordlist[i] && keywordlist[i].length > 0)
+        input.val(keywordlist[i]);
+      if (editable)
+        input.removeClass('readonly').attr('readonly', false);
+    }
+    else {
+      $('#keyword' + i).val('').attr('readonly', true).addClass('readonly');
+      $('#keyword' + i + 'area .keywordname').hide();
+      $('#keyword' + i + 'area').hide();
+    }
+  }
+};
+
+function update_editbox(query, optional_state) {
+  if (query)
+    $('#copy_button').show();
+  else
+    $('#copy_button').hide();
+
+  var state = optional_state || query_current_state(query);
   switch (state) {
   case 'not executed':
   case undefined:
@@ -423,7 +529,22 @@ function update_query(query){
 
 /* left pane interactions (user-operation interactions) */
 
+function execute_query() {
+  if (shibselectedquery) {
+    show_error('UI Bug', 'execute_query should be enable with not-saved-query objects');
+    return;
+  }
+  
+};
 
+function rerun_query() {
+};
+
+function show_result_query(opts) { /* opts: {range:full/head} */
+};
+
+function download_result_query(opts) { /* opts: {format:tsv/csv} */
+};
 
 /* test functions */
 
