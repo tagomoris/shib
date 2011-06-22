@@ -5,7 +5,7 @@ var shibdata = {};
 var shibselectedquery = null;
 var shibselectedquery_dom = null;
 
-var shib_QUERY_STATUS_CHECK_INTERVAL = 20000;
+var shib_QUERY_STATUS_CHECK_INTERVAL = 5000;
 var shib_NOTIFICATION_CHECK_INTERVAL = 100;
 var shib_NOTIFICATION_DEFAULT_DURATION_SECONDS = 20;
 
@@ -16,7 +16,7 @@ $(function(){
     shibdata.history_ids = data.history_ids;
     shibdata.keyword_ids = data.keyword_ids;
     shibdata.query_cache = {};
-    shibdata.query_status_cache = {};
+    shibdata.query_state_cache = {};
     shibdata.result_cache = {};
     $.ajax({
       url: '/queries',
@@ -49,7 +49,7 @@ $(function(){
 
             $('.queryitem').click(select_queryitem);
 
-            setInterval(check_running_query_status, shib_QUERY_STATUS_CHECK_INTERVAL);
+            setInterval(check_running_query_state(), shib_QUERY_STATUS_CHECK_INTERVAL);
             setInterval(show_notification, shib_NOTIFICATION_CHECK_INTERVAL);
           }
         });
@@ -106,17 +106,40 @@ function query_last_result(query) {
     if ((obj = shibdata.result_cache[query.results[query.results.length - 1].resultid]) !== null)
       return obj;
   return null;
-}
+};
+function query_second_last_result(query) {
+  var obj = null;
+  if (query && query.results && query.results.length > 1 && query.results[query.results.length - 2])
+    if ((obj = shibdata.result_cache[query.results[query.results.length - 2].resultid]) !== null)
+      return obj;
+  return null;
+};
 
-function query_current_status(query) {
+function query_current_state(query) {
   if (! (query && query.queryid))
     show_error('UI Bug', 'query id unknown', 5, query);
 
-  if (shibdata.query_status_cache[query.queryid])
-    return shibdata.query_status_cache[query.queryid];
+  if (shibdata.query_state_cache[query.queryid])
+    return shibdata.query_state_cache[query.queryid];
+
+  var state = null;
   var lastresult = query_last_result(query);
-  shibdata.query_status_cache[query.queryid] = (lastresult && lastresult.state) || 'not executed';
-  return shibdata.query_status_cache[query.queryid];
+  if (! lastresult)
+    state = 'waiting';
+  if (lastresult.state === 'running') {
+    var secondlast = query_second_last_result(query);
+    if (secondlast && secondlast.state === 'done')
+      state = 're-running';
+    else
+      state = 'running';
+  }
+  else if (lastresult.state === 'error')
+    state = 'error';
+  else
+    state = 'executed';
+
+  shibdata.query_state_cache[query.queryid] = state;
+  return state;
 };
 
 /* notifications */
@@ -135,7 +158,7 @@ function show_notification(event){ /* event object is not used */
     return; 
   }
   var next = shibnotifications.shift();
-  shib_current_notification_counter = next.duration || shib_NOTIFICATION_DEFAULT_DURATION_SECONDS * 10;
+  shib_current_notification_counter = ( next.duration || shib_NOTIFICATION_DEFAULT_DURATION_SECONDS ) * 10;
   if (shib_current_notification) {
     shib_current_notification.fadeOut(100, function(){
       shib_current_notification = update_notification(next.type, next.title, next.message);
@@ -192,7 +215,7 @@ function create_queryitem_object(queryid, id_prefix){
     QueryId: (id_prefix || '') + query.queryid,
     Information: executed_at + ', ' + keyword_primary,
     Statement: query.querystring,
-    Status: (lastresult && lastresult.state) || 'running',
+    Status: query_current_state(query),
     Etc: (lastresult && lastresult.bytes && lastresult.lines &&
           (lastresult.bytes + ' bytes, ' + lastresult.lines + ' lines')) || ''
   };
@@ -275,13 +298,12 @@ function update_mainview(query){
 };
 
 function update_editbox(query, optional_state) {
-  var lastresult = query_last_result(query);
-  var state = optional_state || (lastresult && lastresult.state) || null;
+  var state = optional_state || query_current_state(query);
 
   switch (state) {
+  case 'not executed':
   case undefined:
   case null:
-    // 'not executed'
     show_editbox_buttons(['execute_button']);
     change_editbox_querystatus_style('not executed');
     break;
@@ -292,18 +314,18 @@ function update_editbox(query, optional_state) {
   case 'executed':
   case 'done':
     show_editbox_buttons(['rerun_button', 'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button']);
-    change_editbox_querystatus_style('executed', lastresult);
+    change_editbox_querystatus_style('executed', query_last_result(query));
     break;
   case 'error':
     show_editbox_buttons(['rerun_button']);
-    change_editbox_querystatus_style('error', lastresult);
+    change_editbox_querystatus_style('error', query_last_result(query));
     break;
   case 're-running':
     show_editbox_buttons(['pause_button', 'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button']);
-    change_editbox_querystatus_style('re-running', lastresult);
+    change_editbox_querystatus_style('re-running', query_last_result(query));
     break;
   default:
-    show_error('UI Bug', 'unknown query status:' + query.state, 5);
+    show_error('UI Bug', 'unknown query status:' + state, 5, query);
   }
 }
 
@@ -359,24 +381,44 @@ function change_editbox_querystatus_style(state, result){
 
 /* query status auto-updates */
 
-/*
-var shibdata = {};
-var shibselectedquery = null;
-var shibselectedquery_dom = null;
- */
-function check_running_query_status(event){ /* event object is not used */
-  
+function check_running_query_state(){
+  var check_target_queryid_list = [];
+  return function(event) { /* event object is not used */
+    if (check_target_queryid_list.length < 1) {
+      var keyid;
+      for (keyid in shibdata.query_cache) {
+        var s = query_current_state(shibdata.query_cache[keyid]);
+        if (s == 'waiting' || s == 'running' || s == 're-running')
+          check_target_queryid_list.push(keyid);
+      }
+    }
+
+    if (check_target_queryid_list.length < 1)
+      return;
+    update_query(shibdata.query_cache[check_target_queryid_list.shift()]);
+  };
 };
 
 function update_query(query){
   $.get('/status/' + query.queryid, function(data){
-    var lastresult = query_last_result(query);
-    var state = (lastresult && lastresult.state) || null;
-    //TODO write!
+    if (query_current_state(query) !== data) {
+      shibdata.query_state_cache[query.queryid] = data;
+
+      if (shibselectedquery.queryid === query.queryid)
+        update_mainview(query);
+      $('div.queryitem#query-history-' + query.queryid).parent('div').replaceWith(
+        $.tmpl("queryItemTemplate", create_queryitem_object(query.queryid, 'history-'))
+      );
+      $('div.queryitem#query-keyword-' + query.queryid).parent('div').replaceWith(
+        $.tmpl("queryItemTemplate", create_queryitem_object(query.queryid, 'keyword-'))
+      );
+    }
   });
 };
 
 /* left pane interactions (user-operation interactions) */
+
+
 
 /* test functions */
 
