@@ -404,8 +404,13 @@ function update_query(query){
     if (query_current_state(query) !== data) {
       shibdata.query_state_cache[query.queryid] = data;
 
-      if (shibselectedquery.queryid === query.queryid)
+      if (shibselectedquery.queryid === query.queryid) {
         update_mainview(query);
+        show_info('Query state updated', '', 5);
+      }
+      else {
+        show_info('', 'Query state updated in tabs', 5);
+      }
       $('div.queryitem#query-history-' + query.queryid).parent('div').replaceWith(
         $.tmpl("queryItemTemplate", create_queryitem_object(query.queryid, 'history-'))
       );
