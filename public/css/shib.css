@@ -55,8 +55,15 @@ span.status_rerunning {font-weight: bold; color: orange;}
     word-spacing: 0em;
     line-height: 1.2;
 }
+#querybox textarea.readonly {background-color: #f0f0f0;}
 
-#editbox {width: 99%; padding: .5em; border: 1px solid #c0c0f8; background-color: #f8f8ff;}
+#keywordbox {display: none; width: 99%; padding: .5em; border: 1px solid #c0c0f8; background-color: #f8f8ff;}
+#keywordbox div {display: none; fond-weight: bold; font-size: small; width: 100%;}
+#keywordbox div .keywordname {display: inline; width: 30%; text-align: right;}
+#keywordbox div input {margin-left: 1em; width: 40%; border: 1px solid #c0c0f8; font-size: medium;}
+#keywordbox div input.readonly {background-color: #f0f0f0;}
+
+#editbox {width: 99%; margin-top: .5em; padding: .5em; border: 1px solid #c0c0f8; background-color: #f8f8ff;}
 #statusview {margin: 10px; font-size: small;}
 
 #graphbox {margin-top: .5em; margin-bottom: .5em;}
