@@ -153,11 +153,10 @@ app.post('/queries', function(req, res){
 });
 
 app.get('/status/:queryid', function(req, res){
+  console.log('status query:' + req.params.queryid);
   shib.client().query(req.params.queryid, function(err, query){
-    //error...
-    res.set('30x/404/...');
+    if (err) { error_handle(req, res, err); return; }
     this.status(query, function(state){
-      //if state ....
       res.send(state);
     });
   });
