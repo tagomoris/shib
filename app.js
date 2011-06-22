@@ -98,7 +98,7 @@ app.post('/execute', function(req, res){
   var keywords = req.body.keywords.split(',');
   shib.client().createQuery(req.body.querystring, keywords, function(err, query){
     if (err) { error_handle(req, res, err); return; }
-    res.send(query.queryid);
+    res.send(query);
     this.execute(query);
   });
 });
@@ -107,6 +107,7 @@ app.post('/refresh', function(req, res){
   shib.client().query(req.body.queryid, function(err, query){
     if (err) { error_handle(req, res, err); return; }
     this.refresh(query);
+    res.send('ok');
   });
 });
 
