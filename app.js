@@ -7,10 +7,14 @@ var MAX_ACCORDION_SIZE = 20;
 
 var shib = require('shib'),
     servers = require('./config').servers;
+var InvalidQueryError = require('shib/query').InvalidQueryError;
 shib.init(servers);
 
 function error_handle(req, res, err){
-  console.log({time: (new Date()), request:req, error:err});
+  //TODO make log line
+  console.log(err);
+  console.log(err.stack);
+  //console.log({time: (new Date()), request:req, error:err});
   res.send(err, 500);
 };
 
@@ -95,9 +99,15 @@ app.get('/summary_bulk', function(req, res){
 });
   
 app.post('/execute', function(req, res){
-  var keywords = req.body.keywords.split(',');
+  var keywords = req.body.keywords;
   shib.client().createQuery(req.body.querystring, keywords, function(err, query){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) {
+      if (err instanceof InvalidQueryError) {
+        res.send(err, 400);
+        return;
+      }
+      error_handle(req, res, err); return;
+    }
     res.send(query);
     this.execute(query);
   });
@@ -154,7 +164,6 @@ app.post('/queries', function(req, res){
 });
 
 app.get('/status/:queryid', function(req, res){
-  console.log('status query:' + req.params.queryid);
   shib.client().query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); return; }
     this.status(query, function(state){
