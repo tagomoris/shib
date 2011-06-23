@@ -32,7 +32,8 @@ setInterval(function(){
 }, 250);
 
 var execute = function(queued_query, success){
-  waited_queries.push(queued_query);
+  waited_queries.push(queued_query.split('\n').join(' '));
+  console.log("query pushed:" + queued_query);
 
   var timer = setInterval(function(){
     if (query != queued_query) {
@@ -54,7 +55,7 @@ var fetchOne = function(success){
   }
   var val = '';
   if (query_result.length > 0) {
-    val = query_result.length.shift();
+    val = query_result.shift();
   }
   if (query_result.length == 0) {
     init_status();
