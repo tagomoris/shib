@@ -1,6 +1,6 @@
 var testCase = require('nodeunit').testCase;
 var result = require('shib/result'),
-    ResultMeta = result.ResultMeta;
+    Result = result.Result;
 
 module.exports = testCase({
   /*
@@ -14,7 +14,7 @@ module.exports = testCase({
     test.done();
   },
   generateResultId: function(test) {
-    test.equals(ResultMeta.generateResultId('cec9ab9d980c1b3ed582471dc79eb65b', '20110427190250'), '26203ab72560e3974b36f16cdea07085');
+    test.equals(Result.generateResultId('cec9ab9d980c1b3ed582471dc79eb65b', '20110427190250'), '26203ab72560e3974b36f16cdea07085');
     test.done();
   },
   tearDown: function (callback) {
