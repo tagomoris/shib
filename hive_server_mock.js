@@ -32,11 +32,12 @@ setInterval(function(){
 }, 250);
 
 var execute = function(queued_query, success){
-  waited_queries.push(queued_query.split('\n').join(' '));
-  console.log("query pushed:" + queued_query);
+  var q = queued_query.split('\n').join(' ');
+  waited_queries.push(q);
+  console.log("query pushed:" + q);
 
   var timer = setInterval(function(){
-    if (query != queued_query) {
+    if (query != q) {
       return;
     };
     clearInterval(timer);
