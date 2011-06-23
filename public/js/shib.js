@@ -11,10 +11,6 @@ var shib_NOTIFICATION_CHECK_INTERVAL = 100;
 var shib_NOTIFICATION_DEFAULT_DURATION_SECONDS = 10;
 
 $(function(){
-  if (window.localStorage && ! window.localStorage.executeList) {
-    window.localStorage.executeList = [];
-  }
-
   $.getJSON('/summary_bulk', function(data){
     shibdata.history = data.history;
     shibdata.keywords = data.keywords;
@@ -33,11 +29,9 @@ $(function(){
         data.queries.forEach(function(query1){
           shibdata.query_cache[query1.queryid] = query1;
           if (query1.results && query1.results.length > 0)
-            resultids = resultids.concat(query1.results.map(function(r){return r.resultid;}));
+            resultids = resultids.concat(query1.results.map(function(r){return r && r.resultid;}));
         });
-        if (window.localStorage) {
-          resultids = resultids.concat(window.localStorage.executeList);
-        }
+        resultids = resultids.concat(execute_query_list());
 
         $.ajax({
           url: '/results',
@@ -46,6 +40,8 @@ $(function(){
           data: {ids: resultids},
           success: function(data){
             data.results.forEach(function(result1){
+              if (! result1)
+                return;
               shibdata.result_cache[result1.resultid] = result1;
             });
 
@@ -120,6 +116,27 @@ $(function(){
 
 /* basic data operations */
 
+function execute_query_list() {
+  if (! window.localStorage)
+    return [];
+  var listString = window.localStorage.executeList;
+  if (listString.length < 1)
+    return [];
+  return JSON.parse(listString);
+};
+
+function set_execute_query_list(list) {
+  if (! window.localStorage)
+    return;
+  window.localStorage.executeList = JSON.stringify(list);
+};
+
+function push_execute_query_list(queryid) {
+  if (! window.localStorage)
+    return;
+  set_execute_query_list(execute_query_list().concat([queryid]));
+};
+
 function query_last_result(query) {
   var obj = null;
   if (query && query.results && query.results.length > 0 && query.results[query.results.length - 1])
@@ -148,7 +165,7 @@ function query_current_state(query) {
   var lastresult = query_last_result(query);
   if (! lastresult)
     state = 'waiting';
-  if (lastresult.state === 'running') {
+  else if (lastresult.state === 'running') {
     var secondlast = query_second_last_result(query);
     if (secondlast && secondlast.state === 'done')
       state = 're-running';
@@ -164,12 +181,14 @@ function query_current_state(query) {
   return state;
 };
 
-function detect_keyword_placeholders(querystring) {
+function detect_keyword_placeholders(querystring, opts) {
   var q = querystring;
   if (q.match(/__KEY__/) && q.match(/__KEY\d__/))
-    show_error('Query Error', 'Cannot use both default single placeholder __KEY__ and sequencial placeholders such as __KEY1__');
+    if (! opts.quiet)
+      show_error('Query Error', 'Cannot use both default single placeholder __KEY__ and sequencial placeholders such as __KEY1__');
   if (q.match(/__KEY\d{2,}__/))
-    show_error('Query Error', 'Cannot use 10 or more sequencial placeholders such as __KEY10__');
+    if (! opts.quiet)
+      show_error('Query Error', 'Cannot use 10 or more sequencial placeholders such as __KEY10__');
 
   if (q.match(/__KEY\d__/)) {
     var re = /__KEY(\d)__/g;
@@ -183,7 +202,8 @@ function detect_keyword_placeholders(querystring) {
     }
     for (var i = 0; i <= max_seq; i++) {
       if (! exists_seq[i])
-        show_error('Query Warning', 'Query has skipping sequencial placeholder number');
+        if (! opts.quiet)
+          show_error('Query Warning', 'Query has skipping sequencial placeholder number');
     }
     return parseInt(max_seq) + 1;
   }
@@ -275,9 +295,9 @@ function update_yours_tab(){
   $('#tab-yours')
     .empty()
     .append('<div><h3><a href="#">your queries</a></h3><div id="yours-idlist"></div></div>');
-  if (window.localStorage.executeList && window.localStorage.executeList.length > 0)
+  if (execute_query_list().length > 0)
     $.tmpl("queryItemTemplate",
-           $(window.localStorage.executedList).map(function(id){return create_queryitem_object(id, 'yours-');})
+           execute_query_list().reverse().map(function(id){return create_queryitem_object(id, 'yours-');})
           ).appendTo('#tab-yours div div#yours-idlist');
 };
 
@@ -333,7 +353,7 @@ function release_selected_query(){
 function select_queryitem(event){
   var target_dom = $(event.target).closest('.queryitem');
   var target_dom_id = target_dom.attr('id');
-  var dom_id_regex = /^query-(keyword|history)-([0-9a-f]+)$/;
+  var dom_id_regex = /^query-(yours|keyword|history)-([0-9a-f]+)$/;
   var match_result = dom_id_regex.exec(target_dom_id);
   if (match_result === null) {
     show_error("UI Bug", "Selected DOM id invalid:" + target_dom_id, 5);
@@ -381,7 +401,6 @@ function queryeditor_watcher(){
       return;
     if (pre_querystring_value == $('#queryeditor').val())
       return;
-    console.log('ok, detect');
     pre_querystring_value = $('#queryeditor').val();
     update_keywordbox(true, detect_keyword_placeholders($('#queryeditor').val()), []);
   };
@@ -561,8 +580,37 @@ function execute_query() {
     show_error('UI Bug', 'execute_query should be enable with not-saved-query objects');
     return;
   }
-  
-  
+  var querystring = $('#queryeditor').val();
+  var keywordPlaceHolders = detect_keyword_placeholders(querystring, {quiet:true});
+  var keywords = [];
+  for(var i = 0; i < keywordPlaceHolders; i++) {
+    var key = $('#keyword' + i).val();
+    if (key && key.length > 0)
+      keywords.push(key);
+  }
+  if (keywordPlaceHolders !== keywords.length) {
+    show_error('Invalid Keywords', 'Blank keyword is not allowed');
+    return;
+  }
+
+  $.ajax({
+    url: '/execute',
+    type: 'POST',
+    dataType: 'json',
+    data: {querystring: querystring, keywords: keywords},
+    error: function(jqXHR, textStatus, err){
+      show_error('Cannot Execute Query', JSON.parse(jqXHR.responseText).message);
+    },
+    success: function(query){
+      show_info('Query now waiting to run', '');
+      shibdata.query_cache[query.queryid] = query;
+      update_mainview(query);
+      if (window.localStorage) {
+        push_execute_query_list(query.queryid);
+        update_yours_tab();
+      }
+    }
+  });
 };
 
 function rerun_query() {
