@@ -19,6 +19,7 @@ function error_handle(req, res, err){
 };
 
 app.configure(function(){
+  app.use(express.logger({ format: ':method :url' }));
   app.use(express.methodOverride());
   app.use(express.bodyParser());
   app.use(app.router);
@@ -150,9 +151,9 @@ app.get('/history/:label', function(req, res){
 });
 
 app.get('/query/:queryid', function(req, res){
-  shib.client().getQuery(req.params.queryid, function(err, query){
+  shib.client().query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); return; }
-    res.send(query); /* *** */
+    res.send(query);
   });
 });
 
@@ -173,12 +174,20 @@ app.get('/status/:queryid', function(req, res){
 });
 
 app.get('/lastresult/:queryid', function(req, res){
-  /* */
+  shib.client().query(req.params.queryid, function(err, query){
+    if (err) { error_handle(req, res, err); return; }
+    this.getLastResult(query, function(err, result){
+      if (err) { error_handle(req, res, err); return; }
+      res.send(result);
+    });
+  });
 });
 
 app.get('/result/:resultid', function(req, res){
-  /* */
-  shib.client().getQuery();
+  shib.client().result(req.params.resultid, function(err, result){
+    if (err) { error_handle(req, res, err); return; }
+    res.send(result);
+  });
 });
 
 app.post('/results', function(req, res){
