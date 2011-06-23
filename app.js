@@ -197,7 +197,20 @@ app.post('/results', function(req, res){
   });
 });
 
-app.get('/rawresult/:resultid', function(req, res){
+app.get('/show/full/:resultid', function(req, res){
+  /* */
+});
+app.get('/show/head/:resultid', function(req, res){
+  /* */
+});
+app.get('/download/tsv/:resultid', function(req, res){
+  shib.client().rawResultData(req.params.resultid, function(err, data){
+    if (err) { error_handle(req, res, err); return; }
+    res.attachment(req.params.resultid + '.tsv');
+    res.send(data);
+  });
+});
+app.get('/download/csv/:resultid', function(req, res){
   /* */
 });
 

@@ -633,6 +633,7 @@ function show_result_query(opts) { /* opts: {range:full/head} */
 };
 
 function download_result_query(opts) { /* opts: {format:tsv/csv} */
+  window.location = '/download/' + opts.format + '/' + query_last_result(shibselectedquery).resultid;
 };
 
 /* test functions */
