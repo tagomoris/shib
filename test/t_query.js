@@ -16,11 +16,11 @@ module.exports = testCase({
   },
   removeNewLines: function(test) {
     test.equals(query.removeNewLines('hoge'), 'hoge');
-    test.equals(query.removeNewLines("hoge\n"), 'hoge');
-    test.equals(query.removeNewLines("ho\nge"), 'hoge');
-    test.equals(query.removeNewLines("\nhoge"), 'hoge');
-    test.equals(query.removeNewLines("\nhoge\n"), 'hoge');
-    test.equals(query.removeNewLines("\nho\n\nge\n"), 'hoge');
+    test.equals(query.removeNewLines("hoge\n"), 'hoge ');
+    test.equals(query.removeNewLines("ho\nge"), 'ho ge');
+    test.equals(query.removeNewLines("\nhoge"), ' hoge');
+    test.equals(query.removeNewLines("\nhoge\n"), ' hoge ');
+    test.equals(query.removeNewLines("\nho\n\nge\n"), ' ho  ge ');
     test.done();
   },
   checkKeywordString: function(test) {
