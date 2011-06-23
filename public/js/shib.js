@@ -563,6 +563,11 @@ function update_query(query){
       else {
         show_info('', 'Query state updated in tabs', 5);
       }
+      if (window.localStorage) {
+        $('div.queryitem#query-yours-' + query.queryid).parent('div').replaceWith(
+          $.tmpl("queryItemTemplate", create_queryitem_object(query.queryid, 'yours-'))
+        );
+      }
       $('div.queryitem#query-history-' + query.queryid).parent('div').replaceWith(
         $.tmpl("queryItemTemplate", create_queryitem_object(query.queryid, 'history-'))
       );
