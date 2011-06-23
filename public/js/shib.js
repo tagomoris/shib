@@ -254,7 +254,7 @@ function load_tabs(opts) {
 
             if (window.localStorage) {
               update_yours_tab();
-              $("#tab-yours").accordion({header:"h3"});
+              $("#tab-yours").accordion({header:"h3", autoHeight:false});
             }
             else {
               $('#index-yours').remove();
@@ -262,10 +262,10 @@ function load_tabs(opts) {
             }
 
             update_history_tab(opts.reload);
-            $("#tab-history").accordion({header:"h3"});
+            $("#tab-history").accordion({header:"h3", autoHeight:false});
 
             update_keywords_tab(opts.reload);
-            $("#tab-keywords").accordion({header:"h3"});
+            $("#tab-keywords").accordion({header:"h3", autoHeight:false});
             $("#listSelector").tabs();
 
             $('.queryitem').click(select_queryitem);
