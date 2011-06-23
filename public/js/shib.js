@@ -11,6 +11,10 @@ var shib_NOTIFICATION_CHECK_INTERVAL = 100;
 var shib_NOTIFICATION_DEFAULT_DURATION_SECONDS = 10;
 
 $(function(){
+  if (window.localStorage && ! window.localStorage.executeList) {
+    window.localStorage.executeList = [];
+  }
+
   $.getJSON('/summary_bulk', function(data){
     shibdata.history = data.history;
     shibdata.keywords = data.keywords;
@@ -31,6 +35,10 @@ $(function(){
           if (query1.results && query1.results.length > 0)
             resultids = resultids.concat(query1.results.map(function(r){return r.resultid;}));
         });
+        if (window.localStorage) {
+          resultids = resultids.concat(window.localStorage.executeList);
+        }
+
         $.ajax({
           url: '/results',
           type: 'POST',
@@ -40,12 +48,21 @@ $(function(){
             data.results.forEach(function(result1){
               shibdata.result_cache[result1.resultid] = result1;
             });
+
+            if (window.localStorage) {
+              update_yours_tab();
+              $("#tab-yours").accordion({header:"h3"});
+            }
+            else {
+              $('#index-yours').remove();
+              $('#tab-yours').remove();
+            }
+
             update_history_tab();
-            update_keywords_tab();
-        
             $("#tab-history").accordion({header:"h3"});
+
+            update_keywords_tab();
             $("#tab-keywords").accordion({header:"h3"});
-            $("#tab-yours").accordion({header:"h3"});
             $("#listSelector").tabs();
 
             $('.queryitem').click(select_queryitem);
@@ -252,6 +269,16 @@ function create_queryitem_object(queryid, id_prefix){
     Etc: (lastresult && lastresult.bytes && lastresult.lines &&
           (lastresult.bytes + ' bytes, ' + lastresult.lines + ' lines')) || ''
   };
+};
+
+function update_yours_tab(){
+  $('#tab-yours')
+    .empty()
+    .append('<div><h3><a href="#">your queries</a></h3><div id="yours-idlist"></div></div>');
+  if (window.localStorage.executeList && window.localStorage.executeList.length > 0)
+    $.tmpl("queryItemTemplate",
+           $(window.localStorage.executedList).map(function(id){return create_queryitem_object(id, 'yours-');})
+          ).appendTo('#tab-yours div div#yours-idlist');
 };
 
 function update_history_tab(){
@@ -534,6 +561,7 @@ function execute_query() {
     show_error('UI Bug', 'execute_query should be enable with not-saved-query objects');
     return;
   }
+  
   
 };
 
