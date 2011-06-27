@@ -630,10 +630,26 @@ function rerun_query() {
 };
 
 function show_result_query(opts) { /* opts: {range:full/head} */
+  //TODO show circular 'loading' icon ?
+  var size = 'full';
+  var height = 400;
+  var width = 600;
+  if (opts.range == 'head'){
+    size = 'head';
+    height = 200;
+  }
+  $.get('/show/' + size + '/' + query_last_result(shibselectedquery).resultid, function(data){
+    $('pre#resultdisplay').text(data);
+    $('#resultdiag').dialog({modal:true, resizable:true, height:400, width:600, maxHeight:650, maxWidth:950});
+  });
 };
 
 function download_result_query(opts) { /* opts: {format:tsv/csv} */
-  window.location = '/download/' + opts.format + '/' + query_last_result(shibselectedquery).resultid;
+  var format = 'tsv';
+  if (opts.csv == 'csv') {
+    format = 'csv';
+  }
+  window.location = '/download/' + format + '/' + query_last_result(shibselectedquery).resultid;
 };
 
 /* test functions */

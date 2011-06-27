@@ -4,6 +4,7 @@ var express = require('express'),
     app = express.createServer();
 
 var MAX_ACCORDION_SIZE = 20;
+var SHOW_RESULT_HEAD_LINES = 20;
 
 var shib = require('shib'),
     servers = require('./config').servers;
@@ -198,10 +199,32 @@ app.post('/results', function(req, res){
 });
 
 app.get('/show/full/:resultid', function(req, res){
-  /* */
+  shib.client().rawResultData(req.params.resultid, function(err, data){
+    if (err) { error_handle(req, res, err); return; }
+    res.send(data);
+  });
 });
 app.get('/show/head/:resultid', function(req, res){
-  /* */
+  shib.client().rawResultData(req.params.resultid, function(err, data){
+    if (err) { error_handle(req, res, err); return; }
+    var headdata = [];
+    var counts = 0;
+    var position = 0;
+    while (counts < SHOW_RESULT_HEAD_LINES && position < data.length) {
+      var nextNewline = data.indexOf('\n', position);
+      if (nextNewline < 0) {
+        headdata.push(data.substring(position));
+        counts += 1;
+        position = data.length;
+      }
+      else{
+        headdata.push(data.substring(position, nextNewline + 1));
+        counts += 1;
+        position = nextNewline + 1;
+      }
+    }
+    res.send(headdata.join(''));
+  });
 });
 app.get('/download/tsv/:resultid', function(req, res){
   shib.client().rawResultData(req.params.resultid, function(err, data){
@@ -211,7 +234,13 @@ app.get('/download/tsv/:resultid', function(req, res){
   });
 });
 app.get('/download/csv/:resultid', function(req, res){
-  /* */
+  shib.client().rawResultData(req.params.resultid, function(err, data){
+    if (err) { error_handle(req, res, err); return; }
+    res.attachment(req.params.resultid + '.csv');
+    //TODO write!
+    // data.split("\n")
+    res.send(data);
+  });
 });
 
 app.listen(3000);
