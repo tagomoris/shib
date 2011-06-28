@@ -646,7 +646,7 @@ function show_result_query(opts) { /* opts: {range:full/head} */
 
 function download_result_query(opts) { /* opts: {format:tsv/csv} */
   var format = 'tsv';
-  if (opts.csv == 'csv') {
+  if (opts.format == 'csv') {
     format = 'csv';
   }
   window.location = '/download/' + format + '/' + query_last_result(shibselectedquery).resultid;

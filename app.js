@@ -1,3 +1,4 @@
+
 var express = require('express'),
     jade = require('jade'),
     async = require('async'),
@@ -6,9 +7,11 @@ var express = require('express'),
 var MAX_ACCORDION_SIZE = 20;
 var SHOW_RESULT_HEAD_LINES = 20;
 
+var InvalidQueryError = require('shib/query').InvalidQueryError;
+var SimpleCSVBuilder = require('shib/simple_csv_builder').SimpleCSVBuilder;
+
 var shib = require('shib'),
     servers = require('./config').servers;
-var InvalidQueryError = require('shib/query').InvalidQueryError;
 shib.init(servers);
 
 function error_handle(req, res, err){
@@ -237,9 +240,10 @@ app.get('/download/csv/:resultid', function(req, res){
   shib.client().rawResultData(req.params.resultid, function(err, data){
     if (err) { error_handle(req, res, err); return; }
     res.attachment(req.params.resultid + '.csv');
-    //TODO write!
-    // data.split("\n")
-    res.send(data);
+    var rows = data.split("\n");
+    if (rows[rows.length - 1].length < 1)
+      rows.pop();
+    res.send(rows.map(function(row){return SimpleCSVBuilder.build(row.split('\t'));}).join(''));
   });
 });
 
