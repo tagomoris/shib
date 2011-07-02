@@ -1,5 +1,5 @@
-* tab reload button
 * TEST with real hive server
 * set/test execute expiration
 * implement dialog to show tables/partitions
 * show graph (many many works to do this)
+* tab reload button (pending)
