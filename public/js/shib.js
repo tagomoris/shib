@@ -79,7 +79,12 @@ function set_execute_query_list(list) {
 function push_execute_query_list(queryid) {
   if (! window.localStorage)
     return;
-  set_execute_query_list(execute_query_list().concat([queryid]));
+  var list = execute_query_list();
+  if (list.length > 4) {
+    list = list.slice(0,4);
+  }
+  list.unshift(queryid);
+  set_execute_query_list(list);
 };
 
 function query_last_result(query) {
@@ -316,7 +321,7 @@ function update_yours_tab(){
     .append('<div><h3><a href="#">your queries</a></h3><div id="yours-idlist"></div></div>');
   if (execute_query_list().length > 0)
     $.tmpl("queryItemTemplate",
-           execute_query_list().reverse().map(function(id){return create_queryitem_object(id, 'yours-');})
+           execute_query_list().map(function(id){return create_queryitem_object(id, 'yours-');})
           ).appendTo('#tab-yours div div#yours-idlist');
 };
 
