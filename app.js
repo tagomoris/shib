@@ -1,4 +1,3 @@
-
 var express = require('express'),
     jade = require('jade'),
     async = require('async'),

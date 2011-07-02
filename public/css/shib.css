@@ -65,6 +65,7 @@ span.status_rerunning {font-weight: bold; color: orange;}
 
 #editbox {width: 99%; margin-top: .5em; padding: .5em; border: 1px solid #c0c0f8; background-color: #f8f8ff;}
 #statusview {margin: 10px; font-size: small;}
+#queryresult {margin: 10px; font-size: small;}
 
 #graphbox {margin-top: .5em; margin-bottom: .5em;}
 #graphboxdummy {width: 100%; border: 1px dotted gray;}

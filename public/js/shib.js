@@ -97,6 +97,10 @@ function query_second_last_result(query) {
   return null;
 };
 
+function query_result_schema_label(result){
+  return 'fields: ' + result.schema.map(function(field){return field.name + '(' + field.type + ')';}).join(', ');
+};
+
 function query_current_state(query) {
   if (!query)
     return null;
@@ -532,7 +536,7 @@ function change_editbox_querystatus_style(state, result){
       .text(state);
 
     if ((allstates[state]).result && result) {
-      $('span#queryresult').show();
+      $('#queryresult').show();
       if (result.error) {
         $('span#queryresultlines').text(result.error);
         $('span#queryresultbytes').text("");
@@ -540,6 +544,7 @@ function change_editbox_querystatus_style(state, result){
       else {
         $('span#queryresultlines').text(" " + result.lines + " lines, ");
         $('span#queryresultbytes').text(" " + result.bytes + " bytes");
+        $('#queryresultschema').text(query_result_schema_label(result));
       }
     }
     else {
