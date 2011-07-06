@@ -62,8 +62,10 @@ $(function(){
 /* basic data operations */
 
 function execute_query_list() {
+  console.log('checking localStorage');
   if (! window.localStorage)
     return [];
+  console.log('get localStorage');
   var listString = window.localStorage.executeList;
   if (listString === undefined || listString === null)
     listString = window.localStorage.executeList = '';
@@ -277,7 +279,9 @@ function load_tabs(opts) {
             resultids = resultids.concat(query1.results.map(function(r){return r && r.resultid;}));
         });
         console.log('in /query, after json parsing');
-        resultids = resultids.concat(execute_query_list());
+        var yours = execute_query_list();
+        if (yours.length > 0)
+          resultids = resultids.concat(execute_query_list());
         console.log('in /query, after resultid generation');
 
         if (resultids.length < 1) {
