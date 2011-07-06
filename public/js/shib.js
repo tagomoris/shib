@@ -62,18 +62,19 @@ $(function(){
 /* basic data operations */
 
 function execute_query_list() {
-  console.log('checking localStorage');
   if (! window.localStorage)
     return [];
-  console.log('get localStorage');
-  var listString = window.localStorage.executeList;
-  if (! listString)
-    listString = window.localStorage.executeList = '';
-  if (listString.length < 1)
-    return [];
-  console.log('get any listString');
-  console.log(listString);
-  return JSON.parse(listString);
+  var list = [];
+  try {
+    var listString = window.localStorage.executeList;
+    if (listString && listString.length > 0)
+      list = JSON.parse(listString);
+  }
+  catch (e) {
+    set_execute_query_list([]);
+    list = [];
+  }
+  return list;
 };
 
 function set_execute_query_list(list) {
