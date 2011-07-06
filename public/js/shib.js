@@ -71,6 +71,8 @@ function execute_query_list() {
     listString = window.localStorage.executeList = '';
   if (listString.length < 1)
     return [];
+  console.log('get any listString');
+  console.log(listString);
   return JSON.parse(listString);
 };
 
