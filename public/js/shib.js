@@ -262,19 +262,23 @@ function load_tabs(opts) {
     shibdata.query_cache = {};
     shibdata.query_state_cache = {};
     shibdata.result_cache = {};
+    console.log('before /query');
     $.ajax({
       url: '/queries',
       type: 'POST',
       dataType: 'json',
       data: {ids: data.query_ids},
       success: function(data){
+        console.log('in /query');
         var resultids = [];
         data.queries.forEach(function(query1){
           shibdata.query_cache[query1.queryid] = query1;
           if (query1.results && query1.results.length > 0)
             resultids = resultids.concat(query1.results.map(function(r){return r && r.resultid;}));
         });
+        console.log('in /query, after json parsing');
         resultids = resultids.concat(execute_query_list());
+        console.log('in /query, after resultid generation');
 
         if (resultids.length < 1) {
           callback();
