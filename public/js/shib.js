@@ -67,7 +67,7 @@ function execute_query_list() {
     return [];
   console.log('get localStorage');
   var listString = window.localStorage.executeList;
-  if (listString === undefined || listString === null)
+  if (! listString)
     listString = window.localStorage.executeList = '';
   if (listString.length < 1)
     return [];
