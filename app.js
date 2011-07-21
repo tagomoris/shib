@@ -49,6 +49,25 @@ app.get('/q/:queryid', function(req, res){
   res.render(__dirname + '/views/index.jade', {layout: false});
 });
 
+app.get('/tables', function(req, res){
+  shib.client().executeSystemStatement('show tables', function(err, result){
+    if (err) { error_handle(req, res, err); return; }
+    res.send(result);
+  });
+});
+
+app.get('/partitions/:tablename', function(req, res){
+  var tablename = req.params.tablename;
+  if (/^[a-z0-9_]+$/i.exec(tablename) == null) {
+    error_handle(req, res, {message: 'invalid tablename for show partitions: ' + tablename});
+    return;
+  }
+  shib.client().executeSystemStatement('show partitions ' + req.tablename, function(err, result){
+    if (err) { error_handle(req, res, err); return; }
+    res.send(result);
+  });
+});
+
 app.get('/summary_bulk', function(req, res){
   var correct_history = function(callback){
     shib.client().getHistories(function(err, list){
