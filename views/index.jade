@@ -9,19 +9,21 @@ html
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Artifika:regular", rel="stylesheet")
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Anonymous+Pro:regular,italic,bold,bolditalic", rel="stylesheet")
     // testing fonts ...
-    link(type="text/css", href="http://fonts.googleapis.com/css?family=Allerta:regular", rel="stylesheet")
-    link(type="text/css", href="http://fonts.googleapis.com/css?family=Cousine:regular,italic,bold,bolditalic", rel="stylesheet")
-    link(type="text/css", href="http://fonts.googleapis.com/css?family=Inconsolata:regular", rel="stylesheet")
-    link(type="text/css", href="http://fonts.googleapis.com/css?family=Ubuntu:300,300italic,regular,italic,500,500italic,bold,bolditalic", rel="stylesheet")
+    //
+      link(type="text/css", href="http://fonts.googleapis.com/css?family=Allerta:regular", rel="stylesheet")
+      link(type="text/css", href="http://fonts.googleapis.com/css?family=Cousine:regular,italic,bold,bolditalic", rel="stylesheet")
+      link(type="text/css", href="http://fonts.googleapis.com/css?family=Inconsolata:regular", rel="stylesheet")
+      link(type="text/css", href="http://fonts.googleapis.com/css?family=Ubuntu:300,300italic,regular,italic,500,500italic,bold,bolditalic", rel="stylesheet")
     // *****
     script(type="text/javascript", src="js/jquery-1.5.1.min.js")
     script(type="text/javascript", src="js/jquery-ui-1.8.13.custom.min.js")
     script(type="text/javascript", src="http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js")
     script(type="text/javascript", src="js/jquery.dynatree.min.js")
     script(type="text/javascript", src="https://www.google.com/jsapi")
-    script(type="text/javascript", src="js/data1.js")
-    script(type="text/javascript", src="js/data2.js")
-    script(type="text/javascript", src="js/shib.graphtest.js")
+    //
+      script(type="text/javascript", src="js/data1.js")
+      script(type="text/javascript", src="js/data2.js")
+      script(type="text/javascript", src="js/shib.graphtest.js")
     script(type="text/javascript", src="js/shib.js")
   body
     #titlearea
@@ -48,6 +50,11 @@ html
       #tables(style="display: none;")
     #mainarea
       #mainview
+        #tablesbox.ui-corner-all
+          ul.operationitems.ui-widget.ui-helper-clearfix
+            li#tables_diag.ui-state-default.ui-corner-all(title="show tables dialog")
+              span.ui-icon.ui-icon-info
+              | show tables and partitions
         #querybox
           textarea#queryeditor(rows="10")
             SELECT
@@ -128,33 +135,35 @@ html
               span#queryresultlines 0 lines, 
               span#queryresultbytes 0 bytes
             div#queryresultschema
-          div
-            ul#icons1.ui-widget.ui-helper-clearfix
-              li#test_status_change_not_executed.ui-state-default.ui-corner-all(title="status not executed")
-                span.ui-icon.ui-icon-stop
-              li#test_status_change_running.ui-state-default.ui-corner-all(title="status running")
-                span.ui-icon.ui-icon-play
-              li#test_status_change_executed.ui-state-default.ui-corner-all(title="status executed")
-                span.ui-icon.ui-icon-bullet
-              li#test_status_change_error.ui-state-default.ui-corner-all(title="status error")
-                span.ui-icon.ui-icon-eject
-              li#test_status_change_rerunning.ui-state-default.ui-corner-all(title="status re-running")
-                span.ui-icon.ui-icon-seek-next
-              li#test_show_notice_bar.ui-state-default.ui-corner-all(title="show notice bar")
-                span.ui-icon.ui-icon-lightbulb
-              li#test_show_error_bar.ui-state-default.ui-corner-all(title="show error bar")
-                span.ui-icon.ui-icon-power
-              li#test_tables_diag.ui-state-default.ui-corner-all(title="show tables dialog")
-                span.ui-icon.ui-icon-info
-        #graphbox
-          #chart_div
-            #graphboxdummy ...
-        #controlbox.ui-corner-all
-          ul#icons2.ui-widget.ui-helper-clearfix
-            li#graph_render_execute_1.ui-state-default.ui-corner-all(title="render test graph 1")
-              span.ui-icon.ui-icon-carat-1-n
-            li#graph_render_execute_2.ui-state-default.ui-corner-all(title="render test graph 2")
-              span.ui-icon.ui-icon-carat-1-ne
+          //
+            div
+              ul#icons1.ui-widget.ui-helper-clearfix
+                li#test_status_change_not_executed.ui-state-default.ui-corner-all(title="status not executed")
+                  span.ui-icon.ui-icon-stop
+                li#test_status_change_running.ui-state-default.ui-corner-all(title="status running")
+                  span.ui-icon.ui-icon-play
+                li#test_status_change_executed.ui-state-default.ui-corner-all(title="status executed")
+                  span.ui-icon.ui-icon-bullet
+                li#test_status_change_error.ui-state-default.ui-corner-all(title="status error")
+                  span.ui-icon.ui-icon-eject
+                li#test_status_change_rerunning.ui-state-default.ui-corner-all(title="status re-running")
+                  span.ui-icon.ui-icon-seek-next
+                li#test_show_notice_bar.ui-state-default.ui-corner-all(title="show notice bar")
+                  span.ui-icon.ui-icon-lightbulb
+                li#test_show_error_bar.ui-state-default.ui-corner-all(title="show error bar")
+                  span.ui-icon.ui-icon-power
+                li#test_tables_diag.ui-state-default.ui-corner-all(title="show tables dialog")
+                  span.ui-icon.ui-icon-info
+        //
+          #graphbox
+            #chart_div
+              #graphboxdummy ...
+          #controlbox.ui-corner-all
+            ul#icons2.ui-widget.ui-helper-clearfix
+              li#graph_render_execute_1.ui-state-default.ui-corner-all(title="render test graph 1")
+                span.ui-icon.ui-icon-carat-1-n
+              li#graph_render_execute_2.ui-state-default.ui-corner-all(title="render test graph 2")
+                span.ui-icon.ui-icon-carat-1-ne
       #tabview
         #listSelector
           ul

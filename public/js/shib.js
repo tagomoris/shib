@@ -24,6 +24,7 @@ $(function(){
   );
 
   /* **** effects, and events for tests **** */
+  /*
   $('ul#icons1 li, ul#icons2 li').hover(
     function() { $(this).addClass('ui-state-hover'); }, 
     function() { $(this).removeClass('ui-state-hover'); }
@@ -36,7 +37,10 @@ $(function(){
   $('#test_show_notice_bar').click(function(event){$('#infoarea').toggle();});
   $('#test_show_error_bar').click(function(event){$('#errorarea').toggle();});
   $('#test_tables_diag').click(function(event){show_tables_dialog();});
+   */
   /* **** **** */
+
+  $('#tables_diag').click(function(event){show_tables_dialog();});
 
   $('#new_button').click(initiate_mainview);
   $('#copy_button').click(copy_selected_query);
