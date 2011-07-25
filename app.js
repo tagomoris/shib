@@ -56,15 +56,41 @@ app.get('/tables', function(req, res){
   });
 });
 
-app.get('/partitions/:tablename', function(req, res){
-  var tablename = req.params.tablename;
+app.get('/partitions', function(req, res){
+  var tablename = req.query.key;
   if (/^[a-z0-9_]+$/i.exec(tablename) == null) {
     error_handle(req, res, {message: 'invalid tablename for show partitions: ' + tablename});
     return;
   }
-  shib.client().executeSystemStatement('show partitions ' + req.tablename, function(err, result){
+  shib.client().executeSystemStatement('show partitions ' + tablename, function(err, result){
     if (err) { error_handle(req, res, err); return; }
-    res.send(result);
+    var response_obj = [];
+    var treenodes = {};
+    
+    var create_node = function(partition, hasChildren){
+      if (treenodes[partition])
+        return treenodes[partition];
+      var parts = partition.split('/');
+      var leafName = parts.pop();
+      var node = {title: leafName};
+      if (hasChildren) {
+        node.children = [];
+      }
+      if (parts.length > 0) {
+        var parent = create_node(parts.join('/'), true);
+        parent.children.push(node);
+      }
+      else {
+        response_obj.push(node);
+      }
+      treenodes[partition] = node;
+      return node;
+    };
+
+    result.forEach(function(partition){
+      create_node(partition);
+    });
+    res.send(response_obj);
   });
 });
 

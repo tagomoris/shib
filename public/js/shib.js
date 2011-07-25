@@ -35,6 +35,7 @@ $(function(){
   $('#test_status_change_rerunning').click(function(event){shib_test_status_change("re-running");});
   $('#test_show_notice_bar').click(function(event){$('#infoarea').toggle();});
   $('#test_show_error_bar').click(function(event){$('#errorarea').toggle();});
+  $('#test_tables_diag').click(function(event){show_tables_dialog();});
   /* **** **** */
 
   $('#new_button').click(initiate_mainview);
@@ -221,6 +222,36 @@ function show_error(title, message, duration, optional_object){
   shibnotifications.push({type:'error', title:title, message:message, duration:duration});
   if (optional_object)
     console.log(optional_object);
+};
+
+/* dialog */
+
+function show_tables_dialog() {
+  $('#tables')
+    .dynatree('destroy')
+    .empty()
+    .hide();
+  $('#loadingimg').show();
+  $('#tablesdiag').dialog({modal:true, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
+  $.get('/tables', function(data){
+    $('#loadingimg').hide();
+    $('#tables')
+      .show()
+      .dynatree({
+        children: data.map(function(v){return {title: v, key: v, isFolder: true, isLazy: true};}),
+        autoFocus: false,
+        autoCollapse: true,
+        clickFolderMode: 2,
+        activeVisible: false,
+        onLazyRead: function(node){
+          node.appendAjax({
+            url: '/partitions',
+            data: {key: node.data.key, mode: 'all'},
+            cache: false
+          });
+        }
+      });
+  });
 };
 
 /* right pane operations */
