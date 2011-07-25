@@ -23,23 +23,6 @@ $(function(){
     function() { $(this).removeClass('ui-state-hover'); }
   );
 
-  /* **** effects, and events for tests **** */
-  /*
-  $('ul#icons1 li, ul#icons2 li').hover(
-    function() { $(this).addClass('ui-state-hover'); }, 
-    function() { $(this).removeClass('ui-state-hover'); }
-  );
-  $('#test_status_change_not_executed').click(function(event){shib_test_status_change("not executed");});
-  $('#test_status_change_running').click(function(event){shib_test_status_change("running");});
-  $('#test_status_change_executed').click(function(event){shib_test_status_change("executed");});
-  $('#test_status_change_error').click(function(event){shib_test_status_change("error");});
-  $('#test_status_change_rerunning').click(function(event){shib_test_status_change("re-running");});
-  $('#test_show_notice_bar').click(function(event){$('#infoarea').toggle();});
-  $('#test_show_error_bar').click(function(event){$('#errorarea').toggle();});
-  $('#test_tables_diag').click(function(event){show_tables_dialog();});
-   */
-  /* **** **** */
-
   $('#tables_diag').click(function(event){show_tables_dialog();});
 
   $('#new_button').click(initiate_mainview);
@@ -714,28 +697,3 @@ function download_result_query(opts) { /* opts: {format:tsv/csv} */
   }
   window.location = '/download/' + format + '/' + query_last_result(shibselectedquery).resultid;
 };
-
-/* test functions */
-
-function shib_test_status_change(next_state) {
-  if (next_state == 'not executed'){
-    show_editbox_buttons(['execute_button']);
-    change_editbox_querystatus_style('not executed');
-  }
-  else if (next_state == 'running'){
-    show_editbox_buttons(['pause_button']);
-    change_editbox_querystatus_style('running');
-  }
-  else if (next_state == 'executed'){
-    show_editbox_buttons(['rerun_button', 'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button']);
-    change_editbox_querystatus_style('executed', {lines:512, bytes:2049});
-  }
-  else if (next_state == 'error'){
-    show_editbox_buttons(['rerun_button']);
-    change_editbox_querystatus_style('error', {error:'hdfs volume full'});
-  }
-  else if (next_state == 're-running'){
-    show_editbox_buttons(['pause_button', 'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button']);
-    change_editbox_querystatus_style('re-running', {lines:1, bytes:50});
-  }
-}
