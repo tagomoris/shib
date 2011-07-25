@@ -5,6 +5,4 @@ if [ ! -d $DATADIR ]; then
     mkdir $DATADIR
 fi
 cd $DATADIR
-nohup ktserver shib.kch result.kcd > ./ktserver.log &
-
-
+exec ktserver shib.kch result.kcd
