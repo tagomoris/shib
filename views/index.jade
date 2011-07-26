@@ -36,9 +36,13 @@ html
     #resultdiag(title="show result")
       pre#resultdisplay
     #tablesdiag(title="tables status")
-      div#loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
+      .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
       #tables(style="display: none;")
+    #describediag(title="table schema")
+      .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
+        image(src="/image/ajax-loader.gif")
+      #describes
     #mainarea
       #mainview
         #tablesbox.ui-corner-all
@@ -46,6 +50,9 @@ html
             li#tables_diag.ui-state-default.ui-corner-all(title="show tables dialog")
               span.ui-icon.ui-icon-info
               | show tables and partitions
+            li#describe_diag.ui-state-default.ui-corner-all(title="show table schema")
+              span.ui-icon.ui-icon-info
+              | show table schemas
         #querybox
           textarea#queryeditor(rows="10")
             SELECT

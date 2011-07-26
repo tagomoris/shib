@@ -94,6 +94,26 @@ app.get('/partitions', function(req, res){
   });
 });
 
+var describe_node_template = 'tr\n  td= colname\n  td= coltype\n  td= colcomment\n';
+
+app.get('/describe', function(req, res){
+  var tablename = req.query.key;
+  if (/^[a-z0-9_]+$/i.exec(tablename) == null) {
+    error_handle(req, res, {message: 'invalid tablename for show partitions: ' + tablename});
+    return;
+  }
+  var fn = jade.compile(describe_node_template);
+  shib.client().executeSystemStatement('describe ' + tablename, function(err, result){
+    if (err) { error_handle(req, res, err); return; }
+    var response_title = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
+    result.forEach(function(row){
+      var cols = row.split('\t');
+      response_title += fn.call(this, {colname: cols[0], coltype: cols[1], colcomment: cols[2]});
+    });
+    res.send([{title: '<table>' + response_title + '</table>'}]);
+  });
+});
+
 app.get('/summary_bulk', function(req, res){
   var correct_history = function(callback){
     shib.client().getHistories(function(err, list){

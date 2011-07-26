@@ -24,6 +24,7 @@ $(function(){
   );
 
   $('#tables_diag').click(function(event){show_tables_dialog();});
+  $('#describe_diag').click(function(event){show_describe_dialog();});
 
   $('#new_button').click(initiate_mainview);
   $('#copy_button').click(copy_selected_query);
@@ -218,10 +219,10 @@ function show_tables_dialog() {
     .dynatree('destroy')
     .empty()
     .hide();
-  $('#loadingimg').show();
   $('#tablesdiag').dialog({modal:true, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
+  $('#tablesdiag .loadingimg').show();
   $.get('/tables', function(data){
-    $('#loadingimg').hide();
+    $('#tablesdiag .loadingimg').hide();
     $('#tables')
       .show()
       .dynatree({
@@ -233,7 +234,32 @@ function show_tables_dialog() {
         onLazyRead: function(node){
           node.appendAjax({
             url: '/partitions',
-            data: {key: node.data.key, mode: 'all'},
+            data: {key: node.data.key},
+            cache: false
+          });
+        }
+      });
+  });
+};
+
+function show_describe_dialog() {
+  $('#describes').empty();
+  $('#describediag').dialog({modal:true, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
+  $('#describediag .loadingimg').show();
+  $.get('/tables', function(data){
+    $('#describediag .loadingimg').hide();
+    $('#describes')
+      .show()
+      .dynatree({
+        children: data.map(function(v){return {title: v, key: v, isFolder: true, isLazy: true};}),
+        autoFocus: false,
+        autoCollapse: true,
+        clickFolderMode: 2,
+        activeVisible: false,
+        onLazyRead: function(node){
+          node.appendAjax({
+            url: '/describe',
+            data: {key: node.data.key},
             cache: false
           });
         }
