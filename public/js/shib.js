@@ -243,7 +243,10 @@ function show_tables_dialog() {
 };
 
 function show_describe_dialog() {
-  $('#describes').empty();
+  $('#describes')
+    .dynatree('destroy')
+    .empty()
+    .hide();
   $('#describediag').dialog({modal:true, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
   $('#describediag .loadingimg').show();
   $.get('/tables', function(data){
