@@ -74,6 +74,12 @@ function set_execute_query_list(list) {
   window.localStorage.executeList = JSON.stringify(list);
 };
 
+function delete_execute_query_item(queryid) {
+  if (! window.localStorage)
+    return;
+  window.localStorage.executeList = JSON.stringify(execute_query_list().filter(function(v){return v !== queryid;}));
+};
+
 function push_execute_query_list(queryid) {
   if (! window.localStorage)
     return;
@@ -685,6 +691,8 @@ function update_query_display(query) {
 };
 
 function update_query(query){
+  if (! query)
+    return;
   $.get('/status/' + query.queryid, function(data){
     if (query_current_state(query) == data)
       return;
@@ -784,6 +792,7 @@ function delete_query(event) {
     success: function(data){
       show_info('Selected query successfully deleted', '');
       initiate_mainview(null, true);
+      delete_execute_query_item(target.queryid);
       load_tabs({reload:true});
     }
   });
