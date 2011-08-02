@@ -756,6 +756,7 @@ function execute_query() {
 };
 
 function rerun_query() {
+  //TODO
 };
 
 function delete_query(event) {
