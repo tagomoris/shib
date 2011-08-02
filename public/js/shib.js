@@ -12,6 +12,7 @@ var shib_NOTIFICATION_DEFAULT_DURATION_SECONDS = 10;
 
 $(function(){
   load_tabs({callback:function(){
+    follow_current_uri();
     setInterval(queryeditor_watcher(), shib_QUERY_EDITOR_WATCHER_INTERVAL);
     setInterval(check_running_query_state, shib_QUERY_STATUS_CHECK_INTERVAL);
     setInterval(show_notification, shib_NOTIFICATION_CHECK_INTERVAL);
@@ -161,6 +162,43 @@ function detect_keyword_placeholders(querystring, opts) {
     return 1;
   return 0;
 };
+
+/* uri and history operation */
+
+function follow_current_uri() {
+  if (window.location.pathname.indexOf('/q/') != 0)
+    return;
+  var queryid = window.location.pathname.substring('/q/'.length);
+  if (! /^[0-9a-z]{32}$/.exec(queryid)) // queryid is md5 (16bytes) hexdigest (32chars)
+    return;
+  var query = shibdata.query_cache[queryid];
+  if (! query) {
+    show_info('', 'selected query maybe expired from history', 5);
+    return;
+  }
+  update_mainview(query);
+};
+
+function update_history_by_query(query) {
+  if (! window.history.pushState ) // if pushState not ready
+    return;
+  if (query === null) {
+    window.history.pushState('','', '/');
+    return;
+  }
+  window.history.pushState(query.queryid, '', '/q/' + query.queryid);
+};
+
+window.addEventListener("popstate", function (event) {
+  if (event.state === null || event.state === undefined || event.state.length < 32)
+    return;
+  var query = shibdata.query_cache[event.state];
+  if (! query) {
+    show_error('UI BUG', 'unknown queryid from history event.state', 10);
+    return;
+  }
+  update_mainview(query);
+}, false);
 
 /* notifications */
 
@@ -455,6 +493,7 @@ function select_queryitem(event){
   }
   
   set_selected_query(query, target_dom);
+  update_history_by_query(query);
   update_mainview(query);
 };
 
@@ -465,6 +504,7 @@ function initiate_mainview(event) { /* event not used */
   update_queryeditor(true, '');
   update_keywordbox(true, 0);
   update_editbox(null, 'not executed');
+  update_history_by_query(null);
 };
 
 function copy_selected_query(event) { /* event not used */
@@ -474,6 +514,7 @@ function copy_selected_query(event) { /* event not used */
   update_queryeditor(true, querystring);
   update_editbox(null, 'not executed');
   update_keywordbox(true, detect_keyword_placeholders(querystring), keywordlist);
+  update_history_by_query(null);
 };
 
 function update_mainview(query){
