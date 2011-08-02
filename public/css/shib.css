@@ -30,6 +30,9 @@ span.status_rerunning {font-weight: bold; color: orange;}
     text-align: center; text-shadow: none; text-decoration: none; text-transform: none;
     letter-spacing: 0em; word-spacing: 0em; line-height: 1.2;
 }
+#title a {
+    text-decoration: none; color: black;
+}
 #subtitle {
     font-family: 'Artifika', serif; font-size: 18px; font-style: normal; font-weight: 400;
     text-align:center; text-shadow: none; text-decoration: none; text-transform: none;
