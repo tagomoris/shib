@@ -33,6 +33,7 @@ $(function(){
   $('#execute_button').click(execute_query);
   $('#pause_button').click(function(){show_info('Stay tune!', 'Shib is waiting the end of this query...', 5);});
   $('#rerun_button').click(rerun_query);
+  $('#delete_button').click(delete_query);
   $('#display_full_button').click(function(){show_result_query({range:'full'});});
   $('#display_head_button').click(function(){show_result_query({range:'head'});});
   $('#download_tsv_button').click(function(){download_result_query({format:'tsv'});});
@@ -456,10 +457,11 @@ function update_keywords_tab(){
   });
 };
 
-function deselect_and_new_query(){
+function deselect_and_new_query(quiet){
   release_selected_query();
   update_editbox(null);
-  show_info('', 'selected query released', 5);
+  if (! quiet)
+    show_info('', 'selected query released', 5);
 };
 
 function set_selected_query(query, dom){
@@ -499,8 +501,8 @@ function select_queryitem(event){
 
 /* left pane view updates */
 
-function initiate_mainview(event) { /* event not used */
-  deselect_and_new_query();
+function initiate_mainview(event, quiet) { /* event not used */
+  deselect_and_new_query(quiet);
   update_queryeditor(true, '');
   update_keywordbox(true, 0);
   update_editbox(null, 'not executed');
@@ -592,20 +594,22 @@ function update_editbox(query, optional_state) {
     change_editbox_querystatus_style('not executed');
     break;
   case 'running':
-    show_editbox_buttons(['pause_button']);
+    show_editbox_buttons(['pause_button', 'delete_button']);
     change_editbox_querystatus_style('running');
     break;
   case 'executed':
   case 'done':
-    show_editbox_buttons(['rerun_button', 'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button']);
+    show_editbox_buttons(['rerun_button', 'delete_button', 'display_full_button', 'display_head_button',
+                          'download_tsv_button', 'download_csv_button']);
     change_editbox_querystatus_style('executed', query_last_result(query));
     break;
   case 'error':
-    show_editbox_buttons(['rerun_button']);
+    show_editbox_buttons(['rerun_button', 'delete_button']);
     change_editbox_querystatus_style('error', query_last_result(query));
     break;
   case 're-running':
-    show_editbox_buttons(['pause_button', 'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button']);
+    show_editbox_buttons(['pause_button', 'delete_button', 'display_full_button', 'display_head_button',
+                          'download_tsv_button', 'download_csv_button']);
     change_editbox_querystatus_style('re-running', query_last_result(query));
     break;
   default:
@@ -615,8 +619,8 @@ function update_editbox(query, optional_state) {
 
 function show_editbox_buttons(buttons){
   var allbuttons = [
-    'execute_button', 'pause_button', 'rerun_button', 'display_full_button',
-    'display_head_button', 'download_tsv_button', 'download_csv_button'
+    'execute_button', 'pause_button', 'rerun_button', 'delete_button',
+    'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button'
   ];
   if (! buttons)
     buttons = [];
@@ -728,7 +732,16 @@ function execute_query() {
     dataType: 'json',
     data: {querystring: querystring, keywords: keywords},
     error: function(jqXHR, textStatus, err){
-      show_error('Cannot Execute Query', JSON.parse(jqXHR.responseText).message);
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try {
+        msg = JSON.parse(jqXHR.responseText).message;
+      }
+      catch (e) {
+        msg = jqXHR.responseText;
+      }
+      show_error('Cannot Execute Query', msg);
     },
     success: function(query){
       show_info('Query now waiting to run', '');
@@ -743,6 +756,36 @@ function execute_query() {
 };
 
 function rerun_query() {
+};
+
+function delete_query(event) {
+  if (! shibselectedquery)
+    return;
+  var target = shibselectedquery;
+  var targetkeyword = (target.keywords && target.keywords.length > 0) ? target.keywords[0] : null;
+  $.ajax({
+    url: '/delete',
+    type: 'POST',
+    dataType: 'json',
+    data: {queryid: target.queryid, keyword: targetkeyword},
+    error: function(jqXHR, textStatus, err){
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try {
+        msg = JSON.parse(jqXHR.responseText).message;
+      }
+      catch (e) {
+        msg = jqXHR.responseText;
+      }
+      show_error('Failed to delete query', msg);
+    },
+    success: function(data){
+      show_info('Selected query successfully deleted', '');
+      initiate_mainview(null, true);
+      load_tabs({reload:true});
+    }
+  });
 };
 
 function show_result_query(opts) { /* opts: {range:full/head} */

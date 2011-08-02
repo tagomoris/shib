@@ -182,11 +182,32 @@ app.post('/execute', function(req, res){
   });
 });
 
+app.post('/delete', function(req, res){
+  var targetid = req.body.queryid;
+  var targetKeyword = req.body.keyword;
+  var targetHistorySize = 5;
+
+  shib.client().getHistories(function(err, histories){
+    if (err)
+      histories = [];
+    var client = this;
+    var targetHistories = histories.sort().reverse().slice(0, targetHistorySize); // unti-dictionary order, last 'targetHistorySize' items
+    var funclist = [
+      function(callback){client.removeKeyword(targetKeyword, targetid); callback(null, 1);},
+      function(callback){client.deleteQuery(targetid); callback(null, 1);}
+    ].concat(targetHistories.map(function(h){return function(callback){client.removeHistory(h, targetid); callback(null, 1);};}));
+    async.parallel(funclist, function(err, results){
+      if (err) {error_handle(req, res, err); return;}
+      res.send({result:'ok'});
+    });
+  });
+});
+
 app.post('/refresh', function(req, res){
   shib.client().query(req.body.queryid, function(err, query){
     if (err) { error_handle(req, res, err); return; }
     this.refresh(query);
-    res.send('ok');
+    res.send({result:'ok'});
   });
 });
 
