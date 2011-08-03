@@ -758,6 +758,7 @@ function execute_query() {
       if (window.localStorage) {
         push_execute_query_list(query.queryid);
       }
+      update_history_by_query(query);
       load_tabs({reload:true});
     }
   });
