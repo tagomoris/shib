@@ -178,7 +178,7 @@ app.post('/execute', function(req, res){
       error_handle(req, res, err); return;
     }
     res.send(query);
-    this.execute(query);
+    this.execute(query, (query.results.length > 0)); // refreshed execution or not
   });
 });
 

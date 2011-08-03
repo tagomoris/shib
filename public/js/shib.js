@@ -84,6 +84,8 @@ function push_execute_query_list(queryid) {
   if (! window.localStorage)
     return;
   var list = execute_query_list();
+  if (list.filter(function(v){return v === queryid;}).length > 0)
+    return;
   if (list.length > 4) {
     list = list.slice(0,4);
   }
