@@ -23,6 +23,22 @@ module.exports = testCase({
     test.equals(query.removeNewLines("\nho\n\nge\n"), ' ho  ge ');
     test.done();
   },
+  removeNewLinesAndComments: function(test) {
+    test.equals(query.removeNewLinesAndComments('hoge'), 'hoge');
+    test.equals(query.removeNewLinesAndComments("hoge\n"), 'hoge ');
+    test.equals(query.removeNewLinesAndComments("ho\nge"), 'ho ge');
+    test.equals(query.removeNewLinesAndComments("\nhoge"), ' hoge');
+    test.equals(query.removeNewLinesAndComments("\nhoge\n"), ' hoge ');
+    test.equals(query.removeNewLinesAndComments("\nho\n\nge\n"), ' ho  ge ');
+
+    test.equals(query.removeNewLinesAndComments('hoge\n--pos'), 'hoge ');
+    test.equals(query.removeNewLinesAndComments('hoge\n--pos\nmoge'), 'hoge  moge');
+    test.equals(query.removeNewLinesAndComments('--koge\nhoge\n--pos\nmoge'), ' hoge  moge');
+    test.equals(query.removeNewLinesAndComments('hoge --koge\nhoge\n--pos\nmoge'), 'hoge  hoge  moge');
+    test.equals(query.removeNewLinesAndComments(' --koge\nhoge\n--pos\nmoge'), '  hoge  moge');
+
+    test.done();
+  },
   checkKeywordString: function(test) {
     test.throws(function(){Query.checkKeywordString(' ');});
     test.throws(function(){Query.checkKeywordString('\\n');});
@@ -52,6 +68,7 @@ module.exports = testCase({
     test.throws(function(){
       Query.checkQueryString("select field1,field2,count(*) as cnt from hoge_table where yyyymmdd=today(); drop table hoge_table");
     });
+    test.doesNotThrow(function(){Query.checkQueryString("-- TEST Query \n select field1,field2,count(*) as cnt from hoge_table where yyyymmdd=today()");});
     test.done();
   },
   generateQueryId: function(test) {
