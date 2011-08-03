@@ -767,7 +767,38 @@ function execute_query() {
 };
 
 function rerun_query() {
-  //TODO
+  if (! shibselectedquery) {
+    show_error('UI Bug', 'rerun_query should be enable with not-saved-query objects');
+    return;
+  }
+  $.ajax({
+    url: '/refresh',
+    type: 'POST',
+    dataType: 'json',
+    data: {queryid: shibselectedquery.queryid},
+    error: function(jqXHR, textStatus, err){
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try {
+        msg = JSON.parse(jqXHR.responseText).message;
+      }
+      catch (e) {
+        msg = jqXHR.responseText;
+      }
+      show_error('Cannot ReRun Query', msg);
+    },
+    success: function(query){
+      show_info('Query now waiting to re-run', '');
+      shibdata.query_cache[query.queryid] = query;
+      update_mainview(query);
+      if (window.localStorage) {
+        push_execute_query_list(query.queryid);
+      }
+      update_history_by_query(query);
+      load_tabs({reload:true});
+    }
+  });
 };
 
 function delete_query(event) {

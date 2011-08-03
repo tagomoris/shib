@@ -207,7 +207,7 @@ app.post('/refresh', function(req, res){
   shib.client().query(req.body.queryid, function(err, query){
     if (err) { error_handle(req, res, err); return; }
     this.refresh(query);
-    res.send({result:'ok'});
+    res.send(query);
   });
 });
 
