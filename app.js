@@ -223,7 +223,7 @@ app.post('/delete', function(req, res){
     ].concat(targetHistories.map(function(h){return function(callback){client.removeHistory(h, targetid); callback(null, 1);};}));
     async.parallel(funclist, function(err, results){
       if (err) {error_handle(req, res, err); return;}
-      delete runningQueries(targetid);
+      delete runningQueries[targetid];
       res.send({result:'ok'});
     });
   });
@@ -232,8 +232,13 @@ app.post('/delete', function(req, res){
 app.post('/refresh', function(req, res){
   shib.client().query(req.body.queryid, function(err, query){
     if (err) { error_handle(req, res, err); return; }
-    this.refresh(query);
     res.send(query);
+    this.execute(query, {
+      refreshed: (query.results.length > 0), // refreshed execution or not
+      prepare: function(query){runningQueries[query.queryid] = new Date();},
+      success: function(query){delete runningQueries[query.queryid];},
+      error: function(query){delete runningQueries[query.queryid];}
+    });
   });
 });
 
@@ -321,6 +326,10 @@ app.get('/show/full/:resultid', function(req, res){
 app.get('/show/head/:resultid', function(req, res){
   shib.client().rawResultData(req.params.resultid, function(err, data){
     if (err) { error_handle(req, res, err); return; }
+    if (! data) {
+      res.send(null);
+      return;
+    }
     var headdata = [];
     var counts = 0;
     var position = 0;
