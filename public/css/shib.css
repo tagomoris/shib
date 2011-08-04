@@ -47,7 +47,7 @@ td#mainviewcell {margin: 0; padding: 0; vertical-align: top;}
 td#tabviewcell {margin: 0; padding: 0; vertical-align: top;}
 #tabview {display: block; position: relative; clear: both; max-width: 420px; width: 420px; margin-left: 10px;}
 
-#runningarea {max-width: 980px; margin: 30px auto; text-align: center;}
+#runningarea {max-width: 980px; margin: 30px auto 10px auto; text-align: center;}
 
 #creditarea {margin: 10px auto; text-align: center;}
 
