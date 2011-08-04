@@ -9,6 +9,7 @@ var shib_QUERY_STATUS_CHECK_INTERVAL = 5000;
 var shib_QUERY_EDITOR_WATCHER_INTERVAL = 500;
 var shib_NOTIFICATION_CHECK_INTERVAL = 100;
 var shib_NOTIFICATION_DEFAULT_DURATION_SECONDS = 10;
+var shib_RUNNING_QUERY_UPDATE_INTERVAL = 15000;
 
 $(function(){
   load_tabs({callback:function(){
@@ -16,6 +17,7 @@ $(function(){
     setInterval(queryeditor_watcher(), shib_QUERY_EDITOR_WATCHER_INTERVAL);
     setInterval(check_running_query_state, shib_QUERY_STATUS_CHECK_INTERVAL);
     setInterval(show_notification, shib_NOTIFICATION_CHECK_INTERVAL);
+    setInterval(update_running_queries, shib_RUNNING_QUERY_UPDATE_INTERVAL);
   }});
   
   //hover states on the static widgets
@@ -713,6 +715,23 @@ function update_query(query){
         update_query_display(new_query);
       }
     });
+  });
+};
+
+$.template("runningsTemplate",
+           '<div><a href="/q/${QueryId}">${QueryId}</a> ${Runnings}</div>');
+
+function update_running_queries(event){
+  $.get('/runnings', function(data){
+    $('#runnings').empty();
+    if (data.length < 1) {
+      $('<div>no running queries</div>').appendTo('#runnings');
+      return;
+    }
+    $('#runnings').show();
+    $.tmpl("runningsTemplate",
+           data.map(function(pair){return {QueryId: pair[0], Runnings: pair[1]};})
+          ).appendTo('#runnings');
   });
 };
 

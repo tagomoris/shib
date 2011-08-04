@@ -13,6 +13,8 @@ var shib = require('shib'),
     servers = require('./config').servers;
 shib.init(servers);
 
+var runningQueries = {};
+
 function error_handle(req, res, err){
   //TODO make log line
   console.log(err);
@@ -47,6 +49,24 @@ app.get('/', function(req, res){
 app.get('/q/:queryid', function(req, res){
   // Only this request handler is for permalink request from browser URL bar.
   res.render(__dirname + '/views/index.jade', {layout: false});
+});
+
+app.get('/runnings', function(req, res){
+  var runnings = [];
+  for (var queryid in runningQueries) {
+    var times = (function(){
+      var secs = Math.floor(((new Date()) - runningQueries[queryid]) / 1000);
+      if (secs < 60)
+        return secs + ' seconds';
+      var mins = Math.floor(secs / 60);
+      if (mins < 60)
+        return mins + ' minutes';
+      var hours = Math.floor(mins / 60);
+      return hours + ' hours';
+    })();
+    runnings.push([queryid, times]);
+  }
+  res.send(runnings);
 });
 
 app.get('/tables', function(req, res){
@@ -123,7 +143,7 @@ app.get('/summary_bulk', function(req, res){
         var idmap = {};
         var ids = [];
         for (var x = 0; x < list.length; x++) {
-          idmap[list[x]] = idlist[x].slice(0,MAX_ACCORDION_SIZE).reverse();
+          idmap[list[x]] = idlist[x].reverse().slice(0,MAX_ACCORDION_SIZE);
           ids = ids.concat(idmap[list[x]]);
         }
         callback(null, {history:list.reverse(), history_ids:idmap, ids:ids});
@@ -138,7 +158,7 @@ app.get('/summary_bulk', function(req, res){
         var idmap = {};
         var ids = [];
         for (var y = 0; y < list.length; y++) {
-          idmap[list[y]] = idlist[y].slice(0,MAX_ACCORDION_SIZE).reverse();
+          idmap[list[y]] = idlist[y].reverse().slice(0,MAX_ACCORDION_SIZE);
           ids = ids.concat(idmap[list[y]]);
         }
         callback(null, {keywords:list, keyword_ids:idmap, ids:ids});
@@ -178,7 +198,12 @@ app.post('/execute', function(req, res){
       error_handle(req, res, err); return;
     }
     res.send(query);
-    this.execute(query, (query.results.length > 0)); // refreshed execution or not
+    this.execute(query, {
+      refreshed: (query.results.length > 0), // refreshed execution or not
+      prepare: function(query){runningQueries[query.queryid] = new Date();},
+      success: function(query){delete runningQueries[query.queryid];},
+      error: function(query){delete runningQueries[query.queryid];}
+    });
   });
 });
 
@@ -198,6 +223,7 @@ app.post('/delete', function(req, res){
     ].concat(targetHistories.map(function(h){return function(callback){client.removeHistory(h, targetid); callback(null, 1);};}));
     async.parallel(funclist, function(err, results){
       if (err) {error_handle(req, res, err); return;}
+      delete runningQueries(targetid);
       res.send({result:'ok'});
     });
   });
