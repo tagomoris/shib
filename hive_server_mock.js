@@ -33,13 +33,25 @@ setInterval(function(){
 
 var execute = function(queued_query, success){
   var q = queued_query.split('\n').join(' ');
-  waited_queries.push(q);
-  console.log("query pushed:" + q);
+  var executeDelay = 0;
+  var matched = null;
+  console.log('=================================================');
+  console.log(q);
+  if ((matched = /-- sleep ([0-9]+)$/im.exec(queued_query)) !== null) {
+    executeDelay = Number(matched[1]) * 1000;
+    console.log('sleep detected:' + executeDelay);
+  }
+  console.log('=================================================');
+  setTimeout(function(){
+    waited_queries.push(q);
+    console.log("query pushed:" + q);
+  }, executeDelay);
 
   var timer = setInterval(function(){
     if (query != q) {
       return;
     };
+    console.log('target query executed');
     clearInterval(timer);
     success();
   }, 500);
