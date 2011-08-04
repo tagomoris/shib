@@ -75,6 +75,10 @@ module.exports = testCase({
     test.equals(Query.generateQueryId('select * from hoge where id=111', []), 'cec9ab9d980c1b3ed582471dc79eb65b');
     test.equals(Query.generateQueryId('select * from __KEY__ where id=111', ['keyword1']), '1007af7e430e26fc0a825b25295387f3');
     test.equals(Query.generateQueryId('select x,__KEY2__ from __KEY1__ where id=111', ['keyword1', 'keyword2']), 'c8b589da212d049df19e4d279eaf2c03');
+
+    test.equals(Query.generateQueryId('select * from hoge where id=111', [], '201108'), '14838f269a5aed68f61bc60615d21330');
+    test.equals(Query.generateQueryId('select * from __KEY__ where id=111', ['keyword1'], '201108'), '24728e4428b9b2993d58fb7a3bef7bfa');
+    test.equals(Query.generateQueryId('select x,__KEY2__ from __KEY1__ where id=111', ['keyword1', 'keyword2'], '201108'), '2f81a56ab6e386252a2b16080aa89447');
     test.done();
   },
   instanciate: function(test) {
@@ -89,6 +93,12 @@ module.exports = testCase({
     test.equals(q2.querystring, 'select f1,f2 from hoge_table where service="__KEY1__"');
     test.deepEqual(q2.keywords, ['news']);
     test.deepEqual(q2.results, []);
+
+    var q3 = new Query({querystring:'select f1,f2 from hoge_table where service="__KEY1__"', keywords:['news'], seed:'201108'});
+    test.equals(q3.queryid, Query.generateQueryId('select f1,f2 from hoge_table where service="__KEY1__"', ['news'], '201108'));
+    test.equals(q3.querystring, 'select f1,f2 from hoge_table where service="__KEY1__"');
+    test.deepEqual(q3.keywords, ['news']);
+    test.deepEqual(q3.results, []);
 
     test.done();
   },
