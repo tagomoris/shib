@@ -192,10 +192,36 @@ function follow_current_uri() {
     return;
   var query = shibdata.query_cache[queryid];
   if (! query) {
-    show_info('', 'selected query maybe expired from history', 5);
+    $.ajax({
+      url: '/query/' + queryid,
+      type: 'GET',
+      error: function(jqXHR, textStatus, errorThrown){
+        show_error('Unknown query id', 'cannot get query object with specified id', 10);
+      },
+      success: function(data, textStatus, jqXHR){
+        query = data;
+        shibdata.query_cache[queryid] = query;
+        var resultids = data.results.map(function(v){return v.resultid;});
+        $.ajax({
+          url: '/results',
+          type: 'POST',
+          dataType: 'json',
+          data: {ids: resultids},
+          success: function(data){
+            data.results.forEach(function(result1){
+              if (! result1)
+                return;
+              shibdata.result_cache[result1.resultid] = result1;
+            });
+            update_mainview(query);
+          }
+        });
+      }
+    });
     return;
   }
-  update_mainview(query);
+  else
+    update_mainview(query);
 };
 
 function update_history_by_query(query) {
