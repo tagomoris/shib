@@ -15,7 +15,7 @@ $(function(){
   load_tabs({callback:function(){
     follow_current_uri();
     setInterval(queryeditor_watcher(), shib_QUERY_EDITOR_WATCHER_INTERVAL);
-    setInterval(check_running_query_state, shib_QUERY_STATUS_CHECK_INTERVAL);
+    setInterval(check_selected_running_query_state, shib_QUERY_STATUS_CHECK_INTERVAL);
     setInterval(show_notification, shib_NOTIFICATION_CHECK_INTERVAL);
     setInterval(update_running_queries, shib_RUNNING_QUERY_UPDATE_INTERVAL);
   }});
@@ -109,6 +109,12 @@ function query_second_last_result(query) {
       return obj;
   return null;
 };
+function query_last_done_result(query) {
+  var last = query_last_result(query);
+  if (last && last.state == 'done')
+    return last;
+  return query_second_last_result(query);
+}
 
 function query_result_schema_label(result){
   return 'fields: ' + result.schema.map(function(field){return field.name + '(' + field.type + ')';}).join(', ');
@@ -620,7 +626,7 @@ function update_editbox(query, optional_state) {
   case 're-running':
     show_editbox_buttons(['pause_button', 'delete_button', 'display_full_button', 'display_head_button',
                           'download_tsv_button', 'download_csv_button']);
-    change_editbox_querystatus_style('re-running', query_last_result(query));
+    change_editbox_querystatus_style('re-running', query_last_done_result(query));
     break;
   default:
     show_error('UI Bug', 'unknown query status:' + state, 5, query);
@@ -648,7 +654,7 @@ function change_editbox_querystatus_style(state, result){
     'running':{classname:'status_running', result:false},
     'executed':{classname:'status_executed', result:true},
     'error':{classname:'status_error', result:true},
-    're-running':{classname:'status_rerunning', result:true}
+    're-running':{classname:'status_re-running', result:true}
   };
   var allclasses = 'status_not_executed status_running status_executed status_error status_rerunning';
   if (state === 'done')
@@ -680,7 +686,7 @@ function change_editbox_querystatus_style(state, result){
 
 /* query status auto-updates */
 
-function check_running_query_state(event){ /* event object is not used */
+function check_selected_running_query_state(event){ /* event object is not used */
   if (! shibselectedquery)
     return;
   var s = query_current_state(shibselectedquery);
@@ -810,10 +816,8 @@ function rerun_query() {
     success: function(query){
       show_info('Query now waiting to re-run', '');
       shibdata.query_cache[query.queryid] = query;
+      shibdata.query_state_cache[query.queryid] = 're-running';
       update_mainview(query);
-      if (window.localStorage) {
-        push_execute_query_list(query.queryid);
-      }
       update_history_by_query(query);
       load_tabs({reload:true});
     }
@@ -860,7 +864,7 @@ function show_result_query(opts) { /* opts: {range:full/head} */
     size = 'head';
     height = 200;
   }
-  $.get('/show/' + size + '/' + query_last_result(shibselectedquery).resultid, function(data){
+  $.get('/show/' + size + '/' + query_last_done_result(shibselectedquery).resultid, function(data){
     $('pre#resultdisplay').text(data);
     $('#resultdiag').dialog({modal:true, resizable:true, height:400, width:600, maxHeight:650, maxWidth:950});
   });
@@ -871,5 +875,5 @@ function download_result_query(opts) { /* opts: {format:tsv/csv} */
   if (opts.format == 'csv') {
     format = 'csv';
   }
-  window.location = '/download/' + format + '/' + query_last_result(shibselectedquery).resultid;
+  window.location = '/download/' + format + '/' + query_last_done_result(shibselectedquery).resultid;
 };
