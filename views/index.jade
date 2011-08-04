@@ -45,117 +45,126 @@ html
         image(src="/image/ajax-loader.gif")
       #describes
     #mainarea
-      #mainview
-        #tablesbox.ui-corner-all
-          ul.operationitems.ui-widget.ui-helper-clearfix
-            li#tables_diag.ui-state-default.ui-corner-all(title="show tables dialog")
-              span.ui-icon.ui-icon-info
-              | show tables and partitions
-            li#describe_diag.ui-state-default.ui-corner-all(title="show table schema")
-              span.ui-icon.ui-icon-info
-              | show table schemas
-        #querybox
-          textarea#queryeditor(rows="10")
-            SELECT
-              (split(fullpath,'/'))[1] AS dirname,
-              sum(bytes) AS totalbytes
-              FROM parsed_log
-              WHERE service='__KEY__' AND yyyymmdd like '201105%'
-              GROUP BY dirname SORT BY totalbytes
-              LIMIT 10
-        #keywordbox.ui-corner-all
-          #keyword0area
-            .keywordname primary keyword
-            input#keyword0.readonly(type="text", readonly)
-          #keyword1area
-            .keywordname KEY1
-            input#keyword1.readonly(type="text", readonly)
-          #keyword2area
-            .keywordname KEY2
-            input#keyword2.readonly(type="text", readonly)
-          #keyword3area
-            .keywordname KEY3
-            input#keyword3.readonly(type="text", readonly)
-          #keyword4area
-            .keywordname KEY4
-            input#keyword4.readonly(type="text", readonly)
-          #keyword5area
-            .keywordname KEY5
-            input#keyword5.readonly(type="text", readonly)
-          #keyword6area
-            .keywordname KEY6
-            input#keyword6.readonly(type="text", readonly)
-          #keyword7area
-            .keywordname KEY7
-            input#keyword7.readonly(type="text", readonly)
-          #keyword8area
-            .keywordname KEY8
-            input#keyword8.readonly(type="text", readonly)
-          #keyword9area
-            .keywordname KEY9
-            input#keyword9.readonly(type="text", readonly)
-        #editbox.ui-corner-all
-          ul.operationitems.ui-widget.ui-helper-clearfix
-            li#new_button.ui-state-default.ui-corner-all
-              span.ui-icon.ui-icon-document
-              | new query
-            li#copy_button.ui-state-default.ui-corner-all(style="display: none;")
-              span.ui-icon.ui-icon-copy
-              | copy to new query
-          ul.operationitems.ui-widget.ui-helper-clearfix
-            li#execute_button.ui-state-default.ui-corner-all
-              span.ui-icon.ui-icon-play
-              | execute
-            li#pause_button.ui-state-default.ui-corner-all(style="display: none;")
-              span.ui-icon.ui-icon-pause
-              | waiting
-            li#rerun_button.ui-state-default.ui-corner-all(style="display: none;")
-              span.ui-icon.ui-icon-play
-              | re-run
-            li#delete_button.ui-state-default.ui-corner-all(style="display: none;")
-              span.ui-icon.ui-icon-trash
-              | delete
-            li#display_full_button.ui-state-default.ui-corner-all(style="display: none;")
-              span.ui-icon.ui-icon-newwin
-              | show full
-            li#display_head_button.ui-state-default.ui-corner-all(style="display: none;")
-              span.ui-icon.ui-icon-newwin
-              | show head
-            li#download_tsv_button.ui-state-default.ui-corner-all(style="display: none;")
-              span.ui-icon.ui-icon-arrowthickstop-1-s
-              | tsv
-            li#download_csv_button.ui-state-default.ui-corner-all(style="display: none;")
-              span.ui-icon.ui-icon-arrowthickstop-1-s
-              | csv
-          #statusview
-            span
-              | Query Status:
-              span#querystatus.status_not_executed not executed
-          #queryresult(style="display: none;")
-            div
-              | Result:
-              span#queryresultlines 0 lines, 
-              span#queryresultbytes 0 bytes
-            div#queryresultschema
-        //
-          #graphbox
-            #chart_div
-              #graphboxdummy ...
-          #controlbox.ui-corner-all
-            ul#icons2.ui-widget.ui-helper-clearfix
-              li#graph_render_execute_1.ui-state-default.ui-corner-all(title="render test graph 1")
-                span.ui-icon.ui-icon-carat-1-n
-              li#graph_render_execute_2.ui-state-default.ui-corner-all(title="render test graph 2")
-                span.ui-icon.ui-icon-carat-1-ne
-      #tabview
-        #listSelector
-          ul
-            li#index-yours
-              a(href="#tab-yours") yours
-            li#index-history
-              a(href="#tab-history") history
-            li#index-keywords
-              a(href="#tab-keywords") keywords
-          #tab-yours
-          #tab-history
-          #tab-keywords
+      table
+        tr
+          td#mainviewcell
+            #mainview
+              #tablesbox.ui-corner-all
+                ul.operationitems.ui-widget.ui-helper-clearfix
+                  li#tables_diag.ui-state-default.ui-corner-all(title="show tables dialog")
+                    span.ui-icon.ui-icon-info
+                    | show tables and partitions
+                  li#describe_diag.ui-state-default.ui-corner-all(title="show table schema")
+                    span.ui-icon.ui-icon-info
+                    | show table schemas
+              #querybox
+                textarea#queryeditor(rows="10")
+                  SELECT
+                    (split(fullpath,'/'))[1] AS dirname,
+                    sum(bytes) AS totalbytes
+                    FROM parsed_log
+                    WHERE service='__KEY__' AND yyyymmdd like '201105%'
+                    GROUP BY dirname SORT BY totalbytes
+                    LIMIT 10
+              #keywordbox.ui-corner-all
+                #keyword0area
+                  .keywordname primary keyword
+                  input#keyword0.readonly(type="text", readonly)
+                #keyword1area
+                  .keywordname KEY1
+                  input#keyword1.readonly(type="text", readonly)
+                #keyword2area
+                  .keywordname KEY2
+                  input#keyword2.readonly(type="text", readonly)
+                #keyword3area
+                  .keywordname KEY3
+                  input#keyword3.readonly(type="text", readonly)
+                #keyword4area
+                  .keywordname KEY4
+                  input#keyword4.readonly(type="text", readonly)
+                #keyword5area
+                  .keywordname KEY5
+                  input#keyword5.readonly(type="text", readonly)
+                #keyword6area
+                  .keywordname KEY6
+                  input#keyword6.readonly(type="text", readonly)
+                #keyword7area
+                  .keywordname KEY7
+                  input#keyword7.readonly(type="text", readonly)
+                #keyword8area
+                  .keywordname KEY8
+                  input#keyword8.readonly(type="text", readonly)
+                #keyword9area
+                  .keywordname KEY9
+                  input#keyword9.readonly(type="text", readonly)
+              #editbox.ui-corner-all
+                ul.operationitems.ui-widget.ui-helper-clearfix
+                  li#new_button.ui-state-default.ui-corner-all
+                    span.ui-icon.ui-icon-document
+                    | new query
+                  li#copy_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-copy
+                    | copy to new query
+                ul.operationitems.ui-widget.ui-helper-clearfix
+                  li#execute_button.ui-state-default.ui-corner-all
+                    span.ui-icon.ui-icon-play
+                    | execute
+                  li#pause_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-pause
+                    | waiting
+                  li#rerun_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-play
+                    | re-run
+                  li#delete_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-trash
+                    | delete
+                  li#display_full_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-newwin
+                    | show full
+                  li#display_head_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-newwin
+                    | show head
+                  li#download_tsv_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-arrowthickstop-1-s
+                    | tsv
+                  li#download_csv_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-arrowthickstop-1-s
+                    | csv
+                #statusview
+                  span
+                    | Query Status:
+                    span#querystatus.status_not_executed not executed
+                #queryresult(style="display: none;")
+                  div
+                    | Result:
+                    span#queryresultlines 0 lines, 
+                    span#queryresultbytes 0 bytes
+                  div#queryresultschema
+              //
+                #graphbox
+                  #chart_div
+                    #graphboxdummy ...
+                #controlbox.ui-corner-all
+                  ul#icons2.ui-widget.ui-helper-clearfix
+                    li#graph_render_execute_1.ui-state-default.ui-corner-all(title="render test graph 1")
+                      span.ui-icon.ui-icon-carat-1-n
+                    li#graph_render_execute_2.ui-state-default.ui-corner-all(title="render test graph 2")
+                      span.ui-icon.ui-icon-carat-1-ne
+          td#tabviewcell
+            #tabview
+              #listSelector
+                ul
+                  li#index-yours
+                    a(href="#tab-yours") yours
+                  li#index-history
+                    a(href="#tab-history") history
+                  li#index-keywords
+                    a(href="#tab-keywords") keywords
+                #tab-yours
+                #tab-history
+                #tab-keywords
+  #runningarea
+    #editbox.ui-corner-all
+    #creditarea
+      #credits
+        | shib by tagomoris

@@ -40,9 +40,16 @@ span.status_rerunning {font-weight: bold; color: orange;}
 }
 
 #noticearea {width: 50%; height: 5em; margin: 15px auto 15px auto;}
+
 #mainarea {position: relative; max-width: 980px; min-width: 550px; margin: -15px auto; }
-#mainview {float: left; width: 550px; margin-right: 0px;}
-#tabview {float: right; width: 420px; margin-left: 0px;}
+td#mainviewcell {margin: 0; padding: 0; vertical-align: top;}
+#mainview {display: block; position: relative; clear: both; max-width: 550px; width: 550px; margin-right: 0px;}
+td#tabviewcell {margin: 0; padding: 0; vertical-align: top;}
+#tabview {display: block; position: relative; clear: both; max-width: 420px; width: 420px; margin-left: 10px;}
+
+#runningarea {max-width: 980px; margin: 30px auto; text-align: center;}
+
+#creditarea {margin: 10px auto; text-align: center;}
 
 /* for main view (left pane) */
 #querybox {}
