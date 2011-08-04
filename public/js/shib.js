@@ -656,7 +656,7 @@ function change_editbox_querystatus_style(state, result){
     'error':{classname:'status_error', result:true},
     're-running':{classname:'status_re-running', result:true}
   };
-  var allclasses = 'status_not_executed status_running status_executed status_error status_rerunning';
+  var allclasses = 'status_not_executed status_running status_executed status_error status_re-running';
   if (state === 'done')
     state = 'executed';
 
