@@ -22,7 +22,7 @@ span.status_running {font-weight: bold; color: navy;}
 span.status_executed {font-weight: bold; color: green;}
 span.status_done {font-weight: bold; color: green;}
 span.status_error {font-weight: bold; color: red;}
-span.status_rerunning {font-weight: bold; color: orange;}
+span.status_re-running {font-weight: bold; color: orange;}
 
 #titlearea {position: relative; min-width: 980px; width: 98%; margin-top: 15px; text-align: center;}
 #title {
