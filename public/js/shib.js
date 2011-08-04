@@ -82,11 +82,13 @@ function delete_execute_query_item(queryid) {
   window.localStorage.executeList = JSON.stringify(execute_query_list().filter(function(v){return v !== queryid;}));
 };
 
-function push_execute_query_list(queryid) {
+function push_execute_query_list(queryid, refresh) {
   if (! window.localStorage)
     return;
   var list = execute_query_list();
-  if (list.filter(function(v){return v === queryid;}).length > 0)
+  if (refresh)
+    list = list.filter(function(v){return v !== queryid;});
+  else if (list.filter(function(v){return v === queryid;}).length > 0)
     return;
   if (list.length > 4) {
     list = list.slice(0,4);
@@ -818,7 +820,9 @@ function rerun_query() {
       shibdata.query_cache[query.queryid] = query;
       shibdata.query_state_cache[query.queryid] = 're-running';
       update_mainview(query);
-      update_history_by_query(query);
+      if (window.localStorage) {
+        push_execute_query_list(query.queryid, true); // with refreshing
+      }
       load_tabs({reload:true});
     }
   });
