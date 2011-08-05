@@ -33,7 +33,7 @@ $(function(){
   $('#copy_button').click(copy_selected_query);
 
   $('#execute_button').click(execute_query);
-  $('#pause_button').click(function(){show_info('Stay tune!', 'Shib is waiting the end of this query...', 5);});
+  $('#giveup_button').click(giveup_query);
   $('#rerun_button').click(rerun_query);
   $('#delete_button').click(delete_query);
   $('#display_full_button').click(function(){show_result_query({range:'full'});});
@@ -409,41 +409,21 @@ function load_tabs(opts) {
     shibdata.query_cache = {};
     shibdata.query_state_cache = {};
     shibdata.result_cache = {};
-    $.ajax({
-      url: '/queries',
-      type: 'POST',
-      dataType: 'json',
-      data: {ids: data.query_ids},
-      success: function(data){
-        var resultids = [];
-        data.queries.forEach(function(query1){
-          shibdata.query_cache[query1.queryid] = query1;
-          if (query1.results && query1.results.length > 0)
-            resultids = resultids.concat(query1.results.map(function(r){return r && r.resultid;}));
-        });
-        var yours = execute_query_list();
-        if (yours.length > 0)
-          resultids = resultids.concat(execute_query_list());
-        if (resultids.length < 1) {
-          callback();
-          return;
-        }
 
-        $.ajax({
-          url: '/results',
-          type: 'POST',
-          dataType: 'json',
-          data: {ids: resultids},
-          success: function(data){
-            data.results.forEach(function(result1){
-              if (! result1)
-                return;
-              shibdata.result_cache[result1.resultid] = result1;
-            });
-            callback();
-          }
-        });
+    load_queries(data.query_ids, function(queries){
+      var resultids = [];
+      queries.forEach(function(v){
+        if (v.results && v.results.length > 0)
+          resultids = resultids.concat(v.results.map(function(r){return r && r.resultid;}));
+      });
+      var yours = execute_query_list();
+      if (yours.length > 0)
+        resultids = resultids.concat(execute_query_list());
+      if (resultids.length < 1) {
+        callback();
+        return;
       }
+      load_results(resultids, function(results){callback();});
     });
   });
 };
@@ -651,7 +631,7 @@ function update_editbox(query, optional_state) {
     change_editbox_querystatus_style('not executed');
     break;
   case 'running':
-    show_editbox_buttons(['pause_button', 'delete_button']);
+    show_editbox_buttons(['giveup_button']);
     change_editbox_querystatus_style('running');
     break;
   case 'executed':
@@ -665,7 +645,7 @@ function update_editbox(query, optional_state) {
     change_editbox_querystatus_style('error', query_last_result(query));
     break;
   case 're-running':
-    show_editbox_buttons(['pause_button', 'delete_button', 'display_full_button', 'display_head_button',
+    show_editbox_buttons(['giveup_button', 'display_full_button', 'display_head_button',
                           'download_tsv_button', 'download_csv_button']);
     change_editbox_querystatus_style('re-running', query_last_done_result(query));
     break;
@@ -676,7 +656,7 @@ function update_editbox(query, optional_state) {
 
 function show_editbox_buttons(buttons){
   var allbuttons = [
-    'execute_button', 'pause_button', 'rerun_button', 'delete_button',
+    'execute_button', 'giveup_button', 'rerun_button', 'delete_button',
     'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button'
   ];
   if (! buttons)
@@ -726,6 +706,42 @@ function change_editbox_querystatus_style(state, result){
     }
   }
 }
+
+/* query and result load/reload/caching */
+
+function load_queries(queryids, callback){
+  $.ajax({
+    url: '/queries',
+    type: 'POST',
+    dataType: 'json',
+    data: {ids: queryids},
+    success: function(data){
+      data.queries.forEach(function(query1){
+        shibdata.query_cache[query1.queryid] = query1;
+      });
+      if (callback)
+        callback(data.queries);
+    }
+  });
+};
+
+function load_results(resultids, callback){
+  $.ajax({
+    url: '/results',
+    type: 'POST',
+    dataType: 'json',
+    data: {ids: resultids},
+    success: function(data){
+      data.results.forEach(function(result1){
+        if (! result1)
+          return;
+        shibdata.result_cache[result1.resultid] = result1;
+      });
+      if (callback)
+        callback(data.results);
+    }
+  });
+};
 
 /* query status auto-updates */
 
@@ -834,9 +850,43 @@ function execute_query() {
   });
 };
 
+function giveup_query() {
+  if (! shibselectedquery) {
+    show_error('UI Bug', 'giveup_query should be enable with non-saved-query objects');
+    return;
+  }
+  $.ajax({
+    url: '/giveup',
+    type: 'POST',
+    dataType: 'json',
+    data: {queryid: shibselectedquery.queryid},
+    error: function(jqXHR, textStatus, err){
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try {
+        msg = JSON.parse(jqXHR.responseText).message;
+      }
+      catch (e) {
+        msg = jqXHR.responseText;
+      }
+      show_error('Cannot GiveUp Query', msg);
+    },
+    success: function(query){
+      show_info('Query gived-up', '');
+      shibdata.query_cache[query.queryid] = query;
+      shibdata.query_state_cache[query.queryid] = 'error';
+      load_results(query.results.map(function(v){return v.resultid;}), function(){
+        update_mainview(query);
+        load_tabs({reload:true});
+      });
+    }
+  });
+};
+
 function rerun_query() {
   if (! shibselectedquery) {
-    show_error('UI Bug', 'rerun_query should be enable with not-saved-query objects');
+    show_error('UI Bug', 'rerun_query should not be enable with non-saved-query objects');
     return;
   }
   $.ajax({

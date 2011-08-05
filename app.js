@@ -202,7 +202,19 @@ app.post('/execute', function(req, res){
       refreshed: (query.results.length > 0), // refreshed execution or not
       prepare: function(query){runningQueries[query.queryid] = new Date();},
       success: function(query){delete runningQueries[query.queryid];},
-      error: function(query){delete runningQueries[query.queryid];}
+      error: function(query){delete runningQueries[query.queryid];},
+      broken: function(query){return (! runningQueries[query.queryid]);}
+    });
+  });
+});
+
+app.post('/giveup', function(req, res){
+  var targetid = req.body.queryid;
+  shib.client().query(targetid, function(err, query){
+    var client = this;
+    client.giveup(query, function(){
+      delete runningQueries[query.queryid];
+      res.send(query);
     });
   });
 });
