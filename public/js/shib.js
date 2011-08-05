@@ -182,6 +182,18 @@ function detect_keyword_placeholders(querystring, opts) {
   return 0;
 };
 
+function timelabel_elapsed(completed_at, executed_at){
+  if (!completed_at || !executed_at)
+    return 'unknown times';
+  var seconds = Math.floor(((new Date(completed_at)) - (new Date(executed_at))) / 1000);
+  if (seconds < 60)
+    return seconds + ' seconds';
+  var minutes = Math.floor(seconds / 60);
+  if (minutes < 60)
+    return minutes + ' minutes';
+  return (minutes / 60) + ' hours';
+};
+
 /* uri and history operation */
 
 function follow_current_uri() {
@@ -458,8 +470,9 @@ function create_queryitem_object(queryid, id_prefix){
     Information: executed_at + ', ' + keyword_primary,
     Statement: query.querystring,
     Status: query_current_state(query),
-    Etc: (lastresult && lastresult.bytes && lastresult.lines &&
-          (lastresult.bytes + ' bytes, ' + lastresult.lines + ' lines')) || ''
+    Etc: timelabel_elapsed(lastresult.completed_at, lastresult.executed_at) +
+      ((lastresult && lastresult.bytes && lastresult.lines &&
+        (', ' + lastresult.bytes + ' bytes, ' + lastresult.lines + ' lines')) || '')
   };
 };
 
@@ -699,10 +712,12 @@ function change_editbox_querystatus_style(state, result){
       if (result.error) {
         $('span#queryresultlines').text(result.error);
         $('span#queryresultbytes').text("");
+        $('#queryresultelapsed').text(timelabel_elapsed(result.completed_at, result.executed_at));
       }
       else {
         $('span#queryresultlines').text(" " + result.lines + " lines, ");
         $('span#queryresultbytes').text(" " + result.bytes + " bytes");
+        $('#queryresultelapsed').text(timelabel_elapsed(result.completed_at, result.executed_at));
         $('#queryresultschema').text(query_result_schema_label(result));
       }
     }
