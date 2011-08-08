@@ -24,7 +24,7 @@ function error_handle(req, res, err){
 };
 
 app.configure(function(){
-  app.use(express.logger({ format: ':date :method :url' }));
+  app.use(express.logger('default'));
   app.use(express.methodOverride());
   app.use(express.bodyParser());
   app.use(app.router);
