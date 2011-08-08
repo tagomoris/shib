@@ -191,7 +191,7 @@ function timelabel_elapsed(completed_at, executed_at){
   var minutes = Math.floor(seconds / 60);
   if (minutes < 60)
     return minutes + ' minutes';
-  return (minutes / 60) + ' hours';
+  return Math.floor(minutes / 60) + ' hours';
 };
 
 /* uri and history operation */
