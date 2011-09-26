@@ -38,7 +38,7 @@ And install libraries.
 
 Install shib code.
 
-    git clone http://github.com/tagomoris/shib
+    git clone git://github.com/tagomoris/shib.git
 
 Configure addresses of HiveServer and Kyoto Tycoon.
 
