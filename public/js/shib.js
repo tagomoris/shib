@@ -450,9 +450,11 @@ function create_queryitem_object(queryid, id_prefix){
     Information: executed_at + ', ' + keyword_primary,
     Statement: query.querystring,
     Status: query_current_state(query),
-    Etc: timelabel_elapsed(lastresult.completed_at, lastresult.executed_at) +
-      ((lastresult && lastresult.bytes && lastresult.lines &&
-        (', ' + lastresult.bytes + ' bytes, ' + lastresult.lines + ' lines')) || '')
+    Etc: query_last_result ?
+      (timelabel_elapsed(lastresult.completed_at, lastresult.executed_at) +
+       ((lastresult && lastresult.bytes && lastresult.lines &&
+         (', ' + lastresult.bytes + ' bytes, ' + lastresult.lines + ' lines')) || '')
+      ) : 'not started'
   };
 };
 
