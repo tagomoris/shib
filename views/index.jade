@@ -59,13 +59,6 @@ html
                     | show table schemas
               #querybox
                 textarea#queryeditor(rows="10")
-                  | SELECT
-                  |   (split(fullpath,'/'))[1] AS dirname,
-                  |   sum(bytes) AS totalbytes
-                  |   FROM parsed_log
-                  |   WHERE service='__KEY__' AND yyyymmdd like '201105%'
-                  |   GROUP BY dirname SORT BY totalbytes
-                  |   LIMIT 10
               #keywordbox.ui-corner-all
                 #keyword0area
                   .keywordname primary keyword
