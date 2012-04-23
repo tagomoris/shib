@@ -372,7 +372,7 @@ app.get('/download/csv/:resultid', function(req, res){
   shib.client().rawResultData(req.params.resultid, function(err, data){
     if (err) { error_handle(req, res, err); return; }
     res.attachment(req.params.resultid + '.csv');
-    var rows = data.split("\n");
+    var rows = (data || '').split("\n");
     if (rows[rows.length - 1].length < 1)
       rows.pop();
     res.send(rows.map(function(row){return SimpleCSVBuilder.build(row.split('\t'));}).join(''));
