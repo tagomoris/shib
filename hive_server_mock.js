@@ -1,5 +1,5 @@
 var thrift = require('thrift'),
-    ttransport = require('thrift/transport');
+    ttransport = require('thrift/lib/thrift/transport');
 var ThriftHive = require('gen-nodejs/ThriftHive');
 
 var mock = require('ThriftHiveMock');

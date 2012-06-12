@@ -8,15 +8,15 @@ html
     link(type="text/css", href="/css/shib.css", rel="stylesheet")
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Artifika:regular", rel="stylesheet")
     link(type="text/css", href="http://fonts.googleapis.com/css?family=Anonymous+Pro:regular,italic,bold,bolditalic", rel="stylesheet")
-    script(type="text/javascript", src="/js/jquery-1.5.1.min.js")
+    script(type="text/javascript", src="/js/jquery-1.7.2.min.js")
     script(type="text/javascript", src="/js/jquery-ui-1.8.13.custom.min.js")
     script(type="text/javascript", src="http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js")
     script(type="text/javascript", src="/js/jquery.dynatree.min.js")
     script(type="text/javascript", src="https://www.google.com/jsapi")
-    //
-      script(type="text/javascript", src="/js/shib.graphtest.js")
     script(type="text/javascript", src="/js/shib.js")
   body
+    div(style="display: none;")
+      input#detailcontrol(type="hidden", name="detailcontrol", value="#{control}")
     #titlearea
       #title
         a(href="/") shib
@@ -44,6 +44,10 @@ html
       .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
       #describes
+    #detailstatusdiag(title="query status")
+      .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
+        image(src="/image/ajax-loader.gif")
+      #detailstatus(style="display: none;")
     #mainarea
       table
         tr
@@ -59,37 +63,6 @@ html
                     | show table schemas
               #querybox
                 textarea#queryeditor(rows="10")
-              #keywordbox.ui-corner-all
-                #keyword0area
-                  .keywordname primary keyword
-                  input#keyword0.readonly(type="text", readonly)
-                #keyword1area
-                  .keywordname KEY1
-                  input#keyword1.readonly(type="text", readonly)
-                #keyword2area
-                  .keywordname KEY2
-                  input#keyword2.readonly(type="text", readonly)
-                #keyword3area
-                  .keywordname KEY3
-                  input#keyword3.readonly(type="text", readonly)
-                #keyword4area
-                  .keywordname KEY4
-                  input#keyword4.readonly(type="text", readonly)
-                #keyword5area
-                  .keywordname KEY5
-                  input#keyword5.readonly(type="text", readonly)
-                #keyword6area
-                  .keywordname KEY6
-                  input#keyword6.readonly(type="text", readonly)
-                #keyword7area
-                  .keywordname KEY7
-                  input#keyword7.readonly(type="text", readonly)
-                #keyword8area
-                  .keywordname KEY8
-                  input#keyword8.readonly(type="text", readonly)
-                #keyword9area
-                  .keywordname KEY9
-                  input#keyword9.readonly(type="text", readonly)
               #editbox.ui-corner-all
                 ul.operationitems.ui-widget.ui-helper-clearfix
                   li#new_button.ui-state-default.ui-corner-all
@@ -105,9 +78,13 @@ html
                   li#giveup_button.ui-state-default.ui-corner-all(style="display: none;")
                     span.ui-icon.ui-icon-pause
                     | give up
-                  li#rerun_button.ui-state-default.ui-corner-all(style="display: none;")
-                    span.ui-icon.ui-icon-play
-                    | re-run
+                  //
+                    li#rerun_button.ui-state-default.ui-corner-all(style="display: none;")
+                      span.ui-icon.ui-icon-play
+                      | re-run
+                  li#status_button.ui-state-default.ui-corner-all(style="display: none;")
+                    span.ui-icon.ui-icon-search
+                    | status
                   li#delete_button.ui-state-default.ui-corner-all(style="display: none;")
                     span.ui-icon.ui-icon-trash
                     | delete
@@ -134,16 +111,6 @@ html
                     span#queryresultbytes 0 bytes
                   div#queryresultelapsed
                   div#queryresultschema
-              //
-                #graphbox
-                  #chart_div
-                    #graphboxdummy ...
-                #controlbox.ui-corner-all
-                  ul#icons2.ui-widget.ui-helper-clearfix
-                    li#graph_render_execute_1.ui-state-default.ui-corner-all(title="render test graph 1")
-                      span.ui-icon.ui-icon-carat-1-n
-                    li#graph_render_execute_2.ui-state-default.ui-corner-all(title="render test graph 2")
-                      span.ui-icon.ui-icon-carat-1-ne
           td#tabviewcell
             #tabview
               #listSelector
@@ -152,11 +119,8 @@ html
                     a(href="#tab-yours") yours
                   li#index-history
                     a(href="#tab-history") history
-                  li#index-keywords
-                    a(href="#tab-keywords") keywords
                 #tab-yours
                 #tab-history
-                #tab-keywords
   #runningarea
     #runnings.ui-corner-all
       div no running queries

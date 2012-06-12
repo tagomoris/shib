@@ -1,0 +1,3 @@
+[submodule "lib/kyoto-client"]
+	path = lib/kyoto-client
+	url = git://github.com/wezm/kyoto-client.git

@@ -106,7 +106,7 @@ td#tabviewcell {margin: 0; padding: 0; vertical-align: top;}
   word-spacing: 0em;
   line-height: 1.2;
 }
-.queryitem_status {font-weight: bold;}
+.queryitem_status {font-weight: bold; width: 100%;}
 span.queryitem_etc {padding-left: 5px;}
 
 /* *** */

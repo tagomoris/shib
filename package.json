@@ -1,0 +1,45 @@
+{
+  "name": "shib",
+  "version": "0.1.0",
+  "description": "Hive Client Web Application",
+  "homepage": "https://github.com/tagomoris/shib",
+  "author": "TAGOMORI Satoshi <tagomoris@gmail.com>",
+  "keywords": [
+    "hive",
+    "hadoop"
+  ],
+  "directories": {
+    "lib": "./lib",
+    "views": "./views",
+    "public": "./public",
+    "bin": "./bin"
+  },
+  "files": [
+    "README.md",
+    "app.js",
+    "config.js"
+  ],
+  "dependencies": {
+    "csv": ">= 0.0.13",
+    "thrift": ">= 0.7.0",
+    "async": ">= 0.1.22",
+    "express": ">= 2.5.9",
+    "jade": ">= 0.26.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tagomoris/shib.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tagomoris/shib/issues"
+  },
+  "licenses": [
+    {
+      "type": "APLv2"
+    } 
+  ],
+  "scripts" : {
+    "start": "NODE_ENV=production NODE_PATH=lib node app.js"
+  },
+  "main": "app.js"
+}

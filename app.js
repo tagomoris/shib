@@ -3,6 +3,7 @@ var express = require('express'),
     async = require('async'),
     app = express.createServer();
 
+var SHOW_HISTORY_MONTH = 4;
 var MAX_ACCORDION_SIZE = 20;
 var SHOW_RESULT_HEAD_LINES = 20;
 
@@ -11,15 +12,17 @@ var SimpleCSVBuilder = require('shib/simple_csv_builder').SimpleCSVBuilder;
 
 var shib = require('shib'),
     servers = require('./config').servers;
+
+if (process.env.NODE_ENV === 'production') {
+  servers = require('./production').servers;
+}
 shib.init(servers);
 
 var runningQueries = {};
 
 function error_handle(req, res, err){
-  //TODO make log line
   console.log(err);
   console.log(err.stack);
-  //console.log({time: (new Date()), request:req, error:err});
   res.send(err, 500);
 };
 
@@ -28,6 +31,7 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.bodyParser());
   app.use(app.router);
+  app.set('view options', {layout: false});
 });
 
 app.configure('development', function(){
@@ -36,19 +40,20 @@ app.configure('development', function(){
 });
 
 app.configure('production', function(){
-  var oneYear = 31557600000;
-  app.use(express.static(__dirname + '/public', { maxAge: oneYear }));
+  var onehour = 3600;
+  app.use(express.static(__dirname + '/public', { maxAge: onehour }));
   app.use(express.errorHandler());
 });
 
 app.get('/', function(req, res){
-  // res.redirect('/index.html');
-  res.render(__dirname + '/views/index.jade', {layout: false});
+  var huahin = (shib.client().huahinClient() !== null);
+  res.render(__dirname + '/views/index.jade', {control: huahin});
 });
 
 app.get('/q/:queryid', function(req, res){
   // Only this request handler is for permalink request from browser URL bar.
-  res.render(__dirname + '/views/index.jade', {layout: false});
+  var huahin = (shib.client().huahinClient() !== null);
+  res.render(__dirname + '/views/index.jade', {control: huahin});
 });
 
 app.get('/runnings', function(req, res){
@@ -138,47 +143,31 @@ app.get('/summary_bulk', function(req, res){
   var correct_history = function(callback){
     shib.client().getHistories(function(err, list){
       if (err) {callback(err); return;}
-      this.getHistoryBulk(list, function(err, idlist){
+      var target = list.sort().slice(-1 * SHOW_HISTORY_MONTH);
+      this.getHistoryBulk(target, function(err, idlist){
         if (err) {callback(err); return;}
         var idmap = {};
         var ids = [];
-        for (var x = 0; x < list.length; x++) {
-          idmap[list[x]] = idlist[x].reverse().slice(0,MAX_ACCORDION_SIZE);
-          ids = ids.concat(idmap[list[x]]);
+        for (var x = 0, y = target.length; x < y; x++) {
+          idmap[target[x]] = idlist[x].reverse().slice(0,MAX_ACCORDION_SIZE);
+          ids = ids.concat(idmap[target[x]]);
         }
-        callback(null, {history:list.reverse(), history_ids:idmap, ids:ids});
-      });
-    });
-  };
-  var correct_keywords = function(callback){
-    shib.client().getKeywords(function(err, list){
-      if (err) {callback(err); return;}
-      this.getKeywordBulk(list, function(err, idlist){
-        if (err) {callback(err); return;}
-        var idmap = {};
-        var ids = [];
-        for (var y = 0; y < list.length; y++) {
-          idmap[list[y]] = idlist[y].reverse().slice(0,MAX_ACCORDION_SIZE);
-          ids = ids.concat(idmap[list[y]]);
-        }
-        callback(null, {keywords:list, keyword_ids:idmap, ids:ids});
+        callback(null, {history:target.reverse(), history_ids:idmap, ids:ids});
       });
     });
   };
 
-  async.parallel([correct_history, correct_keywords], function(err, results){
+  async.parallel([correct_history], function(err, results){
     if (err) {
       error_handle(req, res, err);
       return;
     }
     var response_obj = {
-      history: (results[0].history || results[1].history),
-      history_ids: (results[0].history_ids || results[1].history_ids),
-      keywords: (results[0].keywords || results[1].keywords),
-      keyword_ids: (results[0].keyword_ids || results[1].keyword_ids)
+      history: results[0].history,
+      history_ids: results[0].history_ids
     };
     var exist_ids = {};
-    response_obj.query_ids = results[0].ids.concat(results[1].ids).filter(function(v){
+    response_obj.query_ids = results[0].ids.filter(function(v){
       if (exist_ids[v]) return false;
       exist_ids[v] = true;
       return true;
@@ -188,8 +177,7 @@ app.get('/summary_bulk', function(req, res){
 });
   
 app.post('/execute', function(req, res){
-  var keywords = req.body.keywords;
-  shib.client().createQuery(req.body.querystring, keywords, function(err, query){
+  shib.client().createQuery(req.body.querystring, function(err, query){
     if (err) {
       if (err instanceof InvalidQueryError) {
         res.send(err, 400);
@@ -212,16 +200,32 @@ app.post('/giveup', function(req, res){
   var targetid = req.body.queryid;
   shib.client().query(targetid, function(err, query){
     var client = this;
-    client.giveup(query, function(){
-      delete runningQueries[query.queryid];
-      res.send(query);
-    });
+
+    if (client.huahinClient()) {
+      client.searchJob(query.queryid, function(err, jobid){
+        if (err || jobid === undefined) {
+          client.giveup(query, function(){
+            delete runningQueries[query.queryid];
+            res.send(query);
+          });
+          return;
+        }
+        client.killJob(jobid, function(err,result){
+          res.send(query);
+        });
+      });
+    }
+    else {
+      client.giveup(query, function(){
+        delete runningQueries[query.queryid];
+        res.send(query);
+      });
+    }
   });
 });
 
 app.post('/delete', function(req, res){
   var targetid = req.body.queryid;
-  var targetKeyword = req.body.keyword;
   var targetHistorySize = 5;
 
   shib.client().getHistories(function(err, histories){
@@ -230,7 +234,6 @@ app.post('/delete', function(req, res){
     var client = this;
     var targetHistories = histories.sort().reverse().slice(0, targetHistorySize); // unti-dictionary order, last 'targetHistorySize' items
     var funclist = [
-      function(callback){client.removeKeyword(targetKeyword, targetid); callback(null, 1);},
       function(callback){client.deleteQuery(targetid); callback(null, 1);}
     ].concat(targetHistories.map(function(h){return function(callback){client.removeHistory(h, targetid); callback(null, 1);};}));
     async.parallel(funclist, function(err, results){
@@ -241,44 +244,17 @@ app.post('/delete', function(req, res){
   });
 });
 
-app.post('/refresh', function(req, res){
-  shib.client().query(req.body.queryid, function(err, query){
-    if (err) { error_handle(req, res, err); return; }
-    res.send(query);
-    this.execute(query, {
-      refreshed: (query.results.length > 0), // refreshed execution or not
-      prepare: function(query){runningQueries[query.queryid] = new Date();},
-      success: function(query){delete runningQueries[query.queryid];},
-      error: function(query){delete runningQueries[query.queryid];}
-    });
-  });
-});
-
-app.get('/keywords', function(req, res){
-  shib.client().getKeywords(function(err, keywords){
-    if (err) { error_handle(req, res, err); return; }
-    res.send(keywords); /* **** */
-  });
-});
-
-app.get('/keyword/:label', function(req, res){
-  shib.client().getKeyword(req.params.label, function(err, idlist){
-    if (err) { error_handle(req, res, err); return; }
-    res.send(idlist); /* **** */
-  });
-});
-
 app.get('/histories', function(req, res){
   shib.client().getHistories(function(err, histories){
     if (err) { error_handle(req, res, err); return; }
-    res.send(histories); /* *** */
+    res.send(histories);
   });
 });
 
 app.get('/history/:label', function(req, res){
   shib.client().getHistory(req.params.label, function(err, idlist){
     if (err) { error_handle(req, res, err); return; }
-    res.send(idlist); /* **** */
+    res.send(idlist);
   });
 });
 
@@ -302,6 +278,16 @@ app.get('/status/:queryid', function(req, res){
     this.status(query, function(state){
       res.send(state);
     });
+  });
+});
+
+app.get('/detailstatus/:queryid', function(req, res){
+  shib.client().detailStatus(req.params.queryid, function(err, data){
+    if (err) { error_handle(req, res, err); return; }
+    if (data === null)
+      res.send({state:'query not found'});
+    else
+      res.send(data);
   });
 });
 
