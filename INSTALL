@@ -1,0 +1,11 @@
+# node -v #=> 0.6.xx
+# which cofee ; which cake
+# git clone git://github.com/tagomoris/shib.git
+# cd shib
+# npm install
+# git submodule update --init
+# cd lib/kyoto-client
+# cake build
+# cd ../..
+# ### generate production.js configuration file...
+# bin/shib.sh
