@@ -30,7 +30,9 @@ $(function(){
   );
 
   $('#tables_diag').click(function(event){show_tables_dialog();});
+  $('#table_dbname').change(function(event){show_tables_dialog();});
   $('#describe_diag').click(function(event){show_describe_dialog();});
+  $('#desc_dbname').change(function(event){show_describe_dialog();});
 
   $('#new_button').click(initiate_mainview);
   $('#copy_button').click(copy_selected_query);
@@ -279,7 +281,12 @@ function show_tables_dialog() {
     .hide();
   $('#tablesdiag').dialog({modal:true, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
   $('#tablesdiag .loadingimg').show();
-  $.get('/tables', function(data){
+  var dbname = null;
+  if ($('#table_dbname').val()) {
+    dbname = $('#table_dbname').val();
+  }
+  var get_path = (dbname ? '/tables?db=' + dbname : '/tables');
+  $.get(get_path, function(data){
     $('#tablesdiag .loadingimg').hide();
     $('#tables')
       .show()
@@ -290,9 +297,11 @@ function show_tables_dialog() {
         clickFolderMode: 2,
         activeVisible: false,
         onLazyRead: function(node){
+          var datahash = {key: node.data.key};
+          if (dbname) { datahash.db = dbname; }
           node.appendAjax({
             url: '/partitions',
-            data: {key: node.data.key},
+            data: datahash,
             cache: false
           });
         }
@@ -307,7 +316,12 @@ function show_describe_dialog() {
     .hide();
   $('#describediag').dialog({modal:true, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
   $('#describediag .loadingimg').show();
-  $.get('/tables', function(data){
+  var dbname = null;
+  if ($('#desc_dbname').val()) {
+    dbname = $('#desc_dbname').val();
+  }
+  var get_path = (dbname ? '/tables?db=' + dbname : '/tables');
+  $.get(get_path, function(data){
     $('#describediag .loadingimg').hide();
     $('#describes')
       .show()
@@ -318,9 +332,11 @@ function show_describe_dialog() {
         clickFolderMode: 2,
         activeVisible: false,
         onLazyRead: function(node){
+          var datahash = {key: node.data.key};
+          if (dbname) { datahash.db = dbname; }
           node.appendAjax({
             url: '/describe',
-            data: {key: node.data.key},
+            data: datahash,
             cache: false
           });
         }

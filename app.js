@@ -46,8 +46,18 @@ app.configure('production', function(){
 });
 
 app.get('/', function(req, res){
-  var huahin = (shib.client().huahinClient() !== null);
-  res.render(__dirname + '/views/index.jade', {control: huahin});
+  var client = shib.client();
+  var huahin = (client.huahinClient() !== null);
+  var defaultdb = client.default_database || null;
+  if (defaultdb) {
+    client.executeSystemStatement('show databases', function(err, result){
+      if (err) { result = [defaultdb]; }
+      res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:defaultdb, databases:result});
+    });
+  }
+  else {
+    res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:null});
+  }
 });
 
 app.get('/q/:queryid', function(req, res){
@@ -75,67 +85,79 @@ app.get('/runnings', function(req, res){
 });
 
 app.get('/tables', function(req, res){
-  shib.client().executeSystemStatement('show tables', function(err, result){
+  var database = req.query.db;
+  shib.client().useDatabase(database, function(err, client){
     if (err) { error_handle(req, res, err); return; }
-    res.send(result);
+    client.executeSystemStatement('show tables', function(err, result){
+      if (err) { error_handle(req, res, err); return; }
+      res.send(result);
+    });
   });
 });
 
 app.get('/partitions', function(req, res){
+  var database = req.query.db;
   var tablename = req.query.key;
   if (/^[a-z0-9_]+$/i.exec(tablename) == null) {
     error_handle(req, res, {message: 'invalid tablename for show partitions: ' + tablename});
     return;
   }
-  shib.client().executeSystemStatement('show partitions ' + tablename, function(err, result){
+  shib.client().useDatabase(database, function(err, client){
     if (err) { error_handle(req, res, err); return; }
-    var response_obj = [];
-    var treenodes = {};
-    
-    var create_node = function(partition, hasChildren){
-      if (treenodes[partition])
-        return treenodes[partition];
-      var parts = partition.split('/');
-      var leafName = parts.pop();
-      var node = {title: leafName};
-      if (hasChildren) {
-        node.children = [];
-      }
-      if (parts.length > 0) {
-        var parent = create_node(parts.join('/'), true);
-        parent.children.push(node);
-      }
-      else {
-        response_obj.push(node);
-      }
-      treenodes[partition] = node;
-      return node;
-    };
+    client.executeSystemStatement('show partitions ' + tablename, function(err, result){
+      if (err) { error_handle(req, res, err); return; }
+      var response_obj = [];
+      var treenodes = {};
 
-    result.forEach(function(partition){
-      create_node(partition);
+      var create_node = function(partition, hasChildren){
+        if (treenodes[partition])
+          return treenodes[partition];
+        var parts = partition.split('/');
+        var leafName = parts.pop();
+        var node = {title: leafName};
+        if (hasChildren) {
+          node.children = [];
+        }
+        if (parts.length > 0) {
+          var parent = create_node(parts.join('/'), true);
+          parent.children.push(node);
+        }
+        else {
+          response_obj.push(node);
+        }
+        treenodes[partition] = node;
+        return node;
+      };
+
+      result.forEach(function(partition){
+        create_node(partition);
+      });
+      res.send(response_obj);
     });
-    res.send(response_obj);
   });
 });
 
 var describe_node_template = 'tr\n  td= colname\n  td= coltype\n  td= colcomment\n';
 
 app.get('/describe', function(req, res){
+  var database = req.query.db;
   var tablename = req.query.key;
   if (/^[a-z0-9_]+$/i.exec(tablename) == null) {
     error_handle(req, res, {message: 'invalid tablename for show partitions: ' + tablename});
     return;
   }
   var fn = jade.compile(describe_node_template);
-  shib.client().executeSystemStatement('describe ' + tablename, function(err, result){
+  shib.client().useDatabase(database, function(err, client){
     if (err) { error_handle(req, res, err); return; }
-    var response_title = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
-    result.forEach(function(row){
-      var cols = row.split('\t');
-      response_title += fn.call(this, {colname: cols[0], coltype: cols[1], colcomment: cols[2]});
+    client.executeSystemStatement('describe ' + tablename, function(err, result){
+      if (err) { error_handle(req, res, err); return; }
+      var response_title = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
+      result.forEach(function(row){
+        var cols = row.split('\t');
+        response_title += fn.call(this, {colname: cols[0], coltype: cols[1], colcomment: cols[2]});
+      });
+      res.send([{title: '<table>' + response_title + '</table>'}]);
     });
-    res.send([{title: '<table>' + response_title + '</table>'}]);
   });
 });
 
