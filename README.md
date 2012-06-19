@@ -19,7 +19,7 @@ Some extension features are supported:
 
 You should run HiveServer at any server near your hadoop cluster.
 
-    hive --service hiveserver
+    $ hive --service hiveserver
 
 ### Kyoto Tycoon
 
@@ -27,38 +27,46 @@ At first, you should install Kyoto Tycoon. See http://fallabs.com/kyototycoon/ .
 
 and yuu can run ktserver on localhost with bin/ktserver.sh.
 
-    bin/ktserver.sh
+    $ bin/ktserver.sh
 
 ### Node.js and libraries
 
-To run shib, you must install node.js v0.6.x. At now, nvm and npm is good. See https://github.com/creationix/nvm .
+To run shib, you must install node.js v0.6.x (and coffee-script for setup). At now, nvm and npm is good. See https://github.com/creationix/nvm .
 
-    git clone git://github.com/creationix/nvm.git ~/.nvm
-    . ~/.nvm/nvm.sh
-    nvm install <VERSION>
+    $ git clone git://github.com/creationix/nvm.git ~/.nvm
+    $ . ~/.nvm/nvm.sh
+    $ nvm install <VERSION>
 
 ### shib
 
 Install shib code.
 
-    git clone git://github.com/tagomoris/shib.git
+    $ git clone git://github.com/tagomoris/shib.git
 
-Install libraries, configure addresses of HiveServer and Kyoto Tycoon (and other specifications).
+Install libraries, build kyoto-client, configure addresses of HiveServer and Kyoto Tycoon (and other specifications).
 
-    cd shib
-    npm install
-    vi config.js
+    $ cd shib
+    $ npm coffee-script
+    $ git submodule update --init
+    
+    $ cd lib/kyoto-client
+    (kyoto-client)$ npm install
+    (kyoto-client)$ cake build
+    (kyoto-client)$ cd ../..
+    
+    $ npm install
+    $ vi config.js
 
 And run.
 
-    bin/ktserver.sh
-    node app.js
+    $ bin/ktserver.sh
+    $ NODE_PATH=lib node app.js
 
 Shib listens on port 3000. see http://localhost:3000/
 
 You can also run shib with command below for 'production' environment, with production configuration file 'production.js':
 
-    npm start
+    $ npm start
 
 ## Configuration
 
