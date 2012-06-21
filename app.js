@@ -53,12 +53,13 @@ app.get('/', function(req, res){
     client.executeSystemStatement('show databases', function(err, result){
       if (err) { result = [defaultdb]; }
       res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:defaultdb, databases:result});
+      client.end();
     });
   }
   else {
     res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:null});
+    client.end();
   }
-  client.end();
 });
 
 app.get('/q/:queryid', function(req, res){
