@@ -58,11 +58,14 @@ app.get('/', function(req, res){
   else {
     res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:null});
   }
+  client.end();
 });
 
 app.get('/q/:queryid', function(req, res){
+  var client = shib.client();
   // Only this request handler is for permalink request from browser URL bar.
-  var huahin = (shib.client().huahinClient() !== null);
+  var huahin = (client.huahinClient() !== null);
+  client.end();
   res.render(__dirname + '/views/index.jade', {control: huahin});
 });
 
@@ -86,11 +89,13 @@ app.get('/runnings', function(req, res){
 
 app.get('/tables', function(req, res){
   var database = req.query.db;
-  shib.client().useDatabase(database, function(err, client){
-    if (err) { error_handle(req, res, err); return; }
+  var client = shib.client();
+  client.useDatabase(database, function(err, client){
+    if (err) { error_handle(req, res, err); client.end(); return; }
     client.executeSystemStatement('show tables', function(err, result){
-      if (err) { error_handle(req, res, err); return; }
+      if (err) { error_handle(req, res, err); this.end(); return; }
       res.send(result);
+      client.end();
     });
   });
 });
@@ -102,10 +107,11 @@ app.get('/partitions', function(req, res){
     error_handle(req, res, {message: 'invalid tablename for show partitions: ' + tablename});
     return;
   }
-  shib.client().useDatabase(database, function(err, client){
-    if (err) { error_handle(req, res, err); return; }
+  var client = shib.client();
+  client.useDatabase(database, function(err, client){
+    if (err) { error_handle(req, res, err); client.end(); return; }
     client.executeSystemStatement('show partitions ' + tablename, function(err, result){
-      if (err) { error_handle(req, res, err); return; }
+      if (err) { error_handle(req, res, err); this.end(); return; }
       var response_obj = [];
       var treenodes = {};
 
@@ -133,6 +139,7 @@ app.get('/partitions', function(req, res){
         create_node(partition);
       });
       res.send(response_obj);
+      client.end();
     });
   });
 });
@@ -147,27 +154,30 @@ app.get('/describe', function(req, res){
     return;
   }
   var fn = jade.compile(describe_node_template);
-  shib.client().useDatabase(database, function(err, client){
-    if (err) { error_handle(req, res, err); return; }
+  var client = shib.client();
+  client.useDatabase(database, function(err, client){
+    if (err) { error_handle(req, res, err); client.end(); return; }
     client.executeSystemStatement('describe ' + tablename, function(err, result){
-      if (err) { error_handle(req, res, err); return; }
+      if (err) { error_handle(req, res, err); client.end(); return; }
       var response_title = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
       result.forEach(function(row){
         var cols = row.split('\t');
         response_title += fn.call(this, {colname: cols[0], coltype: cols[1], colcomment: cols[2]});
       });
       res.send([{title: '<table>' + response_title + '</table>'}]);
+      client.end();
     });
   });
 });
 
 app.get('/summary_bulk', function(req, res){
   var correct_history = function(callback){
-    shib.client().getHistories(function(err, list){
-      if (err) {callback(err); return;}
+    var client = shib.client();
+    client.getHistories(function(err, list){
+      if (err) {callback(err); this.end(); return;}
       var target = list.sort().slice(-1 * SHOW_HISTORY_MONTH);
       this.getHistoryBulk(target, function(err, idlist){
-        if (err) {callback(err); return;}
+        if (err) {callback(err); this.end(); return;}
         var idmap = {};
         var ids = [];
         for (var x = 0, y = target.length; x < y; x++) {
@@ -175,6 +185,7 @@ app.get('/summary_bulk', function(req, res){
           ids = ids.concat(idmap[target[x]]);
         }
         callback(null, {history:target.reverse(), history_ids:idmap, ids:ids});
+        client.end();
       });
     });
   };
@@ -199,10 +210,12 @@ app.get('/summary_bulk', function(req, res){
 });
   
 app.post('/execute', function(req, res){
-  shib.client().createQuery(req.body.querystring, function(err, query){
+  var client = shib.client();
+  client.createQuery(req.body.querystring, function(err, query){
     if (err) {
       if (err instanceof InvalidQueryError) {
         res.send(err, 400);
+        this.end();
         return;
       }
       error_handle(req, res, err); return;
@@ -211,16 +224,17 @@ app.post('/execute', function(req, res){
     this.execute(query, {
       refreshed: (query.results.length > 0), // refreshed execution or not
       prepare: function(query){runningQueries[query.queryid] = new Date();},
-      success: function(query){delete runningQueries[query.queryid];},
-      error: function(query){delete runningQueries[query.queryid];},
-      broken: function(query){return (! runningQueries[query.queryid]);}
+      success: function(query){delete runningQueries[query.queryid]; client.end();},
+      error: function(query){delete runningQueries[query.queryid]; client.end();},
+      broken: function(query){return (! runningQueries[query.queryid]); client.end();}
     });
   });
 });
 
 app.post('/giveup', function(req, res){
   var targetid = req.body.queryid;
-  shib.client().query(targetid, function(err, query){
+  var client = shib.client();
+  client.query(targetid, function(err, query){
     var client = this;
 
     if (client.huahinClient()) {
@@ -229,11 +243,13 @@ app.post('/giveup', function(req, res){
           client.giveup(query, function(){
             delete runningQueries[query.queryid];
             res.send(query);
+            client.end();
           });
           return;
         }
         client.killJob(jobid, function(err,result){
           res.send(query);
+          client.end();
         });
       });
     }
@@ -241,6 +257,7 @@ app.post('/giveup', function(req, res){
       client.giveup(query, function(){
         delete runningQueries[query.queryid];
         res.send(query);
+        client.end();
       });
     }
   });
@@ -250,7 +267,8 @@ app.post('/delete', function(req, res){
   var targetid = req.body.queryid;
   var targetHistorySize = 5;
 
-  shib.client().getHistories(function(err, histories){
+  var client = shib.client();
+  client.getHistories(function(err, histories){
     if (err)
       histories = [];
     var client = this;
@@ -259,95 +277,108 @@ app.post('/delete', function(req, res){
       function(callback){client.deleteQuery(targetid); callback(null, 1);}
     ].concat(targetHistories.map(function(h){return function(callback){client.removeHistory(h, targetid); callback(null, 1);};}));
     async.parallel(funclist, function(err, results){
-      if (err) {error_handle(req, res, err); return;}
+      if (err) {error_handle(req, res, err); client.end(); return;}
       delete runningQueries[targetid];
       res.send({result:'ok'});
+      client.end();
     });
   });
 });
 
 app.get('/histories', function(req, res){
   shib.client().getHistories(function(err, histories){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(histories);
+    this.end();
   });
 });
 
 app.get('/history/:label', function(req, res){
   shib.client().getHistory(req.params.label, function(err, idlist){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(idlist);
+    this.end();
   });
 });
 
 app.get('/query/:queryid', function(req, res){
   shib.client().query(req.params.queryid, function(err, query){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(query);
+    this.end();
   });
 });
 
 app.post('/queries', function(req, res){
   shib.client().queries(req.body.ids, function(err, queries){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({queries: queries});
+    this.end();
   });
 });
 
 app.get('/status/:queryid', function(req, res){
   shib.client().query(req.params.queryid, function(err, query){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     this.status(query, function(state){
       res.send(state);
+      this.end();
     });
   });
 });
 
 app.get('/detailstatus/:queryid', function(req, res){
   shib.client().detailStatus(req.params.queryid, function(err, data){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     if (data === null)
       res.send({state:'query not found'});
     else
       res.send(data);
+    this.end();
   });
 });
 
 app.get('/lastresult/:queryid', function(req, res){
   shib.client().query(req.params.queryid, function(err, query){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     this.getLastResult(query, function(err, result){
-      if (err) { error_handle(req, res, err); return; }
+      if (err) { error_handle(req, res, err); this.end(); return; }
       res.send(result);
+      this.end();
     });
   });
 });
 
 app.get('/result/:resultid', function(req, res){
   shib.client().result(req.params.resultid, function(err, result){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(result);
+    this.end();
   });
 });
 
 app.post('/results', function(req, res){
   shib.client().results(req.body.ids, function(err, results){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({results: results});
+    this.end();
   });
 });
 
 app.get('/show/full/:resultid', function(req, res){
   shib.client().rawResultData(req.params.resultid, function(err, data){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(data);
+    this.end();
   });
 });
+
 app.get('/show/head/:resultid', function(req, res){
   shib.client().rawResultData(req.params.resultid, function(err, data){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     if (! data) {
       res.send(null);
+      this.end();
       return;
     }
     var headdata = [];
@@ -367,23 +398,28 @@ app.get('/show/head/:resultid', function(req, res){
       }
     }
     res.send(headdata.join(''));
+    this.end();
   });
 });
+
 app.get('/download/tsv/:resultid', function(req, res){
   shib.client().rawResultData(req.params.resultid, function(err, data){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.attachment(req.params.resultid + '.tsv');
     res.send(data);
+    this.end();
   });
 });
+
 app.get('/download/csv/:resultid', function(req, res){
   shib.client().rawResultData(req.params.resultid, function(err, data){
-    if (err) { error_handle(req, res, err); return; }
+    if (err) { error_handle(req, res, err); this.end(); return; }
     res.attachment(req.params.resultid + '.csv');
     var rows = (data || '').split("\n");
     if (rows[rows.length - 1].length < 1)
       rows.pop();
     res.send(rows.map(function(row){return SimpleCSVBuilder.build(row.split('\t'));}).join(''));
+    this.end();
   });
 });
 
