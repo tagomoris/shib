@@ -66,8 +66,18 @@ app.get('/q/:queryid', function(req, res){
   var client = shib.client();
   // Only this request handler is for permalink request from browser URL bar.
   var huahin = (client.huahinClient() !== null);
-  client.end();
-  res.render(__dirname + '/views/index.jade', {control: huahin});
+  var defaultdb = client.default_database || null;
+  if (defaultdb) {
+    client.executeSystemStatement('show databases', function(err, result){
+      if (err) { result = [defaultdb]; }
+      res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:defaultdb, databases:result});
+      client.end();
+    });
+  }
+  else {
+    res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:null});
+    client.end();
+  }
 });
 
 app.get('/runnings', function(req, res){
