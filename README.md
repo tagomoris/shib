@@ -6,6 +6,8 @@
 
 'shib' is hive client application for HiveServer, run as web application on Node.js (v0.6.x) and Kyoto Tycoon.
 
+***'shib' requires node.js v0.6.x, because of 'sys' built-in module dependency of Apache Thrift (0.8.0). ***
+
 Some extension features are supported:
 
 * Huahin-Manager (Job Controller Proxy with HTTP API) support: Kill hive mapreduce job correctly from shib, with Huahin-Manager
