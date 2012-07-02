@@ -354,7 +354,12 @@ app.get('/lastresult/:queryid', function(req, res){
     if (err) { error_handle(req, res, err); this.end(); return; }
     this.getLastResult(query, function(err, result){
       if (err) { error_handle(req, res, err); this.end(); return; }
-      res.send(result);
+      if (result === null) {
+        res.send(404);
+      }
+      else {
+        res.send(result);
+      }
       this.end();
     });
   });
