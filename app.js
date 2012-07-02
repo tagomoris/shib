@@ -342,7 +342,7 @@ app.get('/detailstatus/:queryid', function(req, res){
   shib.client().detailStatus(req.params.queryid, function(err, data){
     if (err) { error_handle(req, res, err); this.end(); return; }
     if (data === null)
-      res.send({state:'query not found'});
+      res.send('query not found', 404);
     else
       res.send(data);
     this.end();
@@ -352,14 +352,17 @@ app.get('/detailstatus/:queryid', function(req, res){
 app.get('/lastresult/:queryid', function(req, res){
   shib.client().query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
+    if (query === null) {
+      res.send('query not found', 404);
+      this.end();
+      return;
+    }
     this.getLastResult(query, function(err, result){
       if (err) { error_handle(req, res, err); this.end(); return; }
-      if (result === null) {
-        res.send(404);
-      }
-      else {
+      if (result === null)
+        res.send('result not found', 404);
+      else
         res.send(result);
-      }
       this.end();
     });
   });
