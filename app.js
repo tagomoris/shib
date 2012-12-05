@@ -107,7 +107,7 @@ app.get('/tables', function(req, res){
   var database = req.query.db;
   var client = shib.client();
   client.useDatabase(database, function(err, client){
-    if (err) { error_handle(req, res, err); client.end(); return; }
+    if (err) { error_handle(req, res, err); if (client.end) client.end(); return; }
     client.executeSystemStatement('show tables', function(err, result){
       if (err) { error_handle(req, res, err); this.end(); return; }
       res.send(result);
