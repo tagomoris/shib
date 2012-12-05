@@ -62,10 +62,12 @@ function load_database_list() {
 
     var defaultdb = $('select#table_dbname').data('defaultdb');
     $('select#table_dbname,select#desc_dbname').empty();
-    var dbs = $.tmpl('databasesTemplate',
-                     data.map(function(dbname){ return {Dbname:dbname, Selected:(defaultdb === dbname ? 'selected' : '')}; }));
-    dbs.appendTo('select#table_dbname');
-    dbs.appendTo('select#desc_dbname');
+    $.tmpl('databasesTemplate',
+           data.map(function(dbname){ return {Dbname:dbname, Selected:(defaultdb === dbname ? 'selected' : '')}; })
+          ).appendTo('select#table_dbname');
+    $.tmpl('databasesTemplate',
+           data.map(function(dbname){ return {Dbname:dbname, Selected:(defaultdb === dbname ? 'selected' : '')}; })
+          ).appendTo('select#desc_dbname');
   });
 };
 
