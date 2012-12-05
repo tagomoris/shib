@@ -16,6 +16,10 @@ $(function(){
     shibdetailcontrol = true;
   }
 
+  if ($('select#table_dbname').size() > 0) {
+    load_database_list();
+  }
+
   load_tabs({callback:function(){
     follow_current_uri();
     setInterval(check_selected_running_query_state, shib_QUERY_STATUS_CHECK_INTERVAL);
@@ -47,6 +51,23 @@ $(function(){
   $('#download_csv_button').click(function(){download_result_query({format:'csv'});});
 
 });
+
+/* database list loading (just after page loading) */
+
+$.template("databasesTemplate",
+           '<option ${Selected}>${Dbname}</option>');
+function load_database_list() {
+  $.get('/databases?=' + (new Date()).getTime(), function(data){
+    if (data.length < 1) return;
+
+    var defaultdb = $('select#table_dbname').data('defaultdb');
+    $('select#table_dbname,select#desc_dbname').empty();
+    var dbs = $.tmpl('databasesTemplate',
+                     data.map(function(dbname){ return {Dbname:dbname, Selected:(defaultdb === dbname ? 'selected' : '')}; }));
+    dbs.appendTo('select#table_dbname');
+    dbs.appendTo('select#desc_dbname');
+  });
+};
 
 /* basic data operations */
 
@@ -896,4 +917,3 @@ function download_result_query(opts) { /* opts: {format:tsv/csv} */
   }
   window.location = '/download/' + format + '/' + query_last_done_result(shibselectedquery).resultid;
 };
-

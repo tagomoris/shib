@@ -49,15 +49,20 @@ app.get('/', function(req, res){
   var client = shib.client();
   var huahin = (client.huahinClient() !== null);
   var defaultdb = client.default_database || null;
-  if (defaultdb) {
+  res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:defaultdb});
+  client.end();
+});
+
+app.get('/databases', function(req, res){
+  var client = shib.client();
+  if (client.default_database) {
     client.executeSystemStatement('show databases', function(err, result){
-      if (err) { result = [defaultdb]; }
-      res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:defaultdb, databases:result});
+      if (err) { result = [client.default_database]; }
+      res.send(result);
       client.end();
     });
-  }
-  else {
-    res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:null});
+  } else {
+    res.send([]);
     client.end();
   }
 });
