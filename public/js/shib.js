@@ -16,10 +16,6 @@ $(function(){
     shibdetailcontrol = true;
   }
 
-  if ($('select#table_dbname').size() > 0) {
-    load_database_list();
-  }
-
   load_tabs({callback:function(){
     follow_current_uri();
     setInterval(check_selected_running_query_state, shib_QUERY_STATUS_CHECK_INTERVAL);
@@ -33,10 +29,19 @@ $(function(){
     function() { $(this).removeClass('ui-state-hover'); }
   );
 
-  $('#tables_diag').click(function(event){show_tables_dialog();});
-  $('#table_dbname').change(function(event){show_tables_dialog();});
-  $('#describe_diag').click(function(event){show_describe_dialog();});
-  $('#desc_dbname').change(function(event){show_describe_dialog();});
+  if ($('select#table_dbname').size() > 0) {
+    $('#tables_diag,#describe_diag').css('text-decoration', 'line-through');
+    load_database_list(function(){
+      $('#tables_diag').click(function(event){show_tables_dialog();});
+      $('#table_dbname').change(function(event){show_tables_dialog();});
+      $('#describe_diag').click(function(event){show_describe_dialog();});
+      $('#desc_dbname').change(function(event){show_describe_dialog();});
+      $('#tables_diag,#describe_diag').css('text-decoration', '');
+    });
+  } else {
+    $('#tables_diag').click(function(event){show_tables_dialog();});
+    $('#describe_diag').click(function(event){show_describe_dialog();});
+  }
 
   $('#new_button').click(initiate_mainview);
   $('#copy_button').click(copy_selected_query);
@@ -56,7 +61,7 @@ $(function(){
 
 $.template("databasesTemplate",
            '<option ${Selected}>${Dbname}</option>');
-function load_database_list() {
+function load_database_list(callback) {
   $.get('/databases?=' + (new Date()).getTime(), function(data){
     if (data.length < 1) return;
 
@@ -68,6 +73,7 @@ function load_database_list() {
     $.tmpl('databasesTemplate',
            data.map(function(dbname){ return {Dbname:dbname, Selected:(defaultdb === dbname ? 'selected' : '')}; })
           ).appendTo('select#desc_dbname');
+    callback();
   });
 };
 
