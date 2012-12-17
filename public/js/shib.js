@@ -30,13 +30,17 @@ $(function(){
   );
 
   if ($('select#table_dbname').size() > 0) {
-    $('#tables_diag,#describe_diag').css('text-decoration', 'line-through');
+    $('#tables_diag,#describe_diag')
+      .css('text-decoration', 'line-through')
+      .css('cursor', 'wait');
     load_database_list(function(){
       $('#tables_diag').click(function(event){show_tables_dialog();});
       $('#table_dbname').change(function(event){show_tables_dialog();});
       $('#describe_diag').click(function(event){show_describe_dialog();});
       $('#desc_dbname').change(function(event){show_describe_dialog();});
-      $('#tables_diag,#describe_diag').css('text-decoration', '');
+      $('#tables_diag,#describe_diag')
+        .css('text-decoration', '')
+        .css('cursor', 'pointer');
     });
   } else {
     $('#tables_diag').click(function(event){show_tables_dialog();});
