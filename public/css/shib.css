@@ -33,17 +33,16 @@ span.status_re-running {font-weight: bold; color: orange;}
 #title a {
     text-decoration: none; color: black;
 }
-#subtitle {
-    font-family: 'Artifika', serif; font-size: 18px; font-style: normal; font-weight: 400;
-    text-align:center; text-shadow: none; text-decoration: none; text-transform: none;
+span#subtitle {
+    font-size: 18px; font-style: normal; font-weight: 400;
     letter-spacing: 0em; word-spacing: 0em; line-height: 1.2;
 }
 
-#noticearea {width: 50%; height: 5em; margin: 15px auto 15px auto;}
+#noticearea {width: 50%; height: 5em; margin: 0px auto 2px auto;}
 
-#mainarea {position: relative; max-width: 980px; min-width: 550px; margin: -15px auto; }
+#mainarea {position: relative; max-width: 980px; min-width: 750px; margin: -15px auto; }
 td#mainviewcell {margin: 0; padding: 0; vertical-align: top;}
-#mainview {display: block; position: relative; clear: both; max-width: 550px; width: 550px; margin-right: 0px;}
+#mainview {display: block; position: relative; clear: both; max-width: 560px; width: 560px; margin-right: 0px;}
 td#tabviewcell {margin: 0; padding: 0; vertical-align: top;}
 #tabview {display: block; position: relative; clear: both; max-width: 420px; width: 420px; margin-left: 10px;}
 
