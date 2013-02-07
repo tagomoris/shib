@@ -121,6 +121,10 @@ var getQueryPlan = function(success){
   success(query_plan);
 };
 
+var clean = function(success){
+  success();
+};
+
 var server_mock = thrift.createServer(ThriftHive, {
   getClusterStatus: getClusterStatus,
   execute: execute,
@@ -129,6 +133,7 @@ var server_mock = thrift.createServer(ThriftHive, {
   fetchAll: fetchAll,
   getSchema: getSchema,
   getThriftSchema: getThriftSchema,
-  getQueryPlan: getQueryPlan
+  getQueryPlan: getQueryPlan,
+  clean: clean
 }, {transport: ttransport.TBufferedTransport});
 server_mock.listen(10000);
