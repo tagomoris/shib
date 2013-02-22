@@ -459,7 +459,7 @@ function load_tabs(opts) {
     shibdata.result_cache = {};
 
     /* query_ids == sum of values of history_ids */
-    load_queries(data.query_ids, function(queries){
+    load_queries(data.query_ids, function(err, queries){
       var resultids = [];
       queries.forEach(function(v){
         if (v.results && v.results.length > 0)
@@ -472,7 +472,7 @@ function load_tabs(opts) {
         callback();
         return;
       }
-      load_results(resultids, function(results){callback();});
+      load_results(resultids, function(err, results){callback();});
     });
   });
 };
@@ -708,6 +708,9 @@ function change_editbox_querystatus_style(state, result){
 /* query and result load/reload/caching */
 
 function load_queries(queryids, callback){
+  if (queryids.length < 1) {
+    callback(null); return;
+  }
   $.ajax({
     url: '/queries',
     type: 'POST',
@@ -718,12 +721,15 @@ function load_queries(queryids, callback){
         shibdata.query_cache[query1.queryid] = query1;
       });
       if (callback)
-        callback(data.queries);
+        callback(null, data.queries);
     }
   });
 };
 
 function load_results(resultids, callback){
+  if (resultids.length < 1) {
+    callback(null); return;
+  }
   $.ajax({
     url: '/results',
     type: 'POST',
@@ -736,7 +742,7 @@ function load_results(resultids, callback){
         shibdata.result_cache[result1.resultid] = result1;
       });
       if (callback)
-        callback(data.results);
+        callback(null, data.results);
     }
   });
 };
@@ -863,7 +869,7 @@ function giveup_query() {
       show_info('Query gived-up', '');
       shibdata.query_cache[query.queryid] = query;
       shibdata.query_state_cache[query.queryid] = 'error';
-      load_results(query.results.map(function(v){return v.resultid;}), function(){
+      load_results(query.results.map(function(v){return v.resultid;}), function(err){
         update_mainview(query);
         load_tabs({reload:true});
       });
