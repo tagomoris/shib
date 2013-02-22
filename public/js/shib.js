@@ -709,7 +709,7 @@ function change_editbox_querystatus_style(state, result){
 
 function load_queries(queryids, callback){
   if (queryids.length < 1) {
-    callback(null); return;
+    callback(null, []); return;
   }
   $.ajax({
     url: '/queries',
@@ -728,7 +728,7 @@ function load_queries(queryids, callback){
 
 function load_results(resultids, callback){
   if (resultids.length < 1) {
-    callback(null); return;
+    callback(null, []); return;
   }
   $.ajax({
     url: '/results',
