@@ -199,8 +199,8 @@ app.get('/summary_bulk', function(req, res){
         history_ids[month] = [];
       history_ids[month].push(row.queryid);
       query_ids.push(row.queryid);
-      cb(null);
     });
+    cb(null);
   };
   var queryUnique = function(cb){
     var exist_ids = {};
