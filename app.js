@@ -3,8 +3,7 @@ var express = require('express'),
     async = require('async'),
     app = express.createServer();
 
-var SHOW_HISTORY_MONTH = 4;
-var MAX_ACCORDION_SIZE = 20;
+var RECENT_FETCHES = 50;
 var SHOW_RESULT_HEAD_LINES = 20;
 
 var InvalidQueryError = require('shib/query').InvalidQueryError;
@@ -178,41 +177,40 @@ app.get('/describe', function(req, res){
 });
 
 app.get('/summary_bulk', function(req, res){
-  var correct_history = function(callback){
-    var client = shib.client();
-    client.getHistories(function(err, list){
-      if (err) {callback(err); this.end(); return;}
-      var target = list.sort().slice(-1 * SHOW_HISTORY_MONTH);
-      this.getHistoryBulk(target, function(err, idlist){
-        if (err) {callback(err); this.end(); return;}
-        var idmap = {};
-        var ids = [];
-        for (var x = 0, y = target.length; x < y; x++) {
-          idmap[target[x]] = idlist[x].reverse().slice(0,MAX_ACCORDION_SIZE);
-          ids = ids.concat(idmap[target[x]]);
-        }
-        callback(null, {history:target.reverse(), history_ids:idmap, ids:ids});
-        client.end();
-      });
+  var client = shib.client();
+
+  var history_queries;
+  var history = [];     /* ["201302", "201301", "201212", "201211"] */
+  var history_ids = {}; /* {"201302":[query_ids], "201301":[query_ids], ...} */
+  var query_ids = [];   /* [query_ids of all months] */
+  var fetchRecent = function(cb){
+    client.recentQueries(RECENT_FETCHES, function(err, list){ // list: [{yyyymm:...., queryid:....}]
+      if (err) { cb(err); return; }
+      history_queries = list;
+      cb(null);
     });
   };
-
-  async.parallel([correct_history], function(err, results){
-    if (err) {
-      error_handle(req, res, err);
-      return;
-    }
-    var response_obj = {
-      history: results[0].history,
-      history_ids: results[0].history_ids
-    };
-    var exist_ids = {};
-    response_obj.query_ids = results[0].ids.filter(function(v){
-      if (exist_ids[v]) return false;
-      exist_ids[v] = true;
-      return true;
+  var bundleMonths = function(cb){ // [{yyyymm:...,queryid:....}] => {yyyymm:[queryids], yyyymm:[queryids]}
+    history_queries.forEach(function(row){
+      var month = row.yyyymm;
+      if (query_ids.indexOf(month) < 0)
+        history.push(month);
+      if (! history_ids[month])
+        history_ids[month] = [];
+      history_ids[month].push(row.queryid);
+      query_ids.push(row.queryid);
+      cb(null);
     });
-    res.send(response_obj);
+  };
+  var queryUnique = function(cb){
+    var exist_ids = {};
+    query_ids = query_ids.filter(function(id){ if (exist_ids[id]) return false; exist_ids[id] = true; return true;});
+    cb(null);
+  };
+
+  async.series([fetchRecent, bundleMonths, queryUnique], function(err, results){
+    if (err) { error_handle(req, res, err); return; }
+    res.send({history: history, history_ids: history_ids, query_ids: query_ids});
   });
 });
   
@@ -292,6 +290,7 @@ app.post('/delete', function(req, res){
   });
 });
 
+/*
 app.get('/histories', function(req, res){
   shib.client().getHistories(function(err, histories){
     if (err) { error_handle(req, res, err); this.end(); return; }
@@ -299,14 +298,18 @@ app.get('/histories', function(req, res){
     this.end();
   });
 });
+ */
 
+/*
 app.get('/history/:label', function(req, res){
+  //TODO: rewrite - or - delete ?
   shib.client().getHistory(req.params.label, function(err, idlist){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(idlist);
     this.end();
   });
 });
+ */
 
 app.get('/query/:queryid', function(req, res){
   shib.client().query(req.params.queryid, function(err, query){

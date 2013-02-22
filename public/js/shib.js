@@ -452,12 +452,13 @@ function load_tabs(opts) {
       opts.callback();
   };
   $.getJSON('/summary_bulk', function(data){
-    shibdata.history = data.history;
-    shibdata.history_ids = data.history_ids;
+    shibdata.history = data.history; /* ["201302", "201301", "201212", "201211"] */
+    shibdata.history_ids = data.history_ids; /* {"201302":[query_ids], "201301":[query_ids], ...} */
     shibdata.query_cache = {};
     shibdata.query_state_cache = {};
     shibdata.result_cache = {};
 
+    /* query_ids == sum of values of history_ids */
     load_queries(data.query_ids, function(queries){
       var resultids = [];
       queries.forEach(function(v){

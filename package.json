@@ -1,48 +1,49 @@
 {
-  "name": "shib",
-  "version": "0.1.0",
-  "description": "Hive Client Web Application",
-  "homepage": "https://github.com/tagomoris/shib",
-  "author": "TAGOMORI Satoshi <tagomoris@gmail.com>",
-  "keywords": [
-    "hive",
-    "hadoop"
-  ],
-  "directories": {
-    "lib": "./lib",
-    "views": "./views",
-    "public": "./public",
-    "bin": "./bin"
-  },
-  "files": [
-    "README.md",
-    "app.js",
-    "config.js"
-  ],
-  "dependencies": {
-    "coffee-script": ">= 1.3.3",
-    "csv": ">= 0.0.13",
-    "base64": ">=2.0.7",
-    "node-thrift": ">= 1.0.0-dev",
-    "async": ">= 0.1.22",
-    "express": ">= 2.5.9",
-    "jade": ">= 0.26.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/tagomoris/shib.git"
-  },
-  "bugs": {
-    "url": "https://github.com/tagomoris/shib/issues"
-  },
-  "licenses": [
-    {
-      "type": "APLv2"
-    } 
-  ],
-  "scripts" : {
-    "prestart": "git submodule update --init; (cd lib/kyoto-client && cake build)",
-    "start": "NODE_ENV=production NODE_PATH=lib node app.js"
-  },
-  "main": "app.js"
+    "name": "shib",
+    "version": "0.1.0",
+    "description": "Hive Client Web Application",
+    "homepage": "https://github.com/tagomoris/shib",
+    "author": "TAGOMORI Satoshi <tagomoris@gmail.com>",
+    "keywords": [
+        "hive",
+        "hadoop"
+    ],
+    "directories": {
+        "lib": "./lib",
+        "views": "./views",
+        "public": "./public",
+        "bin": "./bin"
+    },
+    "files": [
+        "README.md",
+        "app.js",
+        "config.js"
+    ],
+    "dependencies": {
+        "node-gyp": ">= 0.8.4",
+        "sqlite3": ">= 2.1.5",
+        "csv": ">= 0.0.13",
+        "base64": ">=2.0.7",
+        "node-thrift": ">= 1.0.0-dev",
+        "async": ">= 0.1.22",
+        "express": ">= 2.5.9",
+        "jade": ">= 0.26.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/tagomoris/shib.git"
+    },
+    "bugs": {
+        "url": "https://github.com/tagomoris/shib/issues"
+    },
+    "licenses": [
+        {
+            "type": "APLv2"
+        }
+    ],
+    "scripts" : {
+        "prestart": "git submodule update --init; (cd lib/kyoto-client && cake build)",
+        "start": "NODE_ENV=production NODE_PATH=lib node app.js"
+    },
+    "main": "app.js"
 }

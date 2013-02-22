@@ -1,18 +1,19 @@
 var servers = exports.servers = {
+  storage: {
+    datadir: './var'
+  },
   hiveserver: {
+    version: 1, // or 2
     host: 'localhost',
     port: 10000,
     support_database: true,
     default_database: 'default',
     setup_queries: []
   },
-  kyototycoon: {
-    host: 'localhost',
-    port: 1978
-  },
   huahinmanager: {
     enable: true,
     host: 'localhost',
-    port: 9010
+    port: 9010,
+    mapreduce: 'MRv1' // or 'YARN'
   }
 };
