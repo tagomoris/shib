@@ -441,4 +441,5 @@ app.get('/download/csv/:resultid', function(req, res){
   });
 });
 
+shib.client(); // to initialize sqlite3 database
 app.listen(3000);
