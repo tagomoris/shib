@@ -1,5 +1,0 @@
-* handle syntax error and other errors with real hiveserver
-* implement permalink of each queries
-* set/test execute expiration
-* show graph (many many works to do this)
-* tab reload button (pending)

@@ -120,6 +120,11 @@ With some setup queries:
 
 * * * * *
 
+## TODO
+
+* handle syntax error and other errors with real hiveserver
+* set/test execute expiration
+
 ## License
 
 Copyright 2011- TAGOMORI Satoshi (tagomoris)
