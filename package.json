@@ -43,7 +43,6 @@
         }
     ],
     "scripts" : {
-        "prestart": "git submodule update --init; (cd lib/kyoto-client && cake build)",
         "start": "NODE_ENV=production NODE_PATH=lib node app.js"
     },
     "main": "app.js"
