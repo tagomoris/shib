@@ -31,6 +31,7 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(app.router);
   app.set('view options', {layout: false});
+  app.set('port', (servers.listen || process.env.PORT || 3000));
 });
 
 app.configure('development', function(){
@@ -69,9 +70,9 @@ app.get('/databases', function(req, res){
 app.get('/q/:queryid', function(req, res){
   // Only this request handler is for permalink request from browser URL bar.
   var client = shib.client();
-  var huahin = (client.huahinClient() !== null);
+  var control = client.engine().supports('status');
   var defaultdb = client.default_database || null;
-  res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:defaultdb});
+  res.render(__dirname + '/views/index.jade', {control: control, defaultdb:defaultdb});
   client.end();
 });
 
@@ -114,6 +115,7 @@ app.get('/partitions', function(req, res){
     return;
   }
   var client = shib.client();
+  //TODO: move to client.js
   client.useDatabase(database, function(err, client){
     if (err) { error_handle(req, res, err); client.end(); return; }
     client.executeSystemStatement('show partitions ' + tablename, function(err, result){
@@ -161,6 +163,7 @@ app.get('/describe', function(req, res){
   }
   var fn = jade.compile(describe_node_template);
   var client = shib.client();
+  //TODO: move to client.js
   client.useDatabase(database, function(err, client){
     if (err) { error_handle(req, res, err); client.end(); return; }
     client.executeSystemStatement('describe ' + tablename, function(err, result){
@@ -226,12 +229,13 @@ app.post('/execute', function(req, res){
       error_handle(req, res, err); return;
     }
     res.send(query);
+    var queryid = query.queryid;
     this.execute(query, {
-      refreshed: (query.results.length > 0), // refreshed execution or not
-      prepare: function(query){runningQueries[query.queryid] = new Date();},
-      success: function(query){delete runningQueries[query.queryid]; client.end();},
-      error: function(query){delete runningQueries[query.queryid]; client.end();},
-      broken: function(query){return (! runningQueries[query.queryid]); client.end();}
+      prepare: function(){ runningQueries[queryid] = new Date(); },
+      stopCheck: function(){ return (! runningQueries[queryid]); },
+      stop:    function(){ client.end(); },
+      success: function(){ delete runningQueries[queryid]; client.end(); },
+      error:   function(){ delete runningQueries[queryid]; client.end(); }
     });
   });
 });
@@ -241,34 +245,16 @@ app.post('/giveup', function(req, res){
   var client = shib.client();
   client.query(targetid, function(err, query){
     var client = this;
-
-    if (client.huahinClient()) {
-      client.searchJob(query.queryid, function(err, jobid){
-        if (err || jobid === undefined) {
-          client.giveup(query, function(){
-            delete runningQueries[query.queryid];
-            res.send(query);
-            client.end();
-          });
-          return;
-        }
-        client.killJob(jobid, function(err,result){
-          res.send(query);
-          client.end();
-        });
-      });
-    }
-    else {
-      client.giveup(query, function(){
-        delete runningQueries[query.queryid];
-        res.send(query);
-        client.end();
-      });
-    }
+    client.giveup(targetid, function(err, query) {
+      delete runningQueries[query.queryid];
+      res.send(query);
+      client.end();
+    });
   });
 });
 
 app.post('/delete', function(req, res){
+  //TODO: fix without history
   var targetid = req.body.queryid;
   var targetHistorySize = 5;
 
@@ -289,27 +275,6 @@ app.post('/delete', function(req, res){
     });
   });
 });
-
-/*
-app.get('/histories', function(req, res){
-  shib.client().getHistories(function(err, histories){
-    if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(histories);
-    this.end();
-  });
-});
- */
-
-/*
-app.get('/history/:label', function(req, res){
-  //TODO: rewrite - or - delete ?
-  shib.client().getHistory(req.params.label, function(err, idlist){
-    if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(idlist);
-    this.end();
-  });
-});
- */
 
 app.get('/query/:queryid', function(req, res){
   shib.client().query(req.params.queryid, function(err, query){
@@ -442,4 +407,4 @@ app.get('/download/csv/:resultid', function(req, res){
 });
 
 shib.client(); // to initialize sqlite3 database
-app.listen(3000);
+app.listen(app.get('port'));
