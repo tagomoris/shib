@@ -115,38 +115,11 @@ app.get('/partitions', function(req, res){
     return;
   }
   var client = shib.client();
-  //TODO: move to client.js
   client.useDatabase(database, function(err, client){
     if (err) { error_handle(req, res, err); client.end(); return; }
-    client.executeSystemStatement('show partitions ' + tablename, function(err, result){
-      if (err) { error_handle(req, res, err); this.end(); return; }
-      var response_obj = [];
-      var treenodes = {};
-
-      var create_node = function(partition, hasChildren){
-        if (treenodes[partition])
-          return treenodes[partition];
-        var parts = partition.split('/');
-        var leafName = parts.pop();
-        var node = {title: leafName};
-        if (hasChildren) {
-          node.children = [];
-        }
-        if (parts.length > 0) {
-          var parent = create_node(parts.join('/'), true);
-          parent.children.push(node);
-        }
-        else {
-          response_obj.push(node);
-        }
-        treenodes[partition] = node;
-        return node;
-      };
-
-      result.forEach(function(partition){
-        create_node(partition);
-      });
-      res.send(response_obj);
+    client.partitions(tablename, function(err, partition_nodes){
+      if (err) { error_handle(req, res, err); client.end(); return; }
+      res.send(partition_nodes);
       client.end();
     });
   });
@@ -163,17 +136,15 @@ app.get('/describe', function(req, res){
   }
   var fn = jade.compile(describe_node_template);
   var client = shib.client();
-  //TODO: move to client.js
   client.useDatabase(database, function(err, client){
     if (err) { error_handle(req, res, err); client.end(); return; }
-    client.executeSystemStatement('describe ' + tablename, function(err, result){
+    client.describe(tablename, function(err, result){
       if (err) { error_handle(req, res, err); client.end(); return; }
-      var response_title = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
-      result.forEach(function(row){
-        var cols = row.split('\t');
-        response_title += fn.call(this, {colname: cols[0], coltype: cols[1], colcomment: cols[2]});
+      var response_html = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
+      result.forEach(function(cols){
+        response_html += fn.call(this, {colname: cols[0], coltype: cols[1], colcomment: cols[2]});
       });
-      res.send([{title: '<table>' + response_title + '</table>'}]);
+      res.send([{title: '<table>' + response_html + '</table>'}]);
       client.end();
     });
   });
@@ -244,7 +215,6 @@ app.post('/giveup', function(req, res){
   var targetid = req.body.queryid;
   var client = shib.client();
   client.query(targetid, function(err, query){
-    var client = this;
     client.giveup(targetid, function(err, query) {
       delete runningQueries[query.queryid];
       res.send(query);
@@ -262,7 +232,6 @@ app.post('/delete', function(req, res){
   client.getHistories(function(err, histories){
     if (err)
       histories = [];
-    var client = this;
     var targetHistories = histories.sort().reverse().slice(0, targetHistorySize); // unti-dictionary order, last 'targetHistorySize' items
     var funclist = [
       function(callback){client.deleteQuery(targetid); callback(null, 1);}
