@@ -1,5 +1,7 @@
 var servers = exports.servers = {
   listen: 3000,
+  fetch_lines: 100000,
+  setup_queries: [],
   storage: {
     datadir: './var'
   },
@@ -8,8 +10,7 @@ var servers = exports.servers = {
     host: 'localhost',
     port: 10000,
     support_database: true,
-    default_database: 'default',
-    setup_queries: []
+    default_database: 'default'
   },
   // monitor: null
   monitor: {
