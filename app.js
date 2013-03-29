@@ -47,9 +47,9 @@ app.configure('production', function(){
 
 app.get('/', function(req, res){
   var client = shib.client();
-  var huahin = (client.huahinClient() !== null);
+  var control = client.engine().supports('status');
   var defaultdb = client.default_database || null;
-  res.render(__dirname + '/views/index.jade', {control: huahin, defaultdb:defaultdb});
+  res.render(__dirname + '/views/index.jade', {control: control, defaultdb:defaultdb});
   client.end();
 });
 
