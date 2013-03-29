@@ -22,10 +22,8 @@
     ],
     "dependencies": {
         "thrift": "git://github.com/tagomoris/node-thrift.git#v0.9.0",
-        "node-gyp": ">= 0.8.4",
         "sqlite3": ">= 2.1.5",
         "csv": ">= 0.0.13",
-        "base64": ">=2.0.7",
         "async": ">= 0.1.22",
         "express": ">= 2.5.9",
         "jade": ">= 0.26.1"
