@@ -1,7 +1,7 @@
 var express = require('express'),
     jade = require('jade'),
     async = require('async'),
-    app = express.createServer();
+    app = express();
 
 var RECENT_FETCHES = 50;
 var SHOW_RESULT_HEAD_LINES = 20;
