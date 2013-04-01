@@ -215,7 +215,7 @@ app.post('/giveup', function(req, res){
   var targetid = req.body.queryid;
   var client = shib.client();
   client.query(targetid, function(err, query){
-    client.giveup(targetid, function(err, query) {
+    client.giveup(query, function(err, query) {
       delete runningQueries[query.queryid];
       res.send(query);
       client.end();
