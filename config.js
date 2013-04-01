@@ -1,6 +1,6 @@
 var servers = exports.servers = {
   listen: 3000,
-  fetch_lines: 100000,
+  fetch_lines: 1000,
   setup_queries: [],
   storage: {
     datadir: './var'
