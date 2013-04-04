@@ -105,9 +105,9 @@ With some setup queries:
 
 ```js
   setup_queries: [
-    "add jar /path/to/jarfile/foo.jar;",
-    "create temporary function foofunc as 'package.of.udf.FooFunc';",
-    "create temporary function barfunc as 'package.of.udf.BarFunc';"
+    "add jar /path/to/jarfile/foo.jar",
+    "create temporary function foofunc as 'package.of.udf.FooFunc'",
+    "create temporary function barfunc as 'package.of.udf.BarFunc'"
   ],
 ```
 
