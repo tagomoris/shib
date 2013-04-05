@@ -165,9 +165,10 @@ app.get('/summary_bulk', function(req, res){
     });
   };
   var bundleMonths = function(cb){ // [{yyyymm:...,queryid:....}] => {yyyymm:[queryids], yyyymm:[queryids]}
+    history_queries = history_queries.concat(history_queries);
     history_queries.forEach(function(row){
       var month = row.yyyymm;
-      if (query_ids.indexOf(month) < 0)
+      if (history.indexOf(month) < 0)
         history.push(month);
       if (! history_ids[month])
         history_ids[month] = [];
