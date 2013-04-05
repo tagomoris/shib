@@ -74,6 +74,12 @@ html
                   li#copy_button.ui-state-default.ui-corner-all(style="display: none;")
                     span.ui-icon.ui-icon-copy
                     | copy to new query
+                  li#clip_button.ui-state-default.ui-corner-all(style="display: none; margin-left: 12em;")
+                    span.ui-icon.ui-icon-link
+                    | add to your bookmark
+                  li#unclip_button.ui-state-default.ui-corner-all(style="display: none; margin-left: 12em;")
+                    span.ui-icon.ui-icon-cancel
+                    | remove from bookmark
               #querybox
                 textarea#queryeditor(rows="14")
               #editbox.ui-corner-all
@@ -119,9 +125,12 @@ html
                 ul
                   li#index-yours
                     a(href="#tab-yours") yours
+                  li#index-bookmark
+                    a(href="#tab-bookmark") bookmark
                   li#index-history
                     a(href="#tab-history") history
                 #tab-yours
+                #tab-bookmark
                 #tab-history
   #runningarea
     #runnings.ui-corner-all
