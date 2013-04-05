@@ -190,6 +190,7 @@ app.get('/summary_bulk', function(req, res){
   
 app.post('/execute', function(req, res){
   var client = shib.client();
+  var scheduled = req.body.scheduled;
   client.createQuery(req.body.querystring, function(err, query){
     if (err) {
       if (err instanceof InvalidQueryError) {
@@ -202,6 +203,7 @@ app.post('/execute', function(req, res){
     res.send(query);
     var queryid = query.queryid;
     this.execute(query, {
+      scheduled: scheduled,
       prepare: function(){ runningQueries[queryid] = new Date(); },
       stopCheck: function(){ return (! runningQueries[queryid]); },
       stop:    function(){ client.end(); },
