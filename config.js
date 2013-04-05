@@ -12,10 +12,12 @@ var servers = exports.servers = {
     support_database: true,
     default_database: 'default'
   },
-  // monitor: null
+  monitor: null
+  /*
   monitor: {
     name : 'huahin_mrv1', // or 'huahin_yarn'
     host: 'localhost',
     port: 9010
   }
+  */
 };
