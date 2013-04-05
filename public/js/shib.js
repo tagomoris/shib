@@ -312,7 +312,7 @@ function show_tables_dialog() {
     .dynatree('destroy')
     .empty()
     .hide();
-  $('#tablesdiag').dialog({modal:true, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
+  $('#tablesdiag').dialog({modal:false, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
   $('#tablesdiag .loadingimg').show();
   var dbname = null;
   if ($('#table_dbname').val()) {
@@ -347,7 +347,7 @@ function show_describe_dialog() {
     .dynatree('destroy')
     .empty()
     .hide();
-  $('#describediag').dialog({modal:true, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
+  $('#describediag').dialog({modal:false, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
   $('#describediag .loadingimg').show();
   var dbname = null;
   if ($('#desc_dbname').val()) {
