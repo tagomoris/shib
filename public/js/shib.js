@@ -675,17 +675,17 @@ function change_editbox_querystatus_style(state, result){
     'error':{classname:'status_error', result:true},
     're-running':{classname:'status_re-running', result:true}
   };
-  var allclasses = 'status_not_executed status_running status_executed status_error status_re-running';
   if (state === 'done')
     state = 'executed';
 
   if (allstates[state]) {
+    var allclasses = 'status_not_executed status_running status_executed status_error status_re-running';
     $('span#querystatus')
       .removeClass(allclasses)
       .addClass((allstates[state]).classname)
       .text(state);
 
-    if ((allstates[state]).result && result) {
+    if (allstates[state]['result'] && result) {
       $('#queryresult').show();
       if (result.error) {
         $('span#queryresultlines').text(result.error);
@@ -700,7 +700,7 @@ function change_editbox_querystatus_style(state, result){
       }
     }
     else {
-      $('span#queryresult').hide();
+      $('#queryresult').hide();
     }
   }
 }
