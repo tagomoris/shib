@@ -66,16 +66,17 @@ html
                   li#describe_diag.ui-state-default.ui-corner-all(title="show table schema")
                     span.ui-icon.ui-icon-info
                     | show table schemas
-              #querybox
-                textarea#queryeditor(rows="14")
-              #editbox.ui-corner-all
-                ul.operationitems.ui-widget.ui-helper-clearfix
+              #dangereditbox.ui-corner-all
+                ul.dangeritems.operationitems.ui-widget.ui-helper-clearfix
                   li#new_button.ui-state-default.ui-corner-all
                     span.ui-icon.ui-icon-document
                     | new query
                   li#copy_button.ui-state-default.ui-corner-all(style="display: none;")
                     span.ui-icon.ui-icon-copy
                     | copy to new query
+              #querybox
+                textarea#queryeditor(rows="14")
+              #editbox.ui-corner-all
                 ul.operationitems.ui-widget.ui-helper-clearfix
                   li#execute_button.ui-state-default.ui-corner-all
                     span.ui-icon.ui-icon-play
