@@ -634,14 +634,24 @@ function copy_selected_query(event) { /* event not used */
 function clip_selected_query(event) { /* event not used */
   var clip_query_id = shibselectedquery.queryid;
   push_bookmark_query_list(clip_query_id);
-  load_tabs({reload:true});
+  load_tabs({
+    reload:true,
+    callback:function(){
+      $("#listSelector").tabs('option', 'selected', 1);
+    }
+  });
   update_editbox(shibselectedquery);
 };
 
 function unclip_selected_query(event) { /* event not used */
   var unclip_query_id = shibselectedquery.queryid;
   delete_bookmark_query_list(unclip_query_id);
-  load_tabs({reload:true});
+  load_tabs({
+    reload:true,
+    callback:function(){
+      $("#listSelector").tabs('option', 'selected', 1);
+    }
+  });
   update_editbox(shibselectedquery);
 };
 
