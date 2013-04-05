@@ -1,6 +1,6 @@
 var thrift = require('thrift'),
     ttransport = require('thrift/lib/thrift/transport');
-var ThriftHive = require('gen-nodejs/ThriftHive');
+var ThriftHive = require('shib/engines/hiveserver/ThriftHive');
 
 var mock = require('ThriftHiveMock');
 /*
