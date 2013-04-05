@@ -39,6 +39,8 @@ span#subtitle {
 }
 
 #noticearea {width: 50%; height: 5em; margin: 0px auto 2px auto;}
+#errorarea {margin: 0 0 0 0;}
+#infoarea {margin: 0 0 0 0;}
 
 #mainarea {position: relative; max-width: 980px; min-width: 750px; margin: -15px auto; }
 td#mainviewcell {margin: 0; padding: 0; vertical-align: top;}
