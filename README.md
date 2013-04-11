@@ -52,13 +52,13 @@ Install libraries, configure addresses of HiveServer (and other specifications).
 
 And run.
 
-    $ NODE_PATH=lib node app.js
+    $ npm start
 
 Shib listens on port 3000. see http://localhost:3000/
 
 You can also run shib with command below for 'production' environment, with production configuration file 'production.js':
 
-    $ npm start
+    $ NODE_ENV=production NODE_PATH=lib node app.js
 
 ## Configuration
 
