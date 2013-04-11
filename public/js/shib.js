@@ -427,9 +427,18 @@ function show_status_dialog(target) {
     },
     success: function(state) {
       /*
-       jobid, name, priority, state, jobSetup, status, jobCleanup,
-       trackingURL, startTime, mapComplete, reduceComplete,
-       hiveQueryId, hiveQueryString
+       var returnedValus = {
+         jobid: 'job_201304011701_1912',
+         name: 'shib-3578d8d4f5a1812de7a7714f5b108776',
+         priority: 'NORMAL',
+         state: 'RUNNING',
+         trackingURL: 'http://master.hadoop.local:50030/jobdetails.jsp?jobid=job_201304011701_1912',
+         startTime: 'Thu Apr 11 2013 16:06:40 (JST)',
+         mapComplete: 89,
+         reduceComplete: 29,
+         hiveQueryId: 'hive_20130411160606_46b1b669-3a64-4174-899e-bb1bf53e90db',
+         hiveQueryString: 'SELECT ...'
+       };
        */
       $.tmpl("detailStatusTemplate",[
         {
