@@ -17,6 +17,15 @@ if (process.env.NODE_ENV === 'production') {
 }
 shib.init(servers);
 
+function shutdown(signal){
+  console.log((new Date()).toString() + ': Shutdown by signal, ' + signal);
+  process.exit();
+};
+process.on('SIGINT', function(){ shutdown('SIGINT'); });
+process.on('SIGHUP', function(){ shutdown('SIGHUP'); });
+process.on('SIGQUIT', function(){ shutdown('SIGQUIT'); });
+process.on('SIGTERM', function(){ shutdown('SIGTERM'); });
+
 var runningQueries = {};
 
 function error_handle(req, res, err){
@@ -378,4 +387,5 @@ app.get('/download/csv/:resultid', function(req, res){
 });
 
 shib.client().end(); // to initialize sqlite3 database
+console.log((new Date()).toString() + ': Starting shib.');
 app.listen(app.get('port'));
