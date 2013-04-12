@@ -1,18 +1,20 @@
+var huahin_mrv1 = require('shib/engines/huahin_mrv1');
+
 // node check_engine_huahin_mrv1.js HUAHIN_HOST HUAHIN_PORT OPERATION ARGS
 //
 // ex: node check_engine_huahin_mrv1.js localhost 9010 status jobname-foo1
 //     node check_engine_huahin_mrv1.js localhost 9010 kill jobname-foo1
 
-var huahin_mrv1 = require('shib/engines/huahin_mrv1');
 
+// argv: ['node', 'script_path', arguments]
 var monitor = new huahin_mrv1.Monitor({
   name: 'huahin_mrv1',
-  host: process.argv[0],
-  port: parseInt(process.argv[1])
+  host: process.argv[2],
+  port: parseInt(process.argv[3])
 });
 
-var operation = process.argv[2],
-    jobname = process.argv[3];
+var operation = process.argv[4],
+    jobname = process.argv[5];
 
 console.log('huahin_mrv1 ' + operation + ':' + jobname);
 if (operation === 'status') {
