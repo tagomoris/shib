@@ -12,12 +12,18 @@ args.shift(); args.shift();
 var conf_path = args.shift(),
     operation = args.shift();
 
-var conf = JSON.parse(require('fs').readFileSync(conf_path));
+var conf = (function(path){
+  var exports = {};
+  var ret = eval(require('fs').readFileSync(path).toString());
+  return exports.servers;
+})(conf_path);
 
 var obj = new engine.Engine(conf.executer, conf.monitor);
 
 console.log('engine operation:' + operation + ', args:' + JSON.stringify(args));
-if (operation === 'execute') {
+if (operation === 'supports') {
+  console.log('supports ' + operation + ':' + obj.supports(args[0]));
+} else if (operation === 'execute') {
   obj.execute('check-engine-query', args[0], {callback: function(err,data){
     if (err) {
       console.log('error:');
