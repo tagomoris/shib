@@ -21,6 +21,8 @@ var conf = (function(path){
 var obj = new engine.Engine(conf.executer, conf.monitor);
 
 console.log('engine operation:' + operation + ', args:' + JSON.stringify(args));
+var shutdown = function(){ obj.close(); process.exit(0); };
+
 if (operation === 'supports') {
   console.log('supports ' + operation + ':' + obj.supports(args[0]));
 } else if (operation === 'execute') {
@@ -31,15 +33,19 @@ if (operation === 'supports') {
     }
     console.log('data:');
     console.log(data);
+    shutdown();
   }});
 } else if (operation === 'status') {
   obj.status(args[0], function(err,status){
     console.log({err:err, status:status});
+    shutdown();
   });
 } else if (operation === 'kill') {
   obj.status(args[0], args[1], function(err){
     console.log({err:err});
+    shutdown();
   });
 } else {
   console.log('unknown operation:' + operation);
+  shutdown();
 }
