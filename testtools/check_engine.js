@@ -41,7 +41,7 @@ if (operation === 'supports') {
     shutdown();
   });
 } else if (operation === 'kill') {
-  obj.status(args[0], args[1], function(err){
+  obj.kill(args[0], args[1], function(err){
     console.log({err:err});
     shutdown();
   });
