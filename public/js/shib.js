@@ -443,7 +443,9 @@ function show_status_dialog(target) {
       $.tmpl("detailStatusTemplate",[
         {
           JobID: state['jobid'], State: state['state'], Priority: state['priority'],
-          Url: state['trackingURL'], MapComplete: state['mapComplete'], ReduceComplete: state['ReduceComplete']
+          Url: state['trackingURL'],
+          MapComplete: String(state['mapComplete'] || 0) + '%',
+          ReduceComplete: String(state['ReduceComplete'] || 0) + '%'
         }
       ]).appendTo('#detailstatus');
       $('#detailstatusdiag .loadingimg').hide();
