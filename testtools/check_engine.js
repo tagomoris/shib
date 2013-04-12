@@ -21,7 +21,7 @@ var conf = (function(path){
 var obj = new engine.Engine(conf.executer, conf.monitor);
 
 console.log('engine operation:' + operation + ', args:' + JSON.stringify(args));
-var shutdown = function(){ obj.close(); process.exit(0); };
+var shutdown = function(){ obj.close(); };
 
 if (operation === 'supports') {
   console.log('supports ' + operation + ':' + obj.supports(args[0]));

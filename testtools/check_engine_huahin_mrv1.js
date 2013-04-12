@@ -17,14 +17,19 @@ var operation = process.argv[4],
     jobname = process.argv[5];
 
 console.log('huahin_mrv1 ' + operation + ':' + jobname);
+var shutdown = function(){ monitor.close(); };
+
 if (operation === 'status') {
   monitor.status(jobname, function(err,status){
     console.log({err:err, status:status});
+    shutdown();
   });
 } else if (operation === 'kill') {
   monitor.kill(null, jobname, function(err){
     console.log({err:err});
+    shutdown();
   });
 } else {
   console.log('unknown operation:' + operation);
+  shutdown();
 }
