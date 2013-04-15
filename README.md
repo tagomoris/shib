@@ -25,7 +25,7 @@ Latest version of 'shib' is v0.2.0.
 * v0.2 series
   * current status of master branch
   * uses local filesystem instead of KT, depends on latest node (v0.8.x, v0.10.x)
-  * higher performance and updated features
+  * higher performance, more safe Web UI and updated features
 
 **There are no compatibilities of data (query and results) between v0.1 and v0.2**. And there are no convert tools now.
 
@@ -78,6 +78,7 @@ Basic configuration in config.js (or productions.js):
 var servers = exports.servers = {
   listen: 3000,
   fetch_lines: 1000,
+  query_timeout: null,
   setup_queries: [],
   storage: {
     datadir: './var'
@@ -100,7 +101,7 @@ var servers = exports.servers = {
 };
 ```
 
-With Hive 0.5 or earlier (without Database):
+With Hive 0.5 or earlier (without database support):
 
 ```js
   executer: {
@@ -124,8 +125,6 @@ With some setup queries:
 * * * * *
 
 ## TODO
-
-* set/test execute expiration
 
 * To get syntax error and other errors with real hiveserver
 * More executer such as 'hiveserver2' and 'huahinmanager'
