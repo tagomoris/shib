@@ -4,3 +4,4 @@ var/results
 node_modules
 npm-debug.log
 production.js
+*.swp
