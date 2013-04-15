@@ -15,6 +15,8 @@ Some extension features are supported:
 
 ### Versions
 
+Latest version of 'shib' is v0.2.0.
+
 'shib' versions are:
 
 * v0.1 series
@@ -35,9 +37,17 @@ You should run HiveServer at any server near your hadoop cluster.
 
     $ hive --service hiveserver
 
+Currently, shib doesn't works well with hiveserver2. If you want that feature, please send me your request...
+
 ### Node.js
 
 To run shib, you must install node.js, and export PATH for installed node.
+
+### Huahin Manager
+
+To show map/reduce status, and/or to kill actual map/reduce jobs behind hive query, shib can use Huahin Manager. Current version supports only 'Huahin Manager CDH4 + MRv1' only.
+
+http://huahinframework.org/huahin-manager/
 
 ### shib
 
@@ -73,16 +83,16 @@ var servers = exports.servers = {
     datadir: './var'
   },
   executer: {
-    name: 'hiveserver', // or 'hiveserver2' (not implemented) or 'huahinmanager' (not implemented)
+    name: 'hiveserver',
     host: 'localhost',
     port: 10000,
     support_database: true,
     default_database: 'default'
   },
   monitor: null
-  /* not implemented
+  /* if you are using Huahin Manager MRv1
   monitor: {
-    name : 'huahin_mrv1', // or 'huahin_yarn'
+    name : 'huahin_mrv1',
     host: 'localhost',
     port: 9010
   }
@@ -115,10 +125,11 @@ With some setup queries:
 
 ## TODO
 
-* handle syntax error and other errors with real hiveserver
 * set/test execute expiration
-* more executer such as 'hiveserver2' and 'huahinmanager'
-* more monitor such as 'huahin\_mrv1' and 'huahin\_yarn'
+
+* To get syntax error and other errors with real hiveserver
+* More executer such as 'hiveserver2' and 'huahinmanager'
+* More monitor such as 'huahin\_yarn'
 
 ## License
 
