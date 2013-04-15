@@ -1,6 +1,7 @@
 var servers = exports.servers = {
   listen: 3000,
   fetch_lines: 1000,
+  query_timeout: null, // seconds. (null:shib will wait query response infinitely).
   setup_queries: [],
   storage: {
     datadir: './var'
