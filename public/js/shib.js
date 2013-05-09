@@ -415,8 +415,9 @@ function show_status_dialog(target) {
   $('#detailstatusdiag').dialog({modal:true, resizable:false, height:200, width:600, maxHeight:200, maxWidth:950});
   $('#detailstatusdiag .loadingimg').show();
   $.ajax({
-    url: '/detailstatus/' + target.queryid + '?t=' + (new Date()).getTime(),
+    url: '/detailstatus/' + target.queryid,
     type: 'GET',
+    cache: false,
     error: function(jqXHR, textStatus, err) {
       console.log(jqXHR);
       console.log(textStatus);
