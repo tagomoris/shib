@@ -2,7 +2,7 @@
 html
   head
     meta(http-equiv="Content-Type", content="text/html", charset="utf-8")
-    title shib - Query your Hive!
+    title niconico data viewer!
     link(type="text/css", href="/css/redmond/jquery-ui-1.8.13.custom.css", rel="stylesheet")
     link(type="text/css", href="/css/ui.dynatree.css", rel="stylesheet")
     link(type="text/css", href="/css/shib.css", rel="stylesheet")
@@ -19,7 +19,25 @@ html
       input#detailcontrol(type="hidden", name="detailcontrol", value="#{control}")
     #titlearea
       #title
-        a(href="/") shib
+        a(href="/") ニコニコデータビューアー
+      span#subtitle データ分析研究会。詳しい説明は
+                    a(href="http://goo.gl/FWsNf4") こちら
+    .samplearea
+       走らせて見よう(wwwwを含むコメントは何個かな)
+       p.
+          SELECT count(*) FROM nicodata.comment_data_sampling100 WHERE comment_string LIKE "%wwwwww%"
+    .tinfoarea
+      ul(style="float:left")
+       li 動画情報(テーブル)
+       li nicodata.videoinfo_sampling100
+       li nicodata.videoinfo_sampling10
+       li nicodata.videoinfo
+      ul(style="float:right")
+       li コメント情報(テーブル)
+       li nicodata.comment_data_sampling100
+       li nicodata.comment_data_sampling10
+       li nicodata.comment_data
+    p(style="clear:both")
     #noticearea
       .ui-widget#errorarea(style="display: none;")
         .ui-state-error.ui-corner-all(style="padding: 0 .7em;")
@@ -137,4 +155,5 @@ html
       div no running queries
   #creditarea
       #credits
-        | shib by tagomoris
+        |niconico data viewer by shibacow 
+        | extends from  shib by tagomoris
