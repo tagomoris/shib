@@ -42,7 +42,7 @@
         }
     ],
     "scripts" : {
-        "start":"NODE_PATH=lib nodejs app.js"
+        "start":"NODE_PATH=lib forever start app.js"
     },
     "main": "app.js"
 }
