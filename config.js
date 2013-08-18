@@ -8,14 +8,14 @@ var servers = exports.servers = {
   },
   executer: {
     name: 'hiveserver', // or 'hiveserver2' (not implemented) or 'huahinmanager' (not implemented)
-    host: '10.132.5.163',
-    port: 10003,
+    host: 'ec2-54-238-9-53.ap-northeast-1.compute.amazonaws.com',
+    port: 10004,
     support_database: true,
     default_database: 'nicodata'
   },
   monitor: {
     name : 'huahin_mrv1', // or 'huahin_yarn'
-    host: '10.132.5.163',
+    host: 'ec2-54-238-9-53.ap-northeast-1.compute.amazonaws.com',
     port: 9010
   }
 };

@@ -26,9 +26,13 @@ html
       input#detailcontrol(type="hidden", name="detailcontrol", value="#{control}")
     #titlearea
       #title
-        a(href="/") ニコニコデータビューアー
+        a(href="/") ニコニコデータビューア(土日だけ使えます)
       span#subtitle データ分析研究会。詳しい説明は
                     a(href="http://goo.gl/FWsNf4") こちら
+                    お金がかかるので、土日だけ利用出来ます。平日は締めます。
+                    ご連絡、ご要望は 
+                    a(href="https://twitter.com/shibacow")@shibacow
+                    まで
     .samplearea
        実行してみよう(病院が来い)
        p.samplearea.
@@ -46,7 +50,12 @@ html
        li nicodata.videoinfo_sampling100
        li nicodata.videoinfo_sampling10
        li nicodata.videoinfo
-      ul(style="float:right")
+      ul(style="float:left")
+       li タグ情報(テーブル)
+       li nicodata.tags_sampling100
+       li nicodata.tags_sampling10
+       li nicodata.tags
+      ul(style="float:left")
        li コメント情報(テーブル)
        li nicodata.comment_data_sampling100
        li nicodata.comment_data_sampling10
@@ -113,6 +122,7 @@ html
                     span.ui-icon.ui-icon-cancel
                     | remove from bookmark
               #querybox
+                //textarea#queryeditor(rows="14",disabled,readonly) 土日だけ開いてます。平日は閉めてます。
                 textarea#queryeditor(rows="14")
               #editbox.ui-corner-all
                 ul.operationitems.ui-widget.ui-helper-clearfix
