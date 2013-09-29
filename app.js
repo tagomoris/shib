@@ -3,7 +3,7 @@ var express = require('express'),
     async = require('async'),
     app = express();
 
-var RECENT_FETCHES = 50;
+var RECENT_FETCHES = 1000;
 var SHOW_RESULT_HEAD_LINES = 20;
 
 var InvalidQueryError = require('shib/query').InvalidQueryError;
@@ -15,6 +15,7 @@ var shib = require('shib'),
 if (process.env.NODE_ENV === 'production') {
   servers = require('./production').servers;
 }
+
 shib.init(servers);
 
 function shutdown(signal){
@@ -58,7 +59,8 @@ app.get('/', function(req, res){
   var client = shib.client();
   var control = client.engine().supports('status');
   var defaultdb = client.default_database || null;
-  res.render(__dirname + '/views/index.jade', {control: control, defaultdb:defaultdb});
+  var executer_host = client.server_uri();
+  res.render(__dirname + '/views/index.jade', {control: control, defaultdb:defaultdb,executer_host:executer_host});
   client.end();
 });
 
