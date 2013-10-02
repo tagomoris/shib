@@ -126,6 +126,7 @@ html
               #querybox
                 //textarea#queryeditor(rows="14",disabled,readonly) 土日だけ開いてます。平日は閉めてます。
                 textarea#queryeditor(rows="14")
+
               #editbox.ui-corner-all
                 ul.operationitems.ui-widget.ui-helper-clearfix
                   li#execute_button.ui-state-default.ui-corner-all
@@ -152,6 +153,14 @@ html
                   li#download_csv_button.ui-state-default.ui-corner-all(style="display: none;")
                     span.ui-icon.ui-icon-arrowthickstop-1-s
                     | csv
+                #additional_info
+                 form(name="input", action="html_form_action.asp", method="get")
+                   Key タイトル
+                     input#query_title(type="text",name="title",value="タイトル(もしあれば)")
+                   Key 名前
+                     input#query_name(type="text" ,name="name",value="名無し")
+                   Key 説明
+                     input#query_desc(type="text" ,name="desc",value="説明(もしあれば)")
                 #statusview
                   span
                     | Query Status:

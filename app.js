@@ -202,7 +202,7 @@ app.get('/summary_bulk', function(req, res){
 app.post('/execute', function(req, res){
   var client = shib.client();
   var scheduled = req.body.scheduled;
-  client.createQuery(req.body.querystring, function(err, query){
+  client.createQuery(req.body.querystring,req.body, function(err, query){
     if (err) {
       if (err instanceof InvalidQueryError) {
         res.send(err, 400);
