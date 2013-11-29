@@ -631,7 +631,6 @@ function select_queryitem(event){
 function initiate_mainview(event, quiet) { /* event not used */
   deselect_and_new_query(quiet);
   update_queryeditor(true, '');
-  update_desceditor(true);
   update_editbox(null, 'not executed');
   update_history_by_query(null);
 };
@@ -640,7 +639,6 @@ function copy_selected_query(event) { /* event not used */
   var querystring = shibselectedquery.querystring;
   deselect_and_new_query();
   update_queryeditor(true, querystring);
-  update_desceditor(true);
   update_editbox(null, 'not executed');
   update_history_by_query(null);
 };
@@ -669,33 +667,12 @@ function unclip_selected_query(event) { /* event not used */
   update_editbox(shibselectedquery);
 };
 
-
 function update_mainview(query){
   shibselectedquery = query;
   update_queryeditor(false, query.querystring);
-  update_desceditor(false);
   update_editbox(query);
 };
 
-function update_desceditor(editable){
-  //datas['query_title'] = $('#query_title').val();
-  //datas['query_name'] = $('#query_name').val();
-  //datas['query_desc'] = $('#query_desc').val();
-    var query_title= $('#query_title');
-    var query_name= $('#query_name');
-    var query_desc= $('#query_desc');
-    var elms =[query_title,query_name,query_desc];
-    if (editable){
-	for (var i=0;i < elms.length;i++){
-	    elms[i].attr('readonly', false).removeClass('readonly');
-	}
-
-    }else{
-	for (var i=0;i < elms.length;i++){
-	    elms[i].attr('readonly', true).addClass('readonly');
-	}
-    }
-}
 function update_queryeditor(editable, querystring) {
   var editor = $('#queryeditor');
   editor.val(querystring);
@@ -915,16 +892,13 @@ function execute_query() {
     show_error('UI Bug', 'execute_query should be enable with not-saved-query objects');
     return;
   }
-  datas={};
-  datas['querystring'] = $('#queryeditor').val();
-  datas['query_title'] = $('#query_title').val();
-  datas['query_name'] = $('#query_name').val();
-  datas['query_desc'] = $('#query_desc').val();
+  var querystring = $('#queryeditor').val();
+
   $.ajax({
     url: '/execute',
     type: 'POST',
     dataType: 'json',
-    data: datas,
+    data: {querystring: querystring},
     error: function(jqXHR, textStatus, err){
       console.log(jqXHR);
       console.log(textStatus);

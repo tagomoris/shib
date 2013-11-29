@@ -2,7 +2,7 @@
     "name": "shib",
     "version": "0.2.0",
     "engines": { "node" : ">= 0.8" },
-    "description": "Hive Client Web Application(for NicoNico Doga)",
+    "description": "Hive Client Web Application",
     "homepage": "https://github.com/shibacow/shib",
     "author": "TAGOMORI Satoshi <tagomoris@gmail.com>",
     "keywords": [
@@ -42,7 +42,7 @@
         }
     ],
     "scripts" : {
-        "start":"NODE_PATH=lib nodejs app.js"
+    	 "start":"NODE_PATH=lib forever start app.js"
     },
     "main": "app.js"
 }
