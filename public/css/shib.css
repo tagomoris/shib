@@ -25,6 +25,10 @@ span.status_error {font-weight: bold; color: red;}
 span.status_re-running {font-weight: bold; color: orange;}
 
 #titlearea {position: relative; min-width: 980px; width: 98%; margin-top: 15px; text-align: center;}
+div.samplearea {position: relative; min-width: 980px; width: 98%;text-align: center;font-size: 18px; font-style: normal;}
+p.samplearea {position: relative; min-width: 980px; width: 98%; text-align: center;font-size: 15px; font-style: normal;}
+.tinfoarea {position: relative; max-width: 980px; min-width: 750px; font-size:18px;font-style:normal;margin: -15px auto;}
+
 #title {
     font-family: 'Artifika', serif; font-size: 40px; font-style: normal; font-weight: 400;
     text-align: center; text-shadow: none; text-decoration: none; text-transform: none;
@@ -35,7 +39,7 @@ span.status_re-running {font-weight: bold; color: orange;}
 }
 span#subtitle {
     font-size: 18px; font-style: normal; font-weight: 400;
-    letter-spacing: 0em; word-spacing: 0em; line-height: 1.2;
+    letter-spacing: 0em; word-spacing: 0em; line-height: 1.0;
 }
 
 #noticearea {width: 50%; height: 5em; margin: 0px auto 2px auto;}

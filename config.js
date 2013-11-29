@@ -1,5 +1,5 @@
 var servers = exports.servers = {
-  listen: 3000,
+  listen: 3010,
   fetch_lines: 1000,
   query_timeout: null, // seconds. (null:shib will wait query response infinitely).
   setup_queries: [],
@@ -8,17 +8,14 @@ var servers = exports.servers = {
   },
   executer: {
     name: 'hiveserver', // or 'hiveserver2' (not implemented) or 'huahinmanager' (not implemented)
-    host: 'localhost',
-    port: 10000,
+    host: 'ec2-54-199-3-217.ap-northeast-1.compute.amazonaws.com',
+    port: 10004,
     support_database: true,
-    default_database: 'default'
+    default_database: 'nicodata'
   },
-  monitor: null
-  /*
   monitor: {
     name : 'huahin_mrv1', // or 'huahin_yarn'
-    host: 'localhost',
+    host: 'ec2-54-199-3-217.ap-northeast-1.compute.amazonaws.com',
     port: 9010
   }
-  */
 };

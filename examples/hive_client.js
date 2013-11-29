@@ -1,8 +1,8 @@
-var thrift = require('thrift'),
-    ttransport = require('thrift/transport'),
-    ThriftHive = require('./gen-nodejs/ThriftHive');
+var thrift = require('../node_modules/thrift'),
+    ttransport = require('../node_modules/thrift/lib/thrift/transport'),
+    ThriftHive = require('../lib/shib/engines/hiveserver/ThriftHive');
 
-var connection = thrift.createConnection("localhost", 10000, {transport: ttransport.TBufferedTransport, timeout: 600*1000}),
+var connection = thrift.createConnection("ec2-54-249-137-203.ap-northeast-1.compute.amazonaws.com", 10004, {transport: ttransport.TBufferedTransport, timeout: 6*1000}),
     client = thrift.createClient(ThriftHive, connection);
 
 connection.on('error', function(err) {
@@ -10,7 +10,8 @@ connection.on('error', function(err) {
 });
 
 connection.addListener("connect", function() {
-    client.execute('select count(*) from p', function(err){
+    console.log("connected");
+    client.execute('select count(*) from nicodata.videoinfo', function(err){
         console.error("pos");
         if (err) { console.error("error on execute(): " + err); process.exit(1); }
         

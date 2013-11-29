@@ -2,7 +2,7 @@
 html
   head
     meta(http-equiv="Content-Type", content="text/html", charset="utf-8")
-    title shib - Query your Hive!
+    title niconico data viewer!
     link(type="text/css", href="/css/redmond/jquery-ui-1.8.13.custom.css", rel="stylesheet")
     link(type="text/css", href="/css/ui.dynatree.css", rel="stylesheet")
     link(type="text/css", href="/css/shib.css", rel="stylesheet")
@@ -14,12 +14,53 @@ html
     script(type="text/javascript", src="/js/jquery.dynatree.min.js")
     // script(type="text/javascript", src="https://www.google.com/jsapi")
     script(type="text/javascript", src="/js/shib.js")
+    script
+         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+         ga('create', 'UA-1682715-4', 'nicodata.info');
+         ga('send', 'pageview');
   body
     div(style="display: none;")
       input#detailcontrol(type="hidden", name="detailcontrol", value="#{control}")
     #titlearea
       #title
-        a(href="/") shib
+        a(href="/") ニコニコデータビューア(土日だけ使えます)
+      span#subtitle データ分析研究会。詳しい説明は
+                    a(href="http://goo.gl/FWsNf4") こちら
+                    お金がかかるので、土日だけ利用出来ます。平日は締めます。
+                    ご連絡、ご要望は 
+                    a(href="https://twitter.com/shibacow")@shibacow
+                    まで
+    .samplearea
+       実行してみよう(病院が来い)
+       p.samplearea.
+          SELECT * FROM nicodata.comment_data_sampling100 WHERE comment_string LIKE "%病院が来い%" LIMIT 10
+       実行してみよう(病院が来いを含むコメントはいくつかな)
+       p.samplearea.
+          SELECT count(*) FROM nicodata.comment_data_sampling100 WHERE comment_string LIKE "%病院が来い%"
+       実行してみよう(病院が来いコメントが多い動画は何かな
+       p.samplearea.
+          SELECT smid,count(*) as cnt FROM nicodata.comment_data_sampling100 WHERE comment_string LIKE "%病院が来い%" GROUP BY smid ORDER BY cnt DESC LIMIT 20
+
+    .tinfoarea
+      ul(style="float:left")
+       li 動画情報(テーブル)
+       li nicodata.videoinfo_sampling100
+       li nicodata.videoinfo_sampling10
+       li nicodata.videoinfo
+      ul(style="float:left")
+       li タグ情報(テーブル)
+       li nicodata.tags_sampling100
+       li nicodata.tags_sampling10
+       li nicodata.tags
+      ul(style="float:left")
+       li コメント情報(テーブル)
+       li nicodata.comment_data_sampling100
+       li nicodata.comment_data_sampling10
+       li nicodata.comment_data
+    p(style="clear:both")
     #noticearea
       .ui-widget#errorarea(style="display: none;")
         .ui-state-error.ui-corner-all(style="padding: 0 .7em;")
@@ -81,7 +122,8 @@ html
                     span.ui-icon.ui-icon-cancel
                     | remove from bookmark
               #querybox
-                textarea#queryeditor(rows="14")
+                textarea#queryeditor(rows="14",disabled,readonly) 土日だけ開いてます。平日は閉めてます。
+                //textarea#queryeditor(rows="14")
               #editbox.ui-corner-all
                 ul.operationitems.ui-widget.ui-helper-clearfix
                   li#execute_button.ui-state-default.ui-corner-all
@@ -137,4 +179,5 @@ html
       div no running queries
   #creditarea
       #credits
-        | shib by tagomoris
+        |niconico data viewer by shibacow 
+        | extends from  shib by tagomoris
