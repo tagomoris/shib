@@ -202,6 +202,9 @@ app.post('/execute', function(req, res){
   var scheduled = req.body.scheduled;
   client.createQuery(req.body.querystring, function(err, query){
     if (err) {
+      if (err.error) {
+        err = err.error;
+      }
       if (err instanceof InvalidQueryError) {
         res.send(err, 400);
         this.end();
