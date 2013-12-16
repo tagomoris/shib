@@ -369,23 +369,35 @@ app.get('/show/head/:resultid', function(req, res){
 });
 
 app.get('/download/tsv/:resultid', function(req, res){
-  shib.client().rawResultData(req.params.resultid, function(err, data){
+  shib.client().result(req.params.resultid, function(err, result){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.attachment(req.params.resultid + '.tsv');
-    res.send(data);
-    this.end();
+    this.rawResultData(req.params.resultid, function(err, data){
+      if (err) { error_handle(req, res, err); this.end(); return; }
+      res.attachment(req.params.resultid + '.tsv');
+      res.set('X-Shib-Result-ID', result.queryid);
+      res.set('X-Executed-At', result.executed_msec);
+      res.set('X-Completed-At', result.completed_msec);
+      res.send(data);
+      this.end();
+    });
   });
 });
 
 app.get('/download/csv/:resultid', function(req, res){
-  shib.client().rawResultData(req.params.resultid, function(err, data){
+  shib.client().result(req.params.resultid, function(err, result){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.attachment(req.params.resultid + '.csv');
-    var rows = (data || '').split("\n");
-    if (rows[rows.length - 1].length < 1)
-      rows.pop();
-    res.send(rows.map(function(row){return SimpleCSVBuilder.build(row.split('\t'));}).join(''));
-    this.end();
+    this.rawResultData(req.params.resultid, function(err, data){
+      if (err) { error_handle(req, res, err); this.end(); return; }
+      res.attachment(req.params.resultid + '.csv');
+      var rows = (data || '').split("\n");
+      if (rows[rows.length - 1].length < 1)
+        rows.pop();
+      res.set('X-Shib-Result-ID', result.queryid);
+      res.set('X-Executed-At', result.executed_msec);
+      res.set('X-Completed-At', result.completed_msec);
+      res.send(rows.map(function(row){return SimpleCSVBuilder.build(row.split('\t'));}).join(''));
+      this.end();
+    });
   });
 });
 
