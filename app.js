@@ -376,8 +376,8 @@ app.get('/download/tsv/:resultid', function(req, res){
       res.attachment(req.params.resultid + '.tsv');
       res.set('X-Shib-Query-ID', result.queryid);
       res.set('X-Shib-Result-ID', result.resultid);
-      res.set('X-Shib-Executed-At', result.executed_msec);
-      res.set('X-Shib-Completed-At', result.completed_msec);
+      res.set('X-Shib-Executed-At', result.executed_msec || 0);
+      res.set('X-Shib-Completed-At', result.completed_msec || 0);
       res.send(data);
       this.end();
     });
@@ -395,8 +395,8 @@ app.get('/download/csv/:resultid', function(req, res){
         rows.pop();
       res.set('X-Shib-Query-ID', result.queryid);
       res.set('X-Shib-Result-ID', result.resultid);
-      res.set('X-Shib-Executed-At', result.executed_msec);
-      res.set('X-Shib-Completed-At', result.completed_msec);
+      res.set('X-Shib-Executed-At', result.executed_msec || 0);
+      res.set('X-Shib-Completed-At', result.completed_msec || 0);
       res.send(rows.map(function(row){return SimpleCSVBuilder.build(row.split('\t'));}).join(''));
       this.end();
     });
