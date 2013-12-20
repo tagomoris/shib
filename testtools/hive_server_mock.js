@@ -1,5 +1,5 @@
-var thrift = require('thrift'),
-    ttransport = require('thrift/lib/thrift/transport');
+var thrift = require('node-thrift'),
+    ttransport = require('node-thrift/lib/thrift/transport');
 var ThriftHive = require('shib/engines/hiveserver/ThriftHive');
 
 var mock = require('ThriftHiveMock');
@@ -42,6 +42,12 @@ var execute = function(queued_query, success){
     console.log('sleep detected:' + executeDelay);
   }
   console.log('=================================================');
+
+  if (/^set .*/.exec(queued_query)) {
+    success();
+    return;
+  }
+
   setTimeout(function(){
     waited_queries.push(q);
     console.log("query pushed:" + q);
@@ -73,6 +79,7 @@ var fetchOne = function(success){
   if (query_result.length == 0) {
     init_status();
   }
+  console.log(val);
   success(val);
 };
 
@@ -89,6 +96,7 @@ var fetchN = function(rows, success){
       break;
     }
   }
+  console.log(val);
   success(val);
 };
 
@@ -99,6 +107,7 @@ var fetchAll = function(success){
   }
   var val = query_result;
   init_status();
+  console.log(val);
   success(val);
 };
 

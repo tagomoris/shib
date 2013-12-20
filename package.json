@@ -21,7 +21,7 @@
         "config.js"
     ],
     "dependencies": {
-        "thrift": "git://github.com/tagomoris/node-thrift.git#v0.9.0",
+        "node-thrift": ">= 1.0.0-dev",
         "sqlite3": ">= 2.1.5",
         "csv": ">= 0.0.13",
         "async": ">= 0.1.22",
