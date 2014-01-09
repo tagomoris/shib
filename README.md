@@ -37,7 +37,9 @@ You should run HiveServer at any server near your hadoop cluster.
 
     $ hive --service hiveserver
 
-Currently, shib doesn't works well with hiveserver2. If you want that feature, please send me your request...
+Or, hiveserver2
+
+    $ hive --service hiveserver2
 
 ### Node.js
 
@@ -84,7 +86,7 @@ var servers = exports.servers = {
     datadir: './var'
   },
   executer: {
-    name: 'hiveserver',
+    name: 'hiveserver', // or 'hiveserver2'
     host: 'localhost',
     port: 10000,
     support_database: true,
@@ -105,7 +107,7 @@ With Hive 0.5 or earlier (without database support):
 
 ```js
   executer: {
-    name: 'hiveserver', // or 'hiveserver2' (not implemented) or 'huahinmanager' (not implemented)
+    name: 'hiveserver', // or 'hiveserver2'
     host: 'localhost',
     port: 10000,
     support_database: false
@@ -126,9 +128,9 @@ With some setup queries:
 
 ## TODO
 
-* To get syntax error and other errors with real hiveserver
-* More executer such as 'hiveserver2' and 'huahinmanager'
-* More monitor such as 'huahin\_yarn'
+* More monitor over 'hiveserver2'
+* Support multi engines at same time
+* Support Presto
 
 ## License
 
