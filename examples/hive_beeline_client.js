@@ -1,7 +1,9 @@
+// NODE_PATH=lib node example/hive_beeline_client.js
+
 var thrift = require('node-thrift')
   , ttransport = require('node-thrift/lib/thrift/transport')
-  , TCLIService = require('./lib/shib/engines/hiveserver2/TCLIService')
-  , TTypes = require('./lib/shib/engines/hiveserver2/TCLIService_types');
+  , TCLIService = require('shib/engines/hiveserver2/TCLIService')
+  , TTypes = require('shib/engines/hiveserver2/TCLIService_types');
 
 var MaxRows = 10000;
 
@@ -79,6 +81,15 @@ client.OpenSession(new TTypes.TOpenSessionReq({username: '', password: ''}), fun
       client.CloseSession(creq, function(e,r){ connection.end(); });
     }); });
   }); });
+  /*
+  var q = 'select service, count(*) as cnt from access_log where service="servic_ename" and yyyymmdd="20130210" group by service';
+  var req = new TTypes.TExecuteStatementReq({sessionHandle: sessionHandle, statement: q});
+  client.ExecuteStatement(req, function(e,r){ fetchOperationResult('ExecuteStatement', e, r, function(err,rows){
+    console.log({err:err, rows:rows});
+    var creq = new TTypes.TCloseSessionReq({sessionHandle:sessionHandle});
+    client.CloseSession(creq, function(e,r){ connection.end(); });
+  }); });
+   */
 });
 
 /*
