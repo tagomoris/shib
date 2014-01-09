@@ -772,6 +772,7 @@ function change_editbox_querystatus_style(state, result){
         $('span#queryresultlines').text(result.error);
         $('span#queryresultbytes').text("");
         $('#queryresultelapsed').text(timelabel_elapsed(result.completed_at, result.executed_at));
+        $('#queryresultschema').text('');
       }
       else {
         $('span#queryresultlines').text(" " + result.lines + " lines, ");
