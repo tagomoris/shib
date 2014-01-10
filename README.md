@@ -41,6 +41,8 @@ Or, hiveserver2
 
     $ hive --service hiveserver2
 
+NOTE: hiveserver should be configured as `hive.server2.authentication=NOSASL`!
+
 ### Node.js
 
 To run shib, you must install node.js, and export PATH for installed node.
