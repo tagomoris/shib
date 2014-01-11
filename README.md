@@ -41,7 +41,7 @@ Or, hiveserver2
 
     $ hive --service hiveserver2
 
-NOTE: hiveserver should be configured as `hive.server2.authentication=NOSASL`!
+NOTE: hiveserver should be configured as `hive.server2.authentication=NOSASL`, and engine `hiveserver2` does not support databases.
 
 ### Node.js
 
@@ -105,7 +105,7 @@ var servers = exports.servers = {
 };
 ```
 
-With Hive 0.5 or earlier (without database support):
+With Hive 0.5 or earlier, or hiveserver2 (without database support):
 
 ```js
   executer: {
@@ -130,6 +130,7 @@ With some setup queries:
 
 ## TODO
 
+* 'hiveserver2' database support (for Hive 0.13 or later?)
 * More monitor over 'hiveserver2'
 * Support multi engines at same time
 * Support Presto

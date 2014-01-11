@@ -57,16 +57,16 @@ app.configure('production', function(){
 app.get('/', function(req, res){
   var client = shib.client();
   var control = client.engine().supports('status');
-  var defaultdb = client.default_database || null;
+  var defaultdb = client.default_database() || null;
   res.render(__dirname + '/views/index.jade', {control: control, defaultdb:defaultdb});
   client.end();
 });
 
 app.get('/databases', function(req, res){
   var client = shib.client();
-  if (client.default_database) {
+  if (client.default_database()) {
     client.executeSystemStatement('show databases', function(err, result){
-      if (err) { result = [client.default_database]; }
+      if (err) { result = [client.default_database()]; }
       res.send(result);
       client.end();
     });
@@ -80,7 +80,7 @@ app.get('/q/:queryid', function(req, res){
   // Only this request handler is for permalink request from browser URL bar.
   var client = shib.client();
   var control = client.engine().supports('status');
-  var defaultdb = client.default_database || null;
+  var defaultdb = client.default_database() || null;
   res.render(__dirname + '/views/index.jade', {control: control, defaultdb:defaultdb});
   client.end();
 });
