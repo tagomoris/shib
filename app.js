@@ -65,7 +65,7 @@ app.get('/', function(req, res){
 app.get('/databases', function(req, res){
   var client = shib.client();
   if (client.default_database()) {
-    client.executeSystemStatement('show databases', function(err, result){
+    client.databases(function(err, result){
       if (err) { result = [client.default_database()]; }
       res.send(result);
       client.end();
@@ -104,15 +104,12 @@ app.get('/runnings', function(req, res){
 });
 
 app.get('/tables', function(req, res){
-  var database = req.query.db;
   var client = shib.client();
-  client.useDatabase(database, function(err, client){
-    if (err) { error_handle(req, res, err); if (client.end) client.end(); return; }
-    client.executeSystemStatement('show tables', function(err, result){
-      if (err) { error_handle(req, res, err); this.end(); return; }
-      res.send(result);
-      client.end();
-    });
+  var database = req.query.db;
+  client.tables(database, function(err, result){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send(result);
+    client.end();
   });
 });
 
@@ -124,13 +121,10 @@ app.get('/partitions', function(req, res){
     return;
   }
   var client = shib.client();
-  client.useDatabase(database, function(err, client){
+  client.partitions(database, tablename, function(err, results){
     if (err) { error_handle(req, res, err); client.end(); return; }
-    client.partitions(tablename, function(err, partition_nodes){
-      if (err) { error_handle(req, res, err); client.end(); return; }
-      res.send(partition_nodes);
-      client.end();
-    });
+    res.send(results);
+    client.end();
   });
 });
 
@@ -145,17 +139,14 @@ app.get('/describe', function(req, res){
   }
   var fn = jade.compile(describe_node_template);
   var client = shib.client();
-  client.useDatabase(database, function(err, client){
+  client.describe(database, tablename, function(err, result){
     if (err) { error_handle(req, res, err); client.end(); return; }
-    client.describe(tablename, function(err, result){
-      if (err) { error_handle(req, res, err); client.end(); return; }
-      var response_html = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
-      result.forEach(function(cols){
-        response_html += fn.call(this, {colname: cols[0], coltype: cols[1], colcomment: cols[2]});
-      });
-      res.send([{title: '<table>' + response_html + '</table>'}]);
-      client.end();
+    var response_html = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
+    result.forEach(function(cols){
+      response_html += fn.call(this, {colname: cols[0], coltype: cols[1], colcomment: cols[2]});
     });
+    res.send([{title: '<table>' + response_html + '</table>'}]);
+    client.end();
   });
 });
 
@@ -200,7 +191,8 @@ app.get('/summary_bulk', function(req, res){
 app.post('/execute', function(req, res){
   var client = shib.client();
   var scheduled = req.body.scheduled;
-  client.createQuery(req.body.querystring, function(err, query){
+  // TODO: req.body.dbname
+  client.createQuery(req.body.dbname, req.body.querystring, function(err, query){
     if (err) {
       if (err.error) {
         err = err.error;
