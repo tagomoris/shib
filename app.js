@@ -46,7 +46,8 @@ app.configure(function(){
   app.set('port', (servers.listen || process.env.PORT || 3000));
 });
 
-app.error(function(err, req, res){
+app.use(function(err, req, res, next){
+  if (!err) return next();
   console.log(err);
   res.send(err);
 });
