@@ -49,7 +49,10 @@ app.configure(function(){
 app.use(function(err, req, res, next){
   if (!err) return next();
   console.log(err);
-  res.send(err);
+  if (err instanceof Object)
+    res.send(500, JSON.stringify(err));
+  else
+    res.send(500, err);
 });
 
 app.configure('development', function(){
