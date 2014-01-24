@@ -62,7 +62,7 @@ function load_pairs(callback) {
   $.get('/engines?=' + (new Date()).getTime(), function(data){
     engineInfo = data;
 
-    $('select#table_pairs,select#desc_pairs').empty();
+    $('select#table_pairs,select#desc_pairs,select#exec_pairs').empty();
     $.tmpl('pairTemplate',
         engineInfo.pairs.map(function(pair){ return { Engine:pair[0], Dbname:pair[1] }; })
     ).appendTo('select#table_pairs');
@@ -742,7 +742,7 @@ function show_editbox_buttons(buttons){
 }
 
 function show_query_exec_pairs(query){
-  if (!query.engine) {
+  if (!query || !query.engine) {
     $('span#queryengine').text('');
     $('span#querydatabase').text('');
   }
