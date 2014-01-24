@@ -15,8 +15,6 @@ html
     // script(type="text/javascript", src="https://www.google.com/jsapi")
     script(type="text/javascript", src="/js/shib.js")
   body
-    div(style="display: none;")
-      input#detailcontrol(type="hidden", name="detailcontrol", value="#{control}")
     #titlearea
       #title
         a(href="/") shib
@@ -36,16 +34,14 @@ html
     #resultdiag(title="show result", style="display:none;")
       pre#resultdisplay
     #tablesdiag(title="tables status", style="display:none;")
-      if defaultdb
-        select#table_dbname(style="width: 300;", "data-default"=defaultdb)
-          option not loaded
+      select#table_pairs(style="width: 300;")
+        option not loaded
       .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
       #tables(style="display: none;")
     #describediag(title="table schema", style="display:none;")
-      if defaultdb
-        select#desc_dbname(style="width: 300;", "data-default"=defaultdb)
-          option not loaded
+      select#desc_pairs(style="width: 300;")
+        option not loaded
       .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
       #describes
@@ -83,6 +79,9 @@ html
               #querybox
                 textarea#queryeditor(rows="14")
               #editbox.ui-corner-all
+                #engineselector(style="display: none")
+                  select#exec_pairs(style="width: 300")
+                    option not loaded
                 ul.operationitems.ui-widget.ui-helper-clearfix
                   li#execute_button.ui-state-default.ui-corner-all
                     span.ui-icon.ui-icon-play
@@ -112,6 +111,12 @@ html
                   span
                     | Query Status:
                     span#querystatus.status_not_executed not executed
+                #queryexec
+                  div
+                    | Engine:
+                    span#queryengine
+                    | Database:
+                    span#querydatabase
                 #queryresult(style="display: none;")
                   div
                     | Result:

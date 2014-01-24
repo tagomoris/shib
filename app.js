@@ -37,7 +37,8 @@ function error_handle(req, res, err){
 app.configure(function(){
   app.use(express.logger('default'));
   app.use(express.methodOverride());
-  app.use(express.bodyParser());
+  app.use(express.urlencoded());
+  app.use(express.json());
   app.use(app.router);
   app.set('view options', {layout: false});
   app.set('port', (servers.listen || process.env.PORT || 3000));
@@ -56,32 +57,14 @@ app.configure('production', function(){
 
 app.get('/', function(req, res){
   var client = shib.client();
-  var control = client.engine().supports('status');
-  var defaultdb = client.default_database() || null;
-  res.render(__dirname + '/views/index.jade', {control: control, defaultdb:defaultdb});
+  res.render(__dirname + '/views/index.jade');
   client.end();
-});
-
-app.get('/databases', function(req, res){
-  var client = shib.client();
-  if (client.default_database()) {
-    client.databases(function(err, result){
-      if (err) { result = [client.default_database()]; }
-      res.send(result);
-      client.end();
-    });
-  } else {
-    res.send([]);
-    client.end();
-  }
 });
 
 app.get('/q/:queryid', function(req, res){
   // Only this request handler is for permalink request from browser URL bar.
   var client = shib.client();
-  var control = client.engine().supports('status');
-  var defaultdb = client.default_database() || null;
-  res.render(__dirname + '/views/index.jade', {control: control, defaultdb:defaultdb});
+  res.render(__dirname + '/views/index.jade');
   client.end();
 });
 
@@ -103,10 +86,56 @@ app.get('/runnings', function(req, res){
   res.send(runnings);
 });
 
+
+/* TODO: needed or not?
+var pairsCache = {
+  createdAt: null,
+  list: []
+};
+
+var PAIRS_CACHE_LIFE = 24 * 60 * 60 * 1000; // 1 day
+
+var forPairs = function(callback){
+  
+};
+ */
+app.get('/engines', function(req, res){
+  /*
+  // "monitor" means support 'status' (and 'kill') or not.
+  {
+    pairs: [ [engine_label, dbname], [engine_label, dbname], ... ],
+    monitor: { label: bool }
+  }
+   */
+  shib.client().engineInfo(function(err, info){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send(info);
+    this.end();
+  });
+});
+
+
+/*
+app.get('/databases', function(req, res){
+  var client = shib.client();
+  if (client.default_database()) {
+    client.databases(function(err, result){
+      if (err) { result = [client.default_database()]; }
+      res.send(result);
+      client.end();
+    });
+  } else {
+    res.send([]);
+    client.end();
+  }
+});
+ */
+
 app.get('/tables', function(req, res){
   var client = shib.client();
+  var engineLabel = req.query.engine;
   var database = req.query.db;
-  client.tables(database, function(err, result){
+  client.tables(engineLabel, database, function(err, result){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(result);
     client.end();
@@ -114,6 +143,7 @@ app.get('/tables', function(req, res){
 });
 
 app.get('/partitions', function(req, res){
+  var engineLabel = req.query.engine;
   var database = req.query.db;
   var tablename = req.query.key;
   if (/^[a-z0-9_]+$/i.exec(tablename) == null) {
@@ -121,7 +151,7 @@ app.get('/partitions', function(req, res){
     return;
   }
   var client = shib.client();
-  client.partitions(database, tablename, function(err, results){
+  client.partitions(engineLabel, database, tablename, function(err, results){
     if (err) { error_handle(req, res, err); client.end(); return; }
     res.send(results);
     client.end();
@@ -131,6 +161,7 @@ app.get('/partitions', function(req, res){
 var describe_node_template = 'tr\n  td= colname\n  td= coltype\n  td= colcomment\n';
 
 app.get('/describe', function(req, res){
+  var engineLabel = req.query.engine;
   var database = req.query.db;
   var tablename = req.query.key;
   if (/^[a-z0-9_]+$/i.exec(tablename) == null) {
@@ -139,7 +170,7 @@ app.get('/describe', function(req, res){
   }
   var fn = jade.compile(describe_node_template);
   var client = shib.client();
-  client.describe(database, tablename, function(err, result){
+  client.describe(engineLabel, database, tablename, function(err, result){
     if (err) { error_handle(req, res, err); client.end(); return; }
     var response_html = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
     result.forEach(function(cols){
@@ -190,9 +221,11 @@ app.get('/summary_bulk', function(req, res){
   
 app.post('/execute', function(req, res){
   var client = shib.client();
+  var engineLabel = req.body.engineLabel;
+  var dbname = req.body.dbname;
+  var query = req.body.querystring;
   var scheduled = req.body.scheduled;
-  // TODO: req.body.dbname
-  client.createQuery(req.body.dbname, req.body.querystring, function(err, query){
+  client.createQuery(engineLabel, dbname, query, function(err, query){
     if (err) {
       if (err.error) {
         err = err.error;
@@ -278,13 +311,16 @@ app.get('/status/:queryid', function(req, res){
 });
 
 app.get('/detailstatus/:queryid', function(req, res){
-  shib.client().detailStatus(req.params.queryid, function(err, data){
+  shib.client().query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    if (data === null)
-      res.send('query not found', 404);
-    else
-      res.send(data);
-    this.end();
+    this.detailStatus(query, function(err, data){
+      if (err) { error_handle(req, res, err); this.end(); return; }
+      if (data === null)
+        res.send('query not found', 404);
+      else
+        res.send(data);
+      this.end();
+    });
   });
 });
 
