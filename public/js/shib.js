@@ -62,7 +62,7 @@ function load_pairs(callback) {
   $.get('/engines?=' + (new Date()).getTime(), function(data){
     engineInfo = data;
 
-    $('select#table_pairse,select#desc_pairs').empty();
+    $('select#table_pairs,select#desc_pairs').empty();
     $.tmpl('pairTemplate',
         engineInfo.pairs.map(function(pair){ return { Engine:pair[0], Dbname:pair[1] }; })
     ).appendTo('select#table_pairs');
