@@ -39,12 +39,16 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.urlencoded());
   app.use(express.json());
-  app.use(express.errorHandler({ dumpExceptions: true }));
 
   app.use(app.router);
 
   app.set('view options', {layout: false});
   app.set('port', (servers.listen || process.env.PORT || 3000));
+});
+
+app.error(function(err, req, res){
+  console.log(err);
+  res.send(err);
 });
 
 app.configure('development', function(){
