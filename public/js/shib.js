@@ -743,12 +743,14 @@ function show_editbox_buttons(buttons){
 
 function show_query_exec_pairs(query){
   if (!query || !query.engine) {
+    $('#queryexec').hide();
     $('span#queryengine').text('');
     $('span#querydatabase').text('');
   }
   else {
     $('span#queryengine').text(query.engine);
     $('span#querydatabase').text(query.dbname || '(default)');
+    $('#queryexec').show();
   }
 }
 
