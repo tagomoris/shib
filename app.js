@@ -102,18 +102,8 @@ app.get('/runnings', function(req, res){
 });
 
 
-/* TODO: needed or not?
-var pairsCache = {
-  createdAt: null,
-  list: []
-};
+var enginesCache = null;
 
-var PAIRS_CACHE_LIFE = 24 * 60 * 60 * 1000; // 1 day
-
-var forPairs = function(callback){
-  
-};
- */
 app.get('/engines', function(req, res){
   /*
   // "monitor" means support 'status' (and 'kill') or not.
@@ -122,29 +112,19 @@ app.get('/engines', function(req, res){
     monitor: { label: bool }
   }
    */
-  shib.client().engineInfo(function(err, info){
-    if (err) { error_handle(req, res, err); this.end(); return; }
+  var info = enginesCache;
+  if (info) {
     res.send(info);
-    this.end();
-  });
-});
-
-
-/*
-app.get('/databases', function(req, res){
-  var client = shib.client();
-  if (client.default_database()) {
-    client.databases(function(err, result){
-      if (err) { result = [client.default_database()]; }
-      res.send(result);
-      client.end();
+  }
+  else {
+    shib.client().engineInfo(function(err, info){
+      if (err) { error_handle(req, res, err); this.end(); return; }
+      enginesCache = info;
+      res.send(info);
+      this.end();
     });
-  } else {
-    res.send([]);
-    client.end();
   }
 });
- */
 
 app.get('/tables', function(req, res){
   var client = shib.client();
@@ -238,6 +218,11 @@ app.post('/execute', function(req, res){
   var client = shib.client();
   var engineLabel = req.body.engineLabel;
   var dbname = req.body.dbname;
+  if (!engineLabel || !dbname) {
+    engineLabel = enginesCache[0][0];
+    dbname = enginesCache[0][1];
+  }
+
   var query = req.body.querystring;
   var scheduled = req.body.scheduled;
   client.createQuery(engineLabel, dbname, query, function(err, query){
@@ -447,5 +432,19 @@ app.get('/download/csv/:resultid', function(req, res){
 });
 
 shib.client().end(); // to initialize sqlite3 database
+
+// var enginesCache = null;
+var enginesCacheUpdate = function(){
+  shib.client().engineInfo(function(err, info){
+    if (!err && info)
+      enginesCache = info;
+    this.end();
+  });
+};
+setInterval(enginesCacheUpdate, 60*60*1000); // cache update per hour
+
 console.log((new Date()).toString() + ': Starting shib.');
+
+enginesCacheUpdate();
+
 app.listen(app.get('port'));
