@@ -4,58 +4,57 @@
 
 ## DESCRIPTION
 
-'shib' is hive client application for HiveServer, run as web application on Node.js.
+Shib is web client application for SQL-like query engines, written in Node.js, supporting
+ * Hive (hiveserver, hiveserver2)
+ * Facebook Presto
+
+Once configured, we can switch query engines per executions.
 
 Some extension features are supported:
 
-* Huahin-Manager (Job Controller Proxy with HTTP API) support: Kill hive mapreduce job correctly from shib, with Huahin-Manager
-  * see: http://huahin.github.com/huahin-manager/
 * Setup queries: options to specify queries executed before main query, like 'create functions ...'
 * Default Database: option to specify default database for Hive 0.6 or later
+* Huahin-Manager (Job Controller Proxy with HTTP API) support: Kill hive mapreduce job correctly from shib, with Huahin-Manager
+  * see: http://huahin.github.com/huahin-manager/
 
 ### Versions
 
-Latest version of 'shib' is v0.2.0.
+Latest version of 'shib' is v0.3.0.
 
 'shib' versions are:
 
-* v0.1 series
-  * uses KT, depends on node v0.6.x
-  * see `v0.1` tag
+* v0.3 series
+  * multi engines/databases support
+  * presto support
+  * storages of v0.3.x are compatible with v0.2
 * v0.2 series
   * current status of master branch
   * uses local filesystem instead of KT, depends on latest node (v0.8.x, v0.10.x)
   * higher performance, more safe Web UI and updated features
-
-**There are no compatibilities of data (query and results) between v0.1 and v0.2**. And there are no convert tools now.
+  * storages of v0.2 are **NOT complatible with v0.1**
+* v0.1 series
+  * uses KT, depends on node v0.6.x
+  * see `v0.1` tag
 
 ## INSTALL
 
-### HiveServer
+### Hive/Presto
 
-You should run HiveServer at any server near your hadoop cluster.
+For Hive queries, shib requires HiveServer or HiveServer2. Setup and run these.
 
-    $ hive --service hiveserver
+* For HiveServer2
+  * Configure `hive.server2.authentication` as `NOSASL`
+  * Database selection is not supported now
 
-Or, hiveserver2
-
-    $ hive --service hiveserver2
-
-NOTE: hiveserver should be configured as `hive.server2.authentication=NOSASL`, and engine `hiveserver2` does not support databases.
+For Presto, shib is tested with Presto version 0.57.
 
 ### Node.js
 
-To run shib, you must install node.js, and export PATH for installed node.
-
-### Huahin Manager
-
-To show map/reduce status, and/or to kill actual map/reduce jobs behind hive query, shib can use Huahin Manager. Current version supports only 'Huahin Manager CDH4 + MRv1' only.
-
-http://huahinframework.org/huahin-manager/
+To run shib, you must install node.js (v0.10.x recommended), and export PATH for installed node.
 
 ### shib
 
-Install shib code.
+Clone shib code.
 
     $ git clone git://github.com/tagomoris/shib.git
 
@@ -76,7 +75,67 @@ You can also run shib with command below for 'production' environment, with prod
 
 ## Configuration
 
-Basic configuration in config.js (or productions.js):
+Shib can have 2 or more query executor engines.
+
+### HiveServer2
+
+Basic configuration with HiveServer2 in config.js (or productions.js):
+
+```js
+var servers = exports.servers = {
+  listen: 3000,
+  fetch_lines: 1000,   // lines per fetch in shib
+  query_timeout: null, // shib waits queries forever
+  setup_queries: [],
+  storage: {
+    datadir: './var'
+  },
+  engines: [
+    { label: 'mycluster1',
+      executer: {
+        name: 'hiveserver2',
+        host: 'hs2.mycluster1.local',
+        port: 10000,
+        support_database: false
+      },
+      monitor: null
+    },
+  ],
+};
+```
+
+For UDFs, you can specify statements before query executions in `setup_queries`.
+
+```js
+var servers = exports.servers = {
+  listen: 3000,
+  fetch_lines: 1000,
+  query_timeout: null,
+  setup_queries: [
+    "add jar /path/to/jarfile/foo.jar",
+    "create temporary function foofunc as 'package.of.udf.FooFunc'",
+    "create temporary function barfunc as 'package.of.udf.BarFunc'"
+  ],
+  storage: {
+    datadir: './var'
+  },
+  engines: [
+    { label: 'mycluster1',
+      executer: {
+        name: 'hiveserver2',
+        host: 'hs2.mycluster1.local',
+        port: 10000,
+        support_database: false
+      },
+      monitor: null
+    },
+  ],
+};
+```
+
+### HiveServer
+
+Classic HiveServer is available if you want database supports instead of HiveServer2.
 
 ```js
 var servers = exports.servers = {
@@ -87,53 +146,164 @@ var servers = exports.servers = {
   storage: {
     datadir: './var'
   },
-  executer: {
-    name: 'hiveserver', // or 'hiveserver2'
-    host: 'localhost',
-    port: 10000,
-    support_database: true,
-    default_database: 'default'
-  },
-  monitor: null
-  /* if you are using Huahin Manager MRv1
-  monitor: {
-    name : 'huahin_mrv1',
-    host: 'localhost',
-    port: 9010
-  }
-  */
+  engines: [
+    { label: 'mycluster1',
+      executer: {
+        name: 'hiveserver',  // HiveServer(1)
+        host: 'hs1.mycluster1.local',
+        port: 10000,
+        support_database: true,
+        default_database: 'mylogs1'
+      },
+      monitor: null
+    },
+  ],
 };
 ```
 
-With Hive 0.5 or earlier, or hiveserver2 (without database support):
+### Presto
+
+For Presto, use `presto` executer.
 
 ```js
-  executer: {
-    name: 'hiveserver', // or 'hiveserver2'
-    host: 'localhost',
-    port: 10000,
-    support_database: false
+var servers = exports.servers = {
+  listen: 3000,
+  fetch_lines: 1000,
+  query_timeout: 30, // 30 seconds for Presto query timeouts (it will fail)
+  setup_queries: [],
+  storage: {
+    datadir: './var'
   },
+  engines: [
+    { label: 'prestocluster1',
+      executer: {
+        name: 'presto',
+        host: 'coordinator.mycluster2.local',
+        port: 8080,
+        catalog: 'hive',  // required configuration argument
+        support_database: true,
+        default_database: 'mylogs1'
+      },
+      monitor: null
+    },
+  ],
+};
 ```
 
-With some setup queries:
+### Multi clusters and engines
+
+Shib supports 2 or more engines for a cluster, and 2 or more clusters with same engines. These patterns are available.
+
+* HiveServer1, HiveServer2 and Presto for same data source
+* 2 or more catalogs for same Presto cluster
+* Many clusters which has one of HiveServer, HiveServer2 or Presto
+
+You should write configurations in `engines` how you wants. `fetch_lines`, `query_timeout` and `setup_queries` in each engines overwrites global default of these configurations.
+
+For example, This is configuration example.
+ * ClusterA has HiveServer2
+   * listenes port 10000
+   * customized udfs in `foo.jar` are availabe
+ * ClusterB has HiveServer
+   * listenes port 10001
+   * customized udfs in `foo.jar` are available
+ * Presto cluster is configured with `hive` catalog and `hive2` catalog
+   * udfs are not available
 
 ```js
+var servers = exports.servers = {
+  listen: 3000,
+  fetch_lines: 1000,
+  query_timeout: null,
   setup_queries: [
     "add jar /path/to/jarfile/foo.jar",
     "create temporary function foofunc as 'package.of.udf.FooFunc'",
     "create temporary function barfunc as 'package.of.udf.BarFunc'"
   ],
+  storage: {
+    datadir: './var'
+  },
+  engines: [
+    { label: 'myclusterA',
+      executer: {
+        name: 'hiveserver2',
+        host: 'master.a.cluster.local',
+        port: 10000,
+        support_database: false
+      },
+      monitor: null
+    },
+    { label: 'myclusterB',
+      executer: {
+        name: 'hiveserver',
+        host: 'master.b.cluster.local',
+        port: 10001,
+        support_database: true,
+        default_database: 'mylogs1'
+      },
+      monitor: null
+    },
+    { label: 'prestocluster1',
+      executer: {
+        name: 'presto',
+        host: 'coordinator.p.cluster.local',
+        port: 8080,
+        catalog: 'hive',
+        support_database: true,
+        default_database: 'mylogs1',
+        query_timeout: 30,  // overwrite global config
+        setup_queries: []   // overwrite global config
+      },
+      monitor: null
+    },
+    { label: 'prestocluster2',
+      executer: {
+        name: 'presto',
+        host: 'coordinator.p.cluster.local',
+        port: 8080,
+        catalog: 'hive2',  // one engine config per catalogs
+        support_database: true,
+        default_database: 'default',
+        query_timeout: 30,  // overwrite global config
+        setup_queries: []   // overwrite global config
+      },
+      monitor: null
+    }
+  ],
+};
+```
+
+## Monitors
+
+`monitor` configurations are used to get query status and to kill queries.
+  * `hiveserver` has no monitoring features
+  * `hiveserver2` monitor is under development
+  * `presto` monitor is under development
+
+### Huahin Manager
+
+For monitors in CDH4 + MRv1 environment, Huahin manager is available.
+
+To show map/reduce status, and/or to kill actual map/reduce jobs behind hive query, shib can use Huahin Manager. Current version supports only 'Huahin Manager CDH4 + MRv1' only.
+
+http://huahinframework.org/huahin-manager/
+
+Configure `monitor` argument like below instead of `null`.
+
+```js
+monitor: {
+  name : 'huahin_mrv1',
+  host: 'localhost',
+  port: 9010
+}
 ```
 
 * * * * *
 
 ## TODO
 
+* Monotir support of `hiveserver2` and `presto`
 * 'hiveserver2' database support (for Hive 0.13 or later?)
-* More monitor over 'hiveserver2'
-* Support multi engines at same time
-* Support Presto
 
 ## License
 
