@@ -3,19 +3,15 @@ var shibdata = {};
 var shibselectedquery = null;
 var shibselectedquery_dom = null;
 
-var shibdetailcontrol = false;
-
 var shib_QUERY_STATUS_CHECK_INTERVAL = 5000;
 var shib_QUERY_EDITOR_WATCHER_INTERVAL = 500;
 var shib_NOTIFICATION_CHECK_INTERVAL = 100;
 var shib_NOTIFICATION_DEFAULT_DURATION_SECONDS = 10;
 var shib_RUNNING_QUERY_UPDATE_INTERVAL = 15000;
 
-$(function(){
-  if ($('input#detailcontrol').val() === 'true') {
-    shibdetailcontrol = true;
-  }
+var engineInfo = null;
 
+$(function(){
   load_tabs({callback:function(){
     follow_current_uri();
     setInterval(check_selected_running_query_state, shib_QUERY_STATUS_CHECK_INTERVAL);
@@ -29,23 +25,18 @@ $(function(){
     function() { $(this).removeClass('ui-state-hover'); }
   );
 
-  if ($('select#table_dbname').size() > 0) {
-    $('#tables_diag,#describe_diag')
+  $('#tables_diag,#describe_diag')
       .css('text-decoration', 'line-through')
       .css('cursor', 'wait');
-    load_database_list(function(){
-      $('#tables_diag').click(function(event){show_tables_dialog();});
-      $('#table_dbname').change(function(event){show_tables_dialog();});
-      $('#describe_diag').click(function(event){show_describe_dialog();});
-      $('#desc_dbname').change(function(event){show_describe_dialog();});
-      $('#tables_diag,#describe_diag')
+  load_pairs(function(){
+    $('#tables_diag').click(function(event){show_tables_dialog();});
+    $('#table_pairs').change(function(event){show_tables_dialog();});
+    $('#describe_diag').click(function(event){show_describe_dialog();});
+    $('#desc_pairs').change(function(event){show_describe_dialog();});
+    $('#tables_diag,#describe_diag')
         .css('text-decoration', '')
         .css('cursor', 'pointer');
-    });
-  } else {
-    $('#tables_diag').click(function(event){show_tables_dialog();});
-    $('#describe_diag').click(function(event){show_describe_dialog();});
-  }
+  });
 
   $('#new_button').click(initiate_mainview);
   $('#copy_button').click(copy_selected_query);
@@ -63,22 +54,24 @@ $(function(){
 
 });
 
-/* database list loading (just after page loading) */
+/* engine/database pairs list loading (just after page loading) */
 
-$.template("databasesTemplate",
-           '<option ${Selected}>${Dbname}</option>');
-function load_database_list(callback) {
-  $.get('/databases?=' + (new Date()).getTime(), function(data){
-    if (data.length < 1) return;
+$.template("pairTemplate",
+           '<option data-engine="${Engine}" data-database="${Dbname}" value=>${Engine} - ${Dbname}</option>');
+function load_pairs(callback) {
+  $.get('/engines?=' + (new Date()).getTime(), function(data){
+    engineInfo = data;
 
-    var defaultdb = $('select#table_dbname').data('defaultdb');
-    $('select#table_dbname,select#desc_dbname').empty();
-    $.tmpl('databasesTemplate',
-           data.map(function(dbname){ return {Dbname:dbname, Selected:(defaultdb === dbname ? 'selected' : '')}; })
-          ).appendTo('select#table_dbname');
-    $.tmpl('databasesTemplate',
-           data.map(function(dbname){ return {Dbname:dbname, Selected:(defaultdb === dbname ? 'selected' : '')}; })
-          ).appendTo('select#desc_dbname');
+    $('select#table_pairs,select#desc_pairs,select#exec_pairs').empty();
+    $.tmpl('pairTemplate',
+        engineInfo.pairs.map(function(pair){ return { Engine:pair[0], Dbname:pair[1] }; })
+    ).appendTo('select#table_pairs');
+    $.tmpl('pairTemplate',
+        engineInfo.pairs.map(function(pair){ return { Engine:pair[0], Dbname:pair[1] }; })
+    ).appendTo('select#desc_pairs');
+    $.tmpl('pairTemplate',
+        engineInfo.pairs.map(function(pair){ return { Engine:pair[0], Dbname:pair[1] }; })
+    ).appendTo('select#exec_pairs');
     callback();
   });
 };
@@ -339,11 +332,12 @@ function show_tables_dialog() {
     .hide();
   $('#tablesdiag').dialog({modal:false, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
   $('#tablesdiag .loadingimg').show();
-  var dbname = null;
-  if ($('#table_dbname').val()) {
-    dbname = $('#table_dbname').val();
-  }
-  var get_path = (dbname ? '/tables?db=' + dbname : '/tables');
+
+  var selected = $('#table_pairs option:selected');
+  var engine = selected.data('engine');
+  var dbname = selected.data('database');
+
+  var get_path = '/tables?engine=' + encodeURIComponent(engine) + '&db=' + encodeURIComponent(dbname);
   $.get(get_path, function(data){
     $('#tablesdiag .loadingimg').hide();
     $('#tables')
@@ -355,11 +349,9 @@ function show_tables_dialog() {
         clickFolderMode: 2,
         activeVisible: false,
         onLazyRead: function(node){
-          var datahash = {key: node.data.key};
-          if (dbname) { datahash.db = dbname; }
           node.appendAjax({
             url: '/partitions',
-            data: datahash,
+            data: { key: node.data.key, engine: engine, db: dbname },
             cache: false
           });
         }
@@ -374,11 +366,12 @@ function show_describe_dialog() {
     .hide();
   $('#describediag').dialog({modal:false, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
   $('#describediag .loadingimg').show();
-  var dbname = null;
-  if ($('#desc_dbname').val()) {
-    dbname = $('#desc_dbname').val();
-  }
-  var get_path = (dbname ? '/tables?db=' + dbname : '/tables');
+
+  var selected = $('#desc_pairs option:selected');
+  var engine = selected.data('engine');
+  var dbname = selected.data('database');
+
+  var get_path = '/tables?engine=' + encodeURIComponent(engine) + '&db=' + encodeURIComponent(dbname);
   $.get(get_path, function(data){
     $('#describediag .loadingimg').hide();
     $('#describes')
@@ -390,11 +383,9 @@ function show_describe_dialog() {
         clickFolderMode: 2,
         activeVisible: false,
         onLazyRead: function(node){
-          var datahash = {key: node.data.key};
-          if (dbname) { datahash.db = dbname; }
           node.appendAjax({
             url: '/describe',
-            data: datahash,
+            data: { key: node.data.key, engine: engine, db: dbname },
             cache: false
           });
         }
@@ -628,14 +619,14 @@ function select_queryitem(event){
 
 /* left pane view updates */
 
-function initiate_mainview(event, quiet) { /* event not used */
+function initiate_mainview(eventNotUsed, quiet) {
   deselect_and_new_query(quiet);
   update_queryeditor(true, '');
   update_editbox(null, 'not executed');
   update_history_by_query(null);
 };
 
-function copy_selected_query(event) { /* event not used */
+function copy_selected_query(eventNotUsed) {
   var querystring = shibselectedquery.querystring;
   deselect_and_new_query();
   update_queryeditor(true, querystring);
@@ -643,7 +634,7 @@ function copy_selected_query(event) { /* event not used */
   update_history_by_query(null);
 };
 
-function clip_selected_query(event) { /* event not used */
+function clip_selected_query(eventNotUsed) {
   var clip_query_id = shibselectedquery.queryid;
   push_bookmark_query_list(clip_query_id);
   load_tabs({
@@ -655,7 +646,7 @@ function clip_selected_query(event) { /* event not used */
   update_editbox(shibselectedquery);
 };
 
-function unclip_selected_query(event) { /* event not used */
+function unclip_selected_query(eventNotUsed) {
   var unclip_query_id = shibselectedquery.queryid;
   delete_bookmark_query_list(unclip_query_id);
   load_tabs({
@@ -696,37 +687,39 @@ function update_editbox(query, optional_state) {
     $('#copy_button,#clip_button,#unclip_button').hide();
   }
 
+  show_query_exec_pairs(query);
+
   var state = optional_state || query_current_state(query);
   switch (state) {
   case 'not executed':
   case undefined:
   case null:
+    $('select#exec_pairs').val($('select#exec_pairs option')[0].text);
+    $('#engineselector').show();
     show_editbox_buttons(['execute_button']);
-    change_editbox_querystatus_style('not executed');
+    change_editbox_querystatus_style(query, 'not executed');
     break;
   case 'running':
-    if (shibdetailcontrol) {
+    $('#engineselector').hide();
+    if (engineInfo && engineInfo.monitor[query.engine]) {
       show_editbox_buttons(['giveup_button', 'status_button']);
     }
     else {
       show_editbox_buttons(['giveup_button']);
     }
-    change_editbox_querystatus_style('running');
+    change_editbox_querystatus_style(query, 'running');
     break;
   case 'executed':
   case 'done':
-    /*
-    show_editbox_buttons(['rerun_button', 'delete_button', 'display_full_button', 'display_head_button',
-                          'download_tsv_button', 'download_csv_button']);
-     */
+    $('#engineselector').hide();
     show_editbox_buttons(['delete_button', 'display_full_button', 'display_head_button',
                           'download_tsv_button', 'download_csv_button']);
-    change_editbox_querystatus_style('executed', query_last_result(query));
+    change_editbox_querystatus_style(query, 'executed', query_last_result(query));
     break;
   case 'error':
-    // show_editbox_buttons(['rerun_button', 'delete_button']);
+    $('#engineselector').hide();
     show_editbox_buttons(['delete_button']);
-    change_editbox_querystatus_style('error', query_last_result(query));
+    change_editbox_querystatus_style(query, 'error', query_last_result(query));
     break;
   default:
     show_error('UI Bug', 'unknown query status:' + state, 5, query);
@@ -748,7 +741,20 @@ function show_editbox_buttons(buttons){
   });
 }
 
-function change_editbox_querystatus_style(state, result){
+function show_query_exec_pairs(query){
+  if (!query || !query.engine) {
+    $('#queryexec').hide();
+    $('span#queryengine').text('');
+    $('span#querydatabase').text('');
+  }
+  else {
+    $('span#queryengine').text(query.engine);
+    $('span#querydatabase').text(query.dbname || '(default)');
+    $('#queryexec').show();
+  }
+}
+
+function change_editbox_querystatus_style(query, state, result){
   var allstates = {
     'not executed':{classname:'status_not_executed', result:false},
     'running':{classname:'status_running', result:false},
@@ -893,13 +899,17 @@ function execute_query() {
     show_error('UI Bug', 'execute_query should be enable with not-saved-query objects');
     return;
   }
+  var selected = $('#exec_pairs option:selected');
+  var engine = selected.data('engine');
+  var dbname = selected.data('database');
+
   var querystring = $('#queryeditor').val();
 
   $.ajax({
     url: '/execute',
     type: 'POST',
     dataType: 'json',
-    data: {querystring: querystring},
+    data: { engineLabel: engine, dbname: dbname, querystring: querystring },
     error: function(jqXHR, textStatus, err){
       console.log(jqXHR);
       console.log(textStatus);
@@ -959,10 +969,10 @@ function giveup_query() {
   });
 };
 
-function show_status_query(event) {
-  if (! shibdetailcontrol)
-    return;
+function show_status_query(eventNotUsed) {
   if (! shibselectedquery)
+    return;
+  if (! engineInfo || !engineInfo.monitor[shibselectedquery.engine])
     return;
   show_status_dialog(shibselectedquery);
 }
