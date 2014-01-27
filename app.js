@@ -219,8 +219,8 @@ app.post('/execute', function(req, res){
   var engineLabel = req.body.engineLabel;
   var dbname = req.body.dbname;
   if (!engineLabel || !dbname) {
-    engineLabel = enginesCache[0][0];
-    dbname = enginesCache[0][1];
+    engineLabel = enginesCache.pairs[0][0];
+    dbname = enginesCache.pairs[0][1];
   }
 
   var query = req.body.querystring;
