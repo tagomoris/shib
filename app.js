@@ -39,6 +39,7 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.urlencoded());
   app.use(express.json());
+  app.use(express.bodyParser());
 
   app.use(app.router);
 
