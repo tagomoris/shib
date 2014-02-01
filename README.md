@@ -302,7 +302,7 @@ monitor: {
 
 ## TODO
 
-* Monotir support of `hiveserver2` and `presto`
+* Monitor support of `hiveserver2` and `presto`
 * 'hiveserver2' database support (for Hive 0.13 or later?)
 
 ## License
