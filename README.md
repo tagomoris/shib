@@ -44,6 +44,7 @@ For Hive queries, shib requires HiveServer or HiveServer2. Setup and run these.
 
 * For HiveServer2
   * Configure `hive.server2.authentication` as `NOSASL`
+    * Strongly recommended to configure `hive.support.concurrency` as `false`
   * Database selection is not supported now
 
 For Presto, shib is tested with Presto version 0.57.
@@ -96,6 +97,7 @@ var servers = exports.servers = {
         name: 'hiveserver2',
         host: 'hs2.mycluster1.local',
         port: 10000,
+        usename: 'hive',
         support_database: false
       },
       monitor: null
@@ -103,6 +105,8 @@ var servers = exports.servers = {
   ],
 };
 ```
+
+`username` should be same as user name that hive job will be executed on. (`password` is not required for NOSASL transport.)
 
 For UDFs, you can specify statements before query executions in `setup_queries`.
 
