@@ -27,7 +27,7 @@
         "async": ">= 0.1.22",
         "express": ">= 2.5.9",
         "jade": ">= 0.26.1",
-        "presto-client": ">= 0.0.3"
+        "presto-client": ">= 0.0.6"
     },
     "repository": {
         "type": "git",
