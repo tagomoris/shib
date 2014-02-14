@@ -1,5 +1,5 @@
 var testCase = require('nodeunit').testCase;
-var mock = require('ThriftHiveMock');
+var mock = require('./../testtools/ThriftHiveMock');
 
 module.exports = testCase({
   /*
