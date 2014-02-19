@@ -59,7 +59,7 @@ $(function(){
 /* engine/database pairs list loading (just after page loading) */
 
 $.template("pairTemplate",
-           '<option data-engine="${Engine}" data-database="${Dbname}" value=>${Engine} - ${Dbname}</option>');
+           '<option data-engine="${Engine}" data-database="${Dbname}" value="${Engine}/${Dbname}">${Engine} - ${Dbname}</option>');
 function load_pairs(callback) {
   $.get('/engines?=' + (new Date()).getTime(), function(data){
     engineInfo = data;
@@ -651,15 +651,15 @@ function copy_selected_query(eventNotUsed) {
   deselect_and_new_query();
   update_queryeditor(true, querystring);
   update_editbox(null, 'not executed');
-  var exec_pairs_copied = null;
+  var exec_pairs_value = null;
   $('select#exec_pairs option').each(function(i,element){
     var e = $(element);
-    if (e.data('engine') === engine && e.data('dbname') === dbname)
-      exec_pairs_copied = e.text();
+    if (e.data('engine') === engine && e.data('database') === dbname)
+      exec_pairs_value = e.val();
   });
-  if (! exec_pairs_copied)
-    exec_pairs_copied = $('select#exec_pairs option')[0].text;
-  $('select#exec_pairs').val(exec_pairs_copied);
+  if (! exec_pairs_value)
+    exec_pairs_value = $($('select#exec_pairs option')[0]).val();
+  $('select#exec_pairs').val(exec_pairs_value);
   update_history_by_query(null);
 };
 
