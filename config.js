@@ -7,7 +7,7 @@ var servers = exports.servers = {
     datadir: './var'
   },
   executer: {
-    name: 'hiveserver', // or 'hiveserver2' (not implemented) or 'huahinmanager' (not implemented)
+    name: 'hiveserver', // or 'hiveserver2', 'presto'
     host: 'localhost',
     port: 10000,
     support_database: true,
@@ -16,7 +16,7 @@ var servers = exports.servers = {
   monitor: null
   /*
   monitor: {
-    name : 'huahin_mrv1', // or 'huahin_yarn'
+    name : 'huahin_mrv1', // or 'presto'
     host: 'localhost',
     port: 9010
   }
