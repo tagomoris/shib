@@ -646,9 +646,20 @@ function initiate_mainview(eventNotUsed, quiet) {
 
 function copy_selected_query(eventNotUsed) {
   var querystring = shibselectedquery.querystring;
+  var engine = shibselectedquery.engine;
+  var dbname = shibselectedquery.dbname;
   deselect_and_new_query();
   update_queryeditor(true, querystring);
   update_editbox(null, 'not executed');
+  var exec_pairs_copied = null;
+  $('select#exec_pairs option').each(function(i,element){
+    var e = $(element);
+    if (e.data('engine') === engine && e.data('dbname') === dbname)
+      exec_pairs_copied = e.text();
+  });
+  if (! exec_pairs_copied)
+    exec_pairs_copied = $('select#exec_pairs option')[0].text;
+  $('select#exec_pairs').val(exec_pairs_copied);
   update_history_by_query(null);
 };
 
@@ -712,7 +723,6 @@ function update_editbox(query, optional_state) {
   case 'not executed':
   case undefined:
   case null:
-    $('select#exec_pairs').val($('select#exec_pairs option')[0].text);
     $('#engineselector').show();
     show_editbox_buttons(['execute_button']);
     change_editbox_querystatus_style(query, 'not executed');
