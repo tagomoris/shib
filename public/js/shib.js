@@ -403,6 +403,14 @@ $.template("detailStatusTemplate",
            '<tr><td>URL</td><td><a href="${Url}">${Url}</a></td></tr>' +
            '<tr><td>Complete</td><td>Map:${MapComplete}, Reduce:${ReduceComplete}</td></tr>' +
            '</table>');
+$.template("detailStatusTemplate2",
+           '<table>' +
+           '<tr><td>Job ID</td><td>${JobID}</td></tr>' +
+           '<tr><td>State</td><td>${State}</td></tr>' +
+           '<tr><td>Priority</td><td>${Priority}</td></tr>' +
+           '<tr><td>URL</td><td><a href="${Url}">${Url}</a></td></tr>' +
+           '<tr><td>Complete</td><td>${Complete}</td></tr>' +
+           '</table>');
 function show_status_dialog(target) {
   $('#detailstatus').empty().hide();
   $('#detailstatusdiag').dialog({modal:true, resizable:false, height:200, width:600, maxHeight:200, maxWidth:950});
@@ -430,18 +438,26 @@ function show_status_dialog(target) {
          startTime: 'Thu Apr 11 2013 16:06:40 (JST)',
          mapComplete: 89,
          reduceComplete: 29,
+         complete: 80,
          hiveQueryId: 'hive_20130411160606_46b1b669-3a64-4174-899e-bb1bf53e90db',
          hiveQueryString: 'SELECT ...'
        };
+       // "complete" and "mapComplete/reduceComplete" are exclusive
        */
-      $.tmpl("detailStatusTemplate",[
-        {
+      var template = "detailStatusTemplate";
+      var out = {
           JobID: state['jobid'], State: state['state'], Priority: state['priority'],
-          Url: state['trackingURL'],
-          MapComplete: String(state['mapComplete'] || 0) + '%',
-          ReduceComplete: String(state['ReduceComplete'] || 0) + '%'
-        }
-      ]).appendTo('#detailstatus');
+          Url: state['trackingURL']
+      };
+      if (state['complete']) {
+        template = "detailStatusTemplate2";
+        out['Complete'] = String(state['complete'] || 0) + '%';
+      } else {
+        out['MapComplete'] = String(state['mapComplete'] || 0) + '%';
+        out['ReduceComplete'] = String(state['ReduceComplete'] || 0) + '%';
+      }
+
+      $.tmpl(template,[ out ]).appendTo('#detailstatus');
       $('#detailstatusdiag .loadingimg').hide();
       $('#detailstatus').show();
     }
