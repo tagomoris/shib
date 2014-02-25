@@ -264,24 +264,13 @@ app.post('/giveup', function(req, res){
 });
 
 app.post('/delete', function(req, res){
-  //TODO: fix without history
   var targetid = req.body.queryid;
-  var targetHistorySize = 5;
-
   var client = shib.client();
-  client.getHistories(function(err, histories){
-    if (err)
-      histories = [];
-    var targetHistories = histories.sort().reverse().slice(0, targetHistorySize); // unti-dictionary order, last 'targetHistorySize' items
-    var funclist = [
-      function(callback){client.deleteQuery(targetid); callback(null, 1);}
-    ].concat(targetHistories.map(function(h){return function(callback){client.removeHistory(h, targetid); callback(null, 1);};}));
-    async.parallel(funclist, function(err, results){
-      if (err) {error_handle(req, res, err); client.end(); return;}
-      delete runningQueries[targetid];
-      res.send({result:'ok'});
-      client.end();
-    });
+  client.deleteRecent(targetid, function(err){
+    if (err) {error_handle(req, res, err); client.end(); return;}
+    delete runningQueries[targetid];
+    res.send({result:'ok'});
+    client.end();
   });
 });
 
