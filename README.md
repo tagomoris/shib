@@ -19,7 +19,7 @@ Some extension features are supported:
 
 ### Versions
 
-Latest version of 'shib' is v0.3.0.
+Latest version of 'shib' is v0.3.1.
 
 'shib' versions are:
 
@@ -301,6 +301,89 @@ monitor: {
   port: 9010
 }
 ```
+
+## As HTTP Proxy for query engines
+
+POST query string into `/execute` with some parameters.
+
+```
+curl -s -X POST -F 'querystring=SELECT COUNT(*) AS cnt FROM yourtable WHERE field="value"' http://shib.server.local:3000/execute | jq .
+{
+  "queryid": "69927e67c5b1d5f665697943cc4867ec",
+  "results": [],
+  "dbname": "default",
+  "engine": "hiveserver",
+  "querystring": "SELECT COUNT(*) AS cnt FROM yourtable WHERE field=\"value\""
+}
+```
+
+Specify `engineLabel` and `dbname` for non-default query engines and databases:
+
+```
+curl -s -X POST -F "engineLabel=presto" -F "dbname=testing" -F "querystring=SELECT COUNT(*) AS cnt FROM yourtable WHERE field='value'" http://shib.server.local:3000/execute
+```
+
+Then, fetch query's status whenever you want.
+
+```
+curl -s http://shib.intra.livedoor.net/status/69927e67c5b1d5f665697943cc4867ec 
+executed
+```
+
+Or get whole query object.
+
+```
+curl -s http://shib.server.local:3000/query/69927e67c5b1d5f665697943cc4867ec | jq .
+{
+  "queryid": "69927e67c5b1d5f665697943cc4867ec",
+  "results": [
+    {
+      "resultid": "969629614dff69411a2f4f1733c9616a",
+      "executed_at": "Wed Feb 26 2014 16:02:00 GMT+0900 (JST)"
+    }
+  ],
+  "dbname": "default",
+  "engine": "hiveserver",
+  "querystring": "SELECT COUNT(*) AS cnt FROM yourtable WHERE field=\"value\""
+}
+```
+
+If this query object has `executed` status, or a member of `results`, you can fetch its result by `resultid`.
+
+```
+# if you want elasped time or bytes or lines or ....
+curl -s http://shib.server.local:3000/result/969629614dff69411a2f4f1733c9616a | jq .
+{
+  "schema": [
+    {
+      "type": "bigint",
+      "name": "cnt"
+    }
+  ],
+  "completed_msec": 1393398893759,
+  "completed_at": "Wed Feb 26 2014 16:14:53 GMT+0900 (JST)",
+  "completed_time": null,
+  "bytes": 6,
+  "queryid": "69927e67c5b1d5f665697943cc4867ec",
+  "executed_time": null,
+  "executed_at": "Wed Feb 26 2014 16:14:52 GMT+0900 (JST)",
+  "executed_msec": 1393398892752,
+  "resultid": "969629614dff69411a2f4f1733c9616a",
+  "state": "done",
+  "error": "",
+  "lines": 2
+}
+# raw result data as TSV (fast)
+curl -s http://shib.server.local:3000/download/tsv/969629614dff69411a2f4f1733c9616a | jq .
+CNT
+1234567
+# or CSV (slow)
+curl -s http://shib.server.local:3000/download/csv/969629614dff69411a2f4f1733c9616a | jq .
+"CNT"
+"1234567"
+```
+
+These HTTP requests/response are same with that javascript on browser does.
 
 * * * * *
 
