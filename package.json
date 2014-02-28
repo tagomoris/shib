@@ -1,6 +1,6 @@
 {
     "name": "shib",
-    "version": "0.2.0",
+    "version": "0.3.2",
     "engines": { "node" : ">= 0.8" },
     "description": "Hive Client Web Application",
     "homepage": "https://github.com/tagomoris/shib",

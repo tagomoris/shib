@@ -19,7 +19,7 @@ Some extension features are supported:
 
 ### Versions
 
-Latest version of 'shib' is v0.3.1.
+Latest version of 'shib' is v0.3.2.
 
 'shib' versions are:
 
