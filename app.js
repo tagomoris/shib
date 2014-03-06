@@ -419,19 +419,28 @@ app.get('/download/tsv/:resultid', function(req, res){
 app.get('/download/csv/:resultid', function(req, res){
   shib.client().result(req.params.resultid, function(err, result){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    this.rawResultData(req.params.resultid, function(err, data){
-      if (err) { error_handle(req, res, err); this.end(); return; }
-      res.attachment(req.params.resultid + '.csv');
-      var rows = (data || '').split("\n");
-      if (rows[rows.length - 1].length < 1)
-        rows.pop();
-      res.set('X-Shib-Query-ID', result.queryid);
-      res.set('X-Shib-Result-ID', result.resultid);
-      res.set('X-Shib-Executed-At', result.executed_msec || 0);
-      res.set('X-Shib-Completed-At', result.completed_msec || 0);
-      res.send(rows.map(function(row){return SimpleCSVBuilder.build(row.split('\t'));}).join(''));
-      this.end();
+
+    res.attachment(req.params.resultid + '.csv');
+    res.set('X-Shib-Query-ID', result.queryid);
+    res.set('X-Shib-Result-ID', result.resultid);
+    res.set('X-Shib-Executed-At', result.executed_msec || 0);
+    res.set('X-Shib-Completed-At', result.completed_msec || 0);
+
+    var file = shib.client().generatePath(req.params.resultid);
+    var rStream = fs.createReadStream(file);
+    var readline = require('readline');
+    var rl = readline.createInterface(rStream, {});
+    rl.on('line', function(line){
+      res.write(SimpleCSVBuilder.build(line.split('\t')));
     });
+    rl.on('close', function(){
+      res.end();
+      shib.client().end();
+    });
+    res.on('resume', function(){
+      rl.resume();
+    });
+    
   });
 });
 
