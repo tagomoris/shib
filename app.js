@@ -351,10 +351,20 @@ app.post('/results', function(req, res){
 });
 
 app.get('/show/full/:resultid', function(req, res){
-  shib.client().rawResultData(req.params.resultid, function(err, data){
-    if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(data);
-    this.end();
+  var file = shib.client().generatePath(req.params.resultid);
+  var rStream = fs.createReadStream(file);
+  rStream.on('data', function(chunk) {
+    rStream.pause();
+    process.nextTick(function(){
+      res.write(chunk);
+    });
+  });
+  rStream.on('end', function(){
+    res.end();
+    shib.client().end();
+  });
+  res.on('drain', function(){
+    rStream.resume();
   });
 });
 
