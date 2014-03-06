@@ -359,31 +359,25 @@ app.get('/show/full/:resultid', function(req, res){
 });
 
 app.get('/show/head/:resultid', function(req, res){
-  shib.client().rawResultData(req.params.resultid, function(err, data){
-    if (err) { error_handle(req, res, err); this.end(); return; }
-    if (! data) {
-      res.send(null);
-      this.end();
-      return;
-    }
-    var headdata = [];
-    var counts = 0;
-    var position = 0;
-    while (counts < SHOW_RESULT_HEAD_LINES && position < data.length) {
-      var nextNewline = data.indexOf('\n', position);
-      if (nextNewline < 0) {
-        headdata.push(data.substring(position));
-        counts += 1;
-        position = data.length;
-      }
-      else{
-        headdata.push(data.substring(position, nextNewline + 1));
-        counts += 1;
-        position = nextNewline + 1;
-      }
-    }
-    res.send(headdata.join(''));
-    this.end();
+  var file = shib.client().generatePath(req.params.resultid);
+  var rStream = fs.createReadStream(file);
+  var readline = require('readline');
+  var rl = readline.createInterface(rStream, {});
+  var line_number = 0;
+  rl.on('line', function(line) {
+    if(line_number < SHOW_RESULT_HEAD_LINES){
+      res.write(line + '\n');
+      line_number++;
+    }else{
+      rl.close();
+     }
+  });
+  rl.on('close', function() {
+    res.end();
+    shib.client().end();
+  });
+  res.on('resume', function() {
+    rl.resume();
   });
 });
 
@@ -440,7 +434,7 @@ app.get('/download/csv/:resultid', function(req, res){
     res.on('resume', function(){
       rl.resume();
     });
-    
+
   });
 });
 
