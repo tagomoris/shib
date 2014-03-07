@@ -351,7 +351,8 @@ app.post('/results', function(req, res){
 });
 
 app.get('/show/full/:resultid', function(req, res){
-  var file = shib.client().generatePath(req.params.resultid);
+  var client = shib.client();
+  var file = client.generatePath(req.params.resultid);
   var rStream = fs.createReadStream(file);
   rStream.on('data', function(chunk) {
     rStream.pause();
@@ -361,7 +362,7 @@ app.get('/show/full/:resultid', function(req, res){
   });
   rStream.on('end', function(){
     res.end();
-    shib.client().end();
+    client.end();
   });
   res.on('drain', function(){
     rStream.resume();
@@ -369,7 +370,8 @@ app.get('/show/full/:resultid', function(req, res){
 });
 
 app.get('/show/head/:resultid', function(req, res){
-  var file = shib.client().generatePath(req.params.resultid);
+  var client = shib.client();
+  var file = client.generatePath(req.params.resultid);
   var rStream = fs.createReadStream(file);
   var readline = require('readline');
   var rl = readline.createInterface(rStream, {});
@@ -384,7 +386,7 @@ app.get('/show/head/:resultid', function(req, res){
   });
   rl.on('close', function() {
     res.end();
-    shib.client().end();
+    client.end();
   });
   res.on('resume', function() {
     rl.resume();
@@ -401,7 +403,8 @@ app.get('/download/tsv/:resultid', function(req, res){
     res.set('X-Shib-Executed-At', result.executed_msec || 0);
     res.set('X-Shib-Completed-At', result.completed_msec || 0);
 
-    var file = shib.client().generatePath(req.params.resultid);
+    var client = shib.client();
+    var file = client.generatePath(req.params.resultid);
     var rStream = fs.createReadStream(file);
     rStream.on('data', function(chunk){
       rStream.pause();
@@ -411,7 +414,7 @@ app.get('/download/tsv/:resultid', function(req, res){
     });
     rStream.on('end', function(){
       res.end();
-      shib.client().end();
+      client.end();
     });
     res.on('drain', function(){
       rStream.resume();
@@ -430,7 +433,8 @@ app.get('/download/csv/:resultid', function(req, res){
     res.set('X-Shib-Executed-At', result.executed_msec || 0);
     res.set('X-Shib-Completed-At', result.completed_msec || 0);
 
-    var file = shib.client().generatePath(req.params.resultid);
+    var client = shib.client();
+    var file = client.generatePath(req.params.resultid);
     var rStream = fs.createReadStream(file);
     var readline = require('readline');
     var rl = readline.createInterface(rStream, {});
@@ -439,7 +443,7 @@ app.get('/download/csv/:resultid', function(req, res){
     });
     rl.on('close', function(){
       res.end();
-      shib.client().end();
+      client.end();
     });
     res.on('resume', function(){
       rl.resume();
