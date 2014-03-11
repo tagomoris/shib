@@ -353,6 +353,12 @@ app.post('/results', function(req, res){
 app.get('/show/full/:resultid', function(req, res){
   var client = shib.client();
   var file = client.generatePath(req.params.resultid);
+  if(!fs.existsSync(file)){
+    res.send(null);
+    res.end();
+    client.end();
+    return;
+  }
   var rStream = fs.createReadStream(file);
   rStream.on('data', function(chunk) {
     rStream.pause();
@@ -372,6 +378,12 @@ app.get('/show/full/:resultid', function(req, res){
 app.get('/show/head/:resultid', function(req, res){
   var client = shib.client();
   var file = client.generatePath(req.params.resultid);
+  if(!fs.existsSync(file)){
+    res.send(null);
+    res.end();
+    client.end();
+    return;
+  }
   var rStream = fs.createReadStream(file);
   var readline = require('readline');
   var rl = readline.createInterface(rStream, {});
@@ -405,6 +417,12 @@ app.get('/download/tsv/:resultid', function(req, res){
 
     var client = shib.client();
     var file = client.generatePath(req.params.resultid);
+    if(!fs.existsSync(file)){
+      res.send(null);
+      res.end();
+      client.end();
+      return;
+    }
     var rStream = fs.createReadStream(file);
     rStream.on('data', function(chunk){
       rStream.pause();
@@ -435,6 +453,12 @@ app.get('/download/csv/:resultid', function(req, res){
 
     var client = shib.client();
     var file = client.generatePath(req.params.resultid);
+    if(!fs.existsSync(file)){
+      res.send(null);
+      res.end();
+      client.end();
+      return;
+    }
     var rStream = fs.createReadStream(file);
     var readline = require('readline');
     var rl = readline.createInterface(rStream, {});
