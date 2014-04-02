@@ -326,7 +326,7 @@ curl -s -X POST -F "engineLabel=presto" -F "dbname=testing" -F "querystring=SELE
 Then, fetch query's status whenever you want.
 
 ```
-curl -s http://shib.intra.livedoor.net/status/69927e67c5b1d5f665697943cc4867ec 
+curl -s http://shib.server.local:3000/status/69927e67c5b1d5f665697943cc4867ec 
 executed
 ```
 
