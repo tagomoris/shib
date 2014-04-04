@@ -116,6 +116,65 @@ module.exports = testCase({
 
     test.done();
   },
+  parseTableNames: function(test) {
+    var q0 = 'SELECT * FROM t1';
+    test.deepEqual(Query.parseTableNames(q0), [['t1', null]]);
+
+    var q1 = 'SELECT * FROM db1.sales WHERE amount > 10 AND region = "US"';
+    test.deepEqual(Query.parseTableNames(q1), [['sales', 'db1']]);
+
+    var q2 = 'SELECT page_views.* FROM page_views\nWHERE page_views.date >= "2008-03-01" \nAND page_views.date <= "2008-03-31"';
+    test.deepEqual(Query.parseTableNames(q2), [['page_views', null]]);
+
+    var q3 = 'SELECT * FROM Source TABLESAMPLE(BUCKET 3 OUT OF 32 ON rand()) s;';
+    test.deepEqual(Query.parseTableNames(q3), [['Source', null]]);
+
+    var q4 = "SELECT u.id, actions.date\nFROM (\n    SELECT av.uid AS uid\n    FROM action_video av\n    WHERE av.date = '2008-06-03'\n    UNION ALL\n    SELECT ac.uid AS uid\n    FROM action_comment ac\n    WHERE ac.date = '2008-06-03'\n ) actions JOIN users u ON (u.id = actions.uid)";
+    test.deepEqual(Query.parseTableNames(q4), [['action_video', null], ['action_comment', null], ['users', null]]);
+
+    var j0 = 'SELECT a.* FROM a JOIN b ON (a.id = b.id AND a.department = b.department)';
+    test.deepEqual(Query.parseTableNames(j0), [['a', null], ['b', null]]);
+
+    var j1 = 'SELECT a.val, b.val, c.val FROM db1.a JOIN db2.b ON (a.key = b.key1) JOIN c ON (c.key = b.key2)';
+    test.deepEqual(Query.parseTableNames(j1), [['a', 'db1'], ['b', 'db2'], ['c', null]]);
+
+    var j2 = 'SELECT a.val, b.val FROM a LEFT OUTER JOIN b ON (a.key=b.key)';
+    test.deepEqual(Query.parseTableNames(j2), [['a', null], ['b', null]]);
+
+    var j3 = 'SELECT a.key, a.val\nFROM a LEFT SEMI JOIN b on (a.key = b.key)';
+    test.deepEqual(Query.parseTableNames(j3), [['a', null], ['b', null]]);
+
+    var j4 = 'SELECT page_views.*\nFROM page_views JOIN dim_users\n  ON (page_views.user_id = dim_users.id AND page_views.date >= "2008-03-01" AND page_views.date <= "2008-03-31")';
+    test.deepEqual(Query.parseTableNames(j4), [['page_views', null], ['dim_users', null]]);
+
+    /*
+select idOne, idTwo, value FROM
+  ( select idOne, idTwo, value FROM
+    bigTable JOIN smallTableOne on (bigTable.idOne = smallTableOne.idOne)                                                  
+  ) firstjoin                                                            
+  JOIN                                                                 
+    smallTableTwo on (firstjoin.idTwo = smallTableTwo.idTwo)
+     */
+    var j5 = 'select idOne, idTwo, value FROM\n  ( select idOne, idTwo, value FROM\n    bigTable JOIN smallTableOne on (bigTable.idOne = smallTableOne.idOne)  \n  ) firstjoin  \n  JOIN   \n  smallTableTwo on (firstjoin.idTwo = smallTableTwo.idTwo) ';
+    test.deepEqual(Query.parseTableNames(j5), [['bigTable', null], ['smallTableOne', null], ['smallTableTwo', null]]);
+
+    var s0 = 'SELECT col\nFROM (\n  SELECT a+b AS col\n  FROM t1\n) t2';
+    test.deepEqual(Query.parseTableNames(s0), [['t1', null]]);
+
+    var s1 = 'SELECT t3.col FROM ( SELECT a+b AS col FROM d1.t1 UNION ALL SELECT c+d AS col FROM d2.t2 ) t3';
+    test.deepEqual(Query.parseTableNames(s1), [['t1', 'd1'], ['t2', 'd2']]);
+
+    var s2 = 'SELECT *\nFROM A\nWHERE A.a IN (SELECT foo FROM B);';
+    test.deepEqual(Query.parseTableNames(s2), [['A', null], ['B', null]]);
+
+    var s3 = 'SELECT A FROM T1 WHERE EXISTS (SELECT B FROM T2 WHERE T1.X = T2.Y)';
+    test.deepEqual(Query.parseTableNames(s3), [['T1', null], ['T2', null]]);
+
+    var s4 = 'SELECT col1 FROM (SELECT col1, SUM(col2) AS col2sum FROM t1 GROUP BY col1) t2 WHERE t2.col2sum > 10';
+    test.deepEqual(Query.parseTableNames(s4), [['t1', null]]);
+
+    test.done();
+  },
   tearDown: function (callback) {
     // clean up
     callback();
