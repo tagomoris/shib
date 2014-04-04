@@ -277,6 +277,44 @@ var servers = exports.servers = {
 };
 ```
 
+### Access Control
+
+Shib have access control list for Databases/Tables. Default is 'allow' for all databases/tables.
+
+Shib's access control rules are:
+  * configure per executer
+  * database level default ('allow' or 'deny') without any optional rules makes that database unvisible
+  * database level default + allow/deny table list makes its tables visible/unvisible
+    * in this case, this 'database' is visible
+  * default 'allow' or 'deny' decides visibilities of databases without any optional rules
+
+'unvisible' databases and tables:
+ * are not shown in tables/partitions list and schema list
+ * cannot be queried by users (these queries always fails)
+
+Access control options are written in 'executer' like this:
+
+```js
+executer: {
+  name: 'presto',
+  host: 'coordinator.p.cluster.local',
+  port: 8080,
+  catalog: 'hive',
+  support_database: true,
+  default_database: 'default',
+  query_timeout: 30,
+  setup_queries: [],
+  access_control: {
+    databases: {
+      secret: { default: "deny" },
+      member: { default: "deny", allow: ["users"] },
+      test:   { default: "allow", deny: ["secretData", "userMaster"] },
+    },
+    default: "allow"
+  }
+},
+```
+
 ## Monitors
 
 `monitor` configurations are used to get query status and to kill queries.
