@@ -17,6 +17,9 @@ module.exports = testCase({
     var rule = {};
     var acl = new AccessControl(rule);
 
+    test.ok(acl.visible('default'));
+    test.ok(acl.visible('db1'));
+
     test.ok(acl.allowed('t1', 'default'));
     test.ok(acl.allowed('t2', 'default'));
     test.ok(acl.allowed('WhatsTable', 'db1'));
@@ -27,16 +30,24 @@ module.exports = testCase({
     var rule = {
       default: "allow",
       databases: {
-        secret: { default: "deny" }
+        secret: { default: "deny" },
+        secret2: { default: "deny", allow: ["t1"] }
       }
     };
     var acl = new AccessControl(rule);
+
+    test.ok(acl.visible('default'));
+    test.ok(! acl.visible('secret'));
+    test.ok(acl.visible('secret2'));
 
     test.ok(acl.allowed('t1', 'default'));
     test.ok(acl.allowed('t2', 'default'));
     test.ok(acl.allowed('WhatsTable', 'db1'));
 
     test.ok(! acl.allowed('table', 'secret'));
+
+    test.ok(! acl.allowed('table', 'secret2'));
+    test.ok(acl.allowed('t1', 'secret2'));
 
     test.done();
   },
@@ -50,6 +61,11 @@ module.exports = testCase({
       }
     };
     var acl = new AccessControl(rule);
+
+    test.ok(! acl.visible("unknown"));
+    test.ok(acl.visible("default"));
+    test.ok(acl.visible("test"));
+    test.ok(acl.visible("data"));
 
     test.ok(acl.allowed('t1', 'default'));
     test.ok(acl.allowed('t2', 'default'));
