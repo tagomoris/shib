@@ -283,10 +283,55 @@ app.get('/query/:queryid', function(req, res){
   });
 });
 
+app.get('/tags/:queryid', function(req, res){
+  shib.client().tags(req.params.queryid, function(err, tags){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send(tags);
+    this.end();
+  });
+});
+
+app.post('/addtag', function(req, res){
+  var tag = req.body.tag;
+  if (tag.length < 1 || tag.length > 16) {
+    error_handle(req, res, {message: 'invalid tag length [1-16]'});
+    return;
+  }
+  shib.client().addTag(req.body.queryid, tag, function(err){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send({result:'ok'});
+    this.end();
+  });
+});
+
+app.post('/deletetag', function(req, res){
+  shib.client().deleteTag(req.body.queryid, req.body.tag, function(err){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send({result:'ok'});
+    this.end();
+  });
+});
+
 app.post('/queries', function(req, res){
   shib.client().queries(req.body.ids, function(err, queries){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({queries: queries});
+    this.end();
+  });
+});
+
+app.get('/tagged/:tag', function(req, res){
+  shib.client().taggedQueries(req.params.tag, function(err, queryids){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send(queryids);
+    this.end();
+  });
+});
+
+app.get('/taglist', function(req, res){
+  shib.client().tagList(function(err, tags){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send(tags);
     this.end();
   });
 });
