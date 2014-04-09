@@ -277,8 +277,11 @@ app.post('/delete', function(req, res){
   client.deleteRecent(targetid, function(err){
     if (err) {error_handle(req, res, err); client.end(); return;}
     delete runningQueries[targetid];
-    res.send({result:'ok'});
-    client.end();
+    client.deleteQuery(targetid, function(err){
+      if (err) {error_handle(req, res, err); client.end(); return;}
+      res.send({result:'ok'});
+      client.end();
+    });
   });
 });
 
