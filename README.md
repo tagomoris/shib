@@ -19,7 +19,7 @@ Some extension features are supported:
 
 ### Versions
 
-Latest version of 'shib' is v0.3.2.
+Latest version of 'shib' is v0.3.3.
 
 'shib' versions are:
 
@@ -27,6 +27,8 @@ Latest version of 'shib' is v0.3.2.
   * multi engines/databases support
   * presto support
   * storages of v0.3.x are compatible with v0.2
+  * database/table access controls
+  * tagging for executed queries
 * v0.2 series
   * current status of master branch
   * uses local filesystem instead of KT, depends on latest node (v0.8.x, v0.10.x)
