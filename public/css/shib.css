@@ -17,6 +17,10 @@ ul.operationitems {margin: 0; padding: 0;}
 ul.operationitems li {margin: 2px; position: relative; padding: 4px 8px 4px 4px; cursor: pointer; float: left;  list-style: none;}
 ul.operationitems span.ui-icon {float: left; margin: 0 4px;}
 
+ul.querytags {margin: 0; padding: 0;}
+ul.querytags li {margin: 2px; position: relative; padding: 4px 8px 4px 4px; cursor: pointer; float: left;  list-style: none;}
+ul.querytags span.ui-icon {float: left; margin: 0 4px;}
+
 span.status_not_executed {font-weight: bold; color: orange;}
 span.status_running {font-weight: bold; color: navy;}
 span.status_executed {font-weight: bold; color: green;}

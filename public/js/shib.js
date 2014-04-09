@@ -35,7 +35,8 @@ $(function(){
     $('#table_pairs').change(function(event){show_tables_dialog();});
     $('#describe_diag').click(function(event){show_describe_dialog();});
     $('#desc_pairs').change(function(event){show_describe_dialog();});
-    $('#tables_diag,#describe_diag')
+    $('#taglist_diag').click(function(event){show_taglist_dialog();})
+    $('#tables_diag,#describe_diag,#taglist_diag')
         .css('text-decoration', '')
         .css('cursor', 'pointer');
   });
@@ -54,6 +55,9 @@ $(function(){
   $('#download_tsv_button').click(function(){download_result_query({format:'tsv'});});
   $('#download_csv_button').click(function(){download_result_query({format:'csv'});});
 
+  $('#edit_tag_button').click(show_edit_tag_dialog);
+  $('#add_tag_submit').click(execute_add_tag);
+  $('#remove_tag_submit').click(execute_remove_tag);
 });
 
 /* engine/database pairs list loading (just after page loading) */
@@ -215,44 +219,73 @@ function timelabel_elapsed(completed_at, executed_at){
 /* uri and history operation */
 
 function follow_current_uri() {
-  if (window.location.pathname.indexOf('/q/') != 0)
-    return;
-  var queryid = window.location.pathname.substring('/q/'.length);
-  if (! /^[0-9a-z]{32}$/.exec(queryid)) // queryid is md5 (16bytes) hexdigest (32chars)
-    return;
+  if (window.location.pathname.indexOf('/q/') === 0) {
+    var queryid = window.location.pathname.substring('/q/'.length);
+    if (/^[0-9a-z]{32}$/.exec(queryid)) // queryid is md5 (16bytes) hexdigest (32chars)
+      follow_current_uri_query(queryid);
+  }
+  if (window.location.pathname.indexOf('/t/') === 0) {
+    var tag = window.location.pathname.substring('/t/'.length);
+    follow_current_uri_tag(tag);
+  }
+};
+
+function follow_current_uri_query(queryid){
   var query = shibdata.query_cache[queryid];
-  if (! query) {
-    $.ajax({
-      url: '/query/' + queryid,
-      type: 'GET',
-      error: function(jqXHR, textStatus, errorThrown){
-        show_error('Unknown query id', 'cannot get query object with specified id', 10);
-      },
-      success: function(data, textStatus, jqXHR){
-        query = data;
-        shibdata.query_cache[queryid] = query;
-        var resultids = data.results.map(function(v){return v.resultid;});
-        $.ajax({
-          url: '/results',
-          type: 'POST',
-          dataType: 'json',
-          data: {ids: resultids},
-          success: function(data){
-            data.results.forEach(function(result1){
-              if (! result1)
-                return;
-              shibdata.result_cache[result1.resultid] = result1;
-            });
-            update_mainview(query);
-          }
-        });
-      }
-    });
+  if (query) {
+    update_mainview(query);
     return;
   }
-  else
-    update_mainview(query);
-};
+
+  $.ajax({
+    url: '/query/' + queryid,
+    type: 'GET',
+    cache: false,
+    error: function(jqXHR, textStatus, errorThrown){
+      show_error('Unknown query id', 'cannot get query object with specified id', 10);
+    },
+    success: function(data, textStatus, jqXHR){
+      query = data;
+      shibdata.query_cache[queryid] = query;
+      var resultids = data.results.map(function(v){return v.resultid;});
+      $.ajax({
+        url: '/results',
+        type: 'POST',
+        dataType: 'json',
+        data: {ids: resultids},
+        success: function(data){
+          data.results.forEach(function(result1){
+            if (! result1)
+              return;
+            shibdata.result_cache[result1.resultid] = result1;
+          });
+          update_mainview(query);
+        }
+      });
+    }
+  });
+}
+
+function follow_current_uri_tag(tag){
+  $.ajax({
+    url: '/tagged/' + tag,
+    type: 'GET',
+    cache: false,
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to get detail status', msg);
+    },
+    success: function(queryids) {
+      load_query_tree(queryids, function(){
+        update_tabs(true, {tag:tag, queryids:queryids});
+      });
+    }
+  });
+}
 
 function update_history_by_query(query) {
   if (! window.history.pushState ) // if pushState not ready
@@ -395,6 +428,22 @@ function show_describe_dialog() {
   });
 };
 
+$.template("tagForTagListTemplate", '<li><a href="/t/${Tag}">${Tag}</a></li>');
+
+function show_taglist_dialog() {
+  $('ul#taglist').empty().hide();
+
+  $('#taglistdiag').dialog({modal:false, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
+  $('#taglistdiag .loadingimg').show();
+
+  $.getJSON('/taglist', function(tags){
+    $.tmpl("tagForTagListTemplate", tags.map(function(t){return {Tag:t};}))
+     .appendTo('ul#taglist');
+    $('#taglistdiag .loadingimg').hide();
+    $('ul#taglist').show();
+  });
+}
+
 $.template("detailStatusTemplate",
            '<table>' +
            '<tr><td>Job ID</td><td>${JobID}</td></tr>' +
@@ -464,15 +513,92 @@ function show_status_dialog(target) {
   });
 }
 
+$.template('removeTagOptionTemplate', '<option>${Tag}</option>');
+
+function show_edit_tag_dialog(){
+  var query = shibselectedquery;
+  $('input#add_tag_text').val('');
+  $('select#remove_tag_list').empty();
+  $('#removeTagPart').hide();
+
+  $.ajax({
+    url: '/tags/' + query.queryid,
+    type: 'GET',
+    cache: false,
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to get detail status', msg);
+    },
+    success: function(tags) {
+      if (tags.length > 0) {
+        $.tmpl("removeTagOptionTemplate", tags.map(function(t){return {Tag:t};}))
+          .appendTo('select#remove_tag_list');
+        $('#removeTagPart').show();
+      }
+
+      $('#edittagdiag').dialog({modal:true, resizable:false, height:100, width:250});
+    }
+  });
+}
+
+function execute_add_tag(){
+  var query = shibselectedquery;
+  $.ajax({
+    url: '/addtag',
+    type: 'POST',
+    cache: false,
+    data: { queryid: query.queryid, tag: $('input#add_tag_text').val() },
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to add a tag', msg);
+    },
+    success: function(state) {
+      $('#edittagdiag').dialog('close');
+      show_editbox_querytags(query);
+    }
+  });
+}
+
+function execute_remove_tag(){
+  var query = shibselectedquery;
+  $.ajax({
+    url: '/deletetag',
+    type: 'POST',
+    cache: false,
+    data: { queryid: query.queryid, tag: $('select#remove_tag_list').val() },
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to remove a tag', msg);
+    },
+    success: function(state) {
+      $('#edittagdiag').dialog('close');
+      show_editbox_querytags(query);
+    }
+  });
+}
+
 /* right pane operations */
 
-function update_tabs(reloading) {
+function update_tabs(reloading, taginfo) {
   if (reloading) {
     $('#listSelector').tabs('destroy');
     if (window.localStorage) {
       $('#tab-yours').accordion('destroy');
       $('#tab-bookmark').accordion('destroy');
     }
+    $('#tab-tag').accordion('destroy');
     $('#tab-history').accordion('destroy');
   }
 
@@ -490,6 +616,17 @@ function update_tabs(reloading) {
   update_history_tab(reloading);
   $("#tab-history").accordion({header:"h3", autoHeight:false});
 
+  if (taginfo) {
+    if ($('#listSelector ul li#index-tag').size() === 0){
+      $('#listSelector ul li#index-yours').before('<li id="index-tag"><a href="#tab-tag"> tag</a></li>');
+      $('#listSelector div#tab-yours').before('<div id="tab-tag"></div>');
+    }
+    update_tag_tab(taginfo.tag, taginfo.queryids);
+    $('#tab-tag').accordion({header:"h3", autoHeight:false});
+  } else {
+    $('#index-tag,#tab-tag').remove();
+  }
+
   $("#listSelector").tabs();
 
   $('.queryitem').click(select_queryitem);
@@ -497,7 +634,7 @@ function update_tabs(reloading) {
 
 function load_tabs(opts) {
   var callback = function() {
-    update_tabs(opts.reload);
+    update_tabs(opts.reload, opts.taginfo);
     if (opts.callback)
       opts.callback();
   };
@@ -508,20 +645,9 @@ function load_tabs(opts) {
     shibdata.query_state_cache = {};
     shibdata.result_cache = {};
 
-    /* query_ids == sum of values of history_ids */
-    load_queries(data.query_ids, function(err, queries){
-      var resultids = [];
-      queries.forEach(function(v){
-        if (v.results && v.results.length > 0)
-          resultids = resultids.concat(v.results.map(function(r){return r && r.resultid;}));
-      });
-      resultids = resultids.concat(execute_query_list()).concat(bookmark_query_list());
-      if (resultids.length < 1) {
-        callback();
-        return;
-      }
-      load_results(resultids, function(err, results){callback();});
-    });
+    /* data.query_ids is sum of values of history_ids */
+    var queryids = data.query_ids.concat( execute_query_list() ).concat( bookmark_query_list() );
+    load_query_tree(queryids, callback);
   });
 };
 
@@ -593,6 +719,15 @@ function update_history_tab(){
   });
 };
 
+function update_tag_tab(tag, queryids){
+  $('#tab-tag')
+      .empty()
+      .append('<div><h3><a href="#">TAG:' + tag + '</a></h3><div id="tag-idlist"></div></div>');
+  if (queryids.length > 0)
+    $.tmpl("queryItemTemplate", queryids.map(function(id){return create_queryitem_object(id, 'tag-');}))
+     .appendTo('#tab-tag div div#tag-idlist');
+}
+
 function deselect_and_new_query(quiet){
   release_selected_query();
   update_editbox(null);
@@ -618,7 +753,7 @@ function release_selected_query(){
 function select_queryitem(event){
   var target_dom = $(event.target).closest('.queryitem');
   var target_dom_id = target_dom.attr('id');
-  var dom_id_regex = /^query-(yours|bookmark|history)-([0-9a-f]+)$/;
+  var dom_id_regex = /^query-(yours|bookmark|history|tag)-([0-9a-f]+)$/;
   var match_result = dom_id_regex.exec(target_dom_id);
   if (match_result === null) {
     show_error("UI Bug", "Selected DOM id invalid:" + target_dom_id, 5);
@@ -726,6 +861,7 @@ function update_editbox(query, optional_state) {
     $('#engineselector').show();
     show_editbox_buttons(['execute_button']);
     change_editbox_querystatus_style(query, 'not executed');
+    show_editbox_querytags(null);
     break;
   case 'running':
     $('#engineselector').hide();
@@ -736,6 +872,7 @@ function update_editbox(query, optional_state) {
       show_editbox_buttons(['giveup_button']);
     }
     change_editbox_querystatus_style(query, 'running');
+    show_editbox_querytags(null);
     break;
   case 'executed':
   case 'done':
@@ -743,11 +880,13 @@ function update_editbox(query, optional_state) {
     show_editbox_buttons(['delete_button', 'display_full_button', 'display_head_button',
                           'download_tsv_button', 'download_csv_button']);
     change_editbox_querystatus_style(query, 'executed', query_last_result(query));
+    show_editbox_querytags(query);
     break;
   case 'error':
     $('#engineselector').hide();
     show_editbox_buttons(['delete_button']);
     change_editbox_querystatus_style(query, 'error', query_last_result(query));
+    show_editbox_querytags(null);
     break;
   default:
     show_error('UI Bug', 'unknown query status:' + state, 5, query);
@@ -821,7 +960,53 @@ function change_editbox_querystatus_style(query, state, result){
   }
 }
 
+$.template("queryTagTemplate",
+    '<li class="tag ui-state-default ui-corner-all" data-tagtext="${Tag}">' +
+    '<span class="ui-icon ui-icon-search"></span> <a href="/t/${Tag}">${Tag}</a>' +
+    '</li>');
+
+function show_editbox_querytags(query){
+  $('ul#querytags li.tag').remove();
+  if (query === null || query === undefined) {
+    $('ul#querytags').hide();
+    return;
+  }
+
+  $('ul#querytags').show();
+  $.ajax({
+    url: '/tags/' + query.queryid,
+    type: 'GET',
+    cache: false,
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to get detail status', msg);
+    },
+    success: function(tags) {
+      $.tmpl("queryTagTemplate",
+          tags.map(function(tag){ return {Tag:tag}; }))
+       .appendTo('ul#querytags');
+    }
+  });
+}
+
+
 /* query and result load/reload/caching */
+
+function load_query_tree(queryids, callback){
+  load_queries(queryids, function(err, queries){
+    var resultids = [];
+    queries.forEach(function(v){
+      if (v.results && v.results.length > 0)
+        resultids = resultids.concat(v.results.map(function(r){return r && r.resultid;}));
+    });
+    // load_results does not call ajax when argument is empty
+    load_results(resultids, function(err, results){callback();});
+  });
+}
 
 function load_queries(queryids, callback){
   if (queryids.length < 1) {
