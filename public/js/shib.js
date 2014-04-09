@@ -35,7 +35,8 @@ $(function(){
     $('#table_pairs').change(function(event){show_tables_dialog();});
     $('#describe_diag').click(function(event){show_describe_dialog();});
     $('#desc_pairs').change(function(event){show_describe_dialog();});
-    $('#tables_diag,#describe_diag')
+    $('#taglist_diag').click(function(event){show_taglist_dialog();})
+    $('#tables_diag,#describe_diag,#taglist_diag')
         .css('text-decoration', '')
         .css('cursor', 'pointer');
   });
@@ -426,6 +427,22 @@ function show_describe_dialog() {
       });
   });
 };
+
+$.template("tagForTagListTemplate", '<li><a href="/t/${Tag}">${Tag}</a></li>');
+
+function show_taglist_dialog() {
+  $('ul#taglist').empty().hide();
+
+  $('#taglistdiag').dialog({modal:false, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
+  $('#taglistdiag .loadingimg').show();
+
+  $.getJSON('/taglist', function(tags){
+    $.tmpl("tagForTagListTemplate", tags.map(function(t){return {Tag:t};}))
+     .appendTo('ul#taglist');
+    $('#taglistdiag .loadingimg').hide();
+    $('ul#taglist').show();
+  });
+}
 
 $.template("detailStatusTemplate",
            '<table>' +
@@ -945,7 +962,7 @@ function change_editbox_querystatus_style(query, state, result){
 
 $.template("queryTagTemplate",
     '<li class="tag ui-state-default ui-corner-all" data-tagtext="${Tag}">' +
-    '<span class="ui-icon ui-icon-search"></span> ${Tag}' +
+    '<span class="ui-icon ui-icon-search"></span> <a href="/t/${Tag}">${Tag}</a>' +
     '</li>');
 
 function show_editbox_querytags(query){

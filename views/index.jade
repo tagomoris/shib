@@ -45,6 +45,10 @@ html
       .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
       #describes
+    #taglistdiag(title="tag list", style="display:none;")
+      .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
+        image(src="/image/ajax-loader.gif")
+      ul#taglist
     #detailstatusdiag(title="query status", style="display:none;")
       .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
@@ -72,6 +76,9 @@ html
                   li#describe_diag.ui-state-default.ui-corner-all(title="show table schema")
                     span.ui-icon.ui-icon-info
                     | show table schemas
+                  li#taglist_diag.ui-state-default.ui-corner-all(title="show all tags")
+                    span.ui-icon.ui-icon-info
+                    | show all tags
               #dangereditbox.ui-corner-all
                 ul.dangeritems.operationitems.ui-widget.ui-helper-clearfix
                   li#new_button.ui-state-default.ui-corner-all
