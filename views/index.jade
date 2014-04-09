@@ -49,6 +49,16 @@ html
       .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
       #detailstatus(style="display: none;")
+    #edittagdiag(title="add/remove tag", style="display: none;")
+      input#add_tag_text(type="text", size="16")
+      button#add_tag_submit
+        | Add
+      #removeTagPart(style="display: none;")
+        hr
+        select#remove_tag_list
+          option not loaded
+        button#remove_tag_submit
+          | Remove
     #mainarea
       table
         tr
@@ -124,6 +134,10 @@ html
                     span#queryresultbytes 0 bytes
                   div#queryresultelapsed
                   div#queryresultschema
+                ul#querytags.querytags.ui-widget.ui-helper-clearfix(style="display: none;")
+                  li#edit_tag_button.ui-state-default.ui-corner-all
+                    span.ui-icon.ui-icon-pencil
+                    | Edit tag
           td#tabviewcell
             #tabview
               #listSelector

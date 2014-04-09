@@ -54,6 +54,9 @@ $(function(){
   $('#download_tsv_button').click(function(){download_result_query({format:'tsv'});});
   $('#download_csv_button').click(function(){download_result_query({format:'csv'});});
 
+  $('#edit_tag_button').click(show_edit_tag_dialog);
+  $('#add_tag_submit').click(execute_add_tag);
+  $('#remove_tag_submit').click(execute_remove_tag);
 });
 
 /* engine/database pairs list loading (just after page loading) */
@@ -464,6 +467,82 @@ function show_status_dialog(target) {
   });
 }
 
+$.template('removeTagOptionTemplate', '<option>${Tag}</option>');
+
+function show_edit_tag_dialog(){
+  var query = shibselectedquery;
+  $('input#add_tag_text').val('');
+  $('select#remove_tag_list').empty();
+  $('#removeTagPart').hide();
+
+  $.ajax({
+    url: '/tags/' + query.queryid,
+    type: 'GET',
+    cache: false,
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to get detail status', msg);
+    },
+    success: function(tags) {
+      if (tags.length > 0) {
+        $.tmpl("removeTagOptionTemplate", tags.map(function(t){return {Tag:t};}))
+          .appendTo('select#remove_tag_list');
+        $('#removeTagPart').show();
+      }
+
+      $('#edittagdiag').dialog({modal:true, resizable:false, height:100, width:250});
+    }
+  });
+}
+
+function execute_add_tag(){
+  var query = shibselectedquery;
+  $.ajax({
+    url: '/addtag',
+    type: 'POST',
+    cache: false,
+    data: { queryid: query.queryid, tag: $('input#add_tag_text').val() },
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to add a tag', msg);
+    },
+    success: function(state) {
+      $('#edittagdiag').dialog('close');
+      show_editbox_querytags(query);
+    }
+  });
+}
+
+function execute_remove_tag(){
+  var query = shibselectedquery;
+  $.ajax({
+    url: '/deletetag',
+    type: 'POST',
+    cache: false,
+    data: { queryid: query.queryid, tag: $('select#remove_tag_list').val() },
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to remove a tag', msg);
+    },
+    success: function(state) {
+      $('#edittagdiag').dialog('close');
+      show_editbox_querytags(query);
+    }
+  });
+}
+
 /* right pane operations */
 
 function update_tabs(reloading) {
@@ -726,6 +805,7 @@ function update_editbox(query, optional_state) {
     $('#engineselector').show();
     show_editbox_buttons(['execute_button']);
     change_editbox_querystatus_style(query, 'not executed');
+    show_editbox_querytags(null);
     break;
   case 'running':
     $('#engineselector').hide();
@@ -736,6 +816,7 @@ function update_editbox(query, optional_state) {
       show_editbox_buttons(['giveup_button']);
     }
     change_editbox_querystatus_style(query, 'running');
+    show_editbox_querytags(null);
     break;
   case 'executed':
   case 'done':
@@ -743,11 +824,13 @@ function update_editbox(query, optional_state) {
     show_editbox_buttons(['delete_button', 'display_full_button', 'display_head_button',
                           'download_tsv_button', 'download_csv_button']);
     change_editbox_querystatus_style(query, 'executed', query_last_result(query));
+    show_editbox_querytags(query);
     break;
   case 'error':
     $('#engineselector').hide();
     show_editbox_buttons(['delete_button']);
     change_editbox_querystatus_style(query, 'error', query_last_result(query));
+    show_editbox_querytags(null);
     break;
   default:
     show_error('UI Bug', 'unknown query status:' + state, 5, query);
@@ -820,6 +903,40 @@ function change_editbox_querystatus_style(query, state, result){
     }
   }
 }
+
+$.template("queryTagTemplate",
+    '<li class="tag ui-state-default ui-corner-all" data-tagtext="${Tag}">' +
+    '<span class="ui-icon ui-icon-search"></span> ${Tag}' +
+    '</li>');
+
+function show_editbox_querytags(query){
+  $('ul#querytags li.tag').remove();
+  if (query === null || query === undefined) {
+    $('ul#querytags').hide();
+    return;
+  }
+
+  $('ul#querytags').show();
+  $.ajax({
+    url: '/tags/' + query.queryid,
+    type: 'GET',
+    cache: false,
+    error: function(jqXHR, textStatus, err) {
+      console.log(jqXHR);
+      console.log(textStatus);
+      var msg = null;
+      try { msg = JSON.parse(jqXHR.responseText).message; }
+      catch (e) { msg = jqXHR.responseText; }
+      show_error('Failed to get detail status', msg);
+    },
+    success: function(tags) {
+      $.tmpl("queryTagTemplate",
+          tags.map(function(tag){ return {Tag:tag}; }))
+       .appendTo('ul#querytags');
+    }
+  });
+}
+
 
 /* query and result load/reload/caching */
 
