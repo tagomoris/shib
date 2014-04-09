@@ -85,6 +85,13 @@ app.get('/q/:queryid', function(req, res){
   client.end();
 });
 
+app.get('/t/:tag', function(req, res){
+  // Only this request handler is for permalink request from browser URL bar.
+  var client = shib.client();
+  res.render(__dirname + '/views/index.jade');
+  client.end();
+});
+
 app.get('/runnings', function(req, res){
   var runnings = [];
   for (var queryid in runningQueries) {
@@ -283,6 +290,14 @@ app.get('/query/:queryid', function(req, res){
   });
 });
 
+app.post('/queries', function(req, res){
+  shib.client().queries(req.body.ids, function(err, queries){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send({queries:queries});
+    this.end();
+  });
+});
+
 app.get('/tags/:queryid', function(req, res){
   shib.client().tags(req.params.queryid, function(err, tags){
     if (err) { error_handle(req, res, err); this.end(); return; }
@@ -308,14 +323,6 @@ app.post('/deletetag', function(req, res){
   shib.client().deleteTag(req.body.queryid, req.body.tag, function(err){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({result:'ok'});
-    this.end();
-  });
-});
-
-app.post('/queries', function(req, res){
-  shib.client().queries(req.body.ids, function(err, queries){
-    if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send({queries: queries});
     this.end();
   });
 });
