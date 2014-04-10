@@ -24,6 +24,7 @@ Latest version of 'shib' is v0.3.3.
 'shib' versions are:
 
 * v0.3 series
+  * use latest node (`~> v0.10.26`)
   * multi engines/databases support
   * presto support
   * storages of v0.3.x are compatible with v0.2
