@@ -1,6 +1,7 @@
 # shib
 
 * http://github.com/tagomoris/shib
+* Blog entry [tagomoris.tumblr](http://tagomoris.tumblr.com/post/77890621867/shib-web-client-for-hive-now-supports-presto)
 
 ## DESCRIPTION
 
