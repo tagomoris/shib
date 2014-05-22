@@ -533,18 +533,30 @@ app.get('/download/csv/:resultid', function(req, res){
 
 shib.client().end(); // to initialize sqlite3 database
 
-// var enginesCache = null;
-var enginesCacheUpdate = function(){
-  shib.client().engineInfo(function(err, info){
-    if (!err && info)
-      enginesCache = info;
-    this.end();
-  });
-};
-setInterval(enginesCacheUpdate, 60*60*1000); // cache update per hour
-
 console.log((new Date()).toString() + ': Starting shib.');
 
-enginesCacheUpdate();
+var d = require('domain').create();
+d.on('error', function(err){
+  // Failed to update engine cache
+  // This may occur by communication errors w/ servers
+  if (err.code === 'ECONNREFUSED') {
+    var e = err.domainEmitter;
+    console.log((new Date()).toString() + ': Connection refused, host "' + e.host + '", port ' + e.port);
+  } else {
+    console.log((new Date()).toString() + ': ' + err.toString());
+  }
+  process.exit();
+});
+d.run(function(){
+  var enginesCacheUpdate = function(){
+    shib.client().engineInfo(function(err, info){
+      if (!err && info)
+        enginesCache = info;
+      this.end();
+    });
+  };
+  setInterval(enginesCacheUpdate, 60*60*1000); // cache update per hour
+  enginesCacheUpdate();
+});
 
 app.listen(app.get('port'));
