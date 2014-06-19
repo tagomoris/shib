@@ -408,7 +408,7 @@ app.post('/results', function(req, res){
 app.get('/show/full/:resultid', function(req, res){
   var client = shib.client();
   var file = client.generatePath(req.params.resultid);
-  if(!fs.existsSync(file)){
+  if (! fs.existsSync(file)) {
     res.send(null);
     res.end();
     client.end();
@@ -431,7 +431,7 @@ app.get('/show/full/:resultid', function(req, res){
 app.get('/show/head/:resultid', function(req, res){
   var client = shib.client();
   var file = client.generatePath(req.params.resultid);
-  if(!fs.existsSync(file)){
+  if (! fs.existsSync(file)) {
     res.send(null);
     res.end();
     client.end();
@@ -442,12 +442,12 @@ app.get('/show/head/:resultid', function(req, res){
   var rl = readline.createInterface(rStream, {});
   var line_number = 0;
   rl.on('line', function(line) {
-    if(line_number < SHOW_RESULT_HEAD_LINES){
+    if (line_number < SHOW_RESULT_HEAD_LINES) {
       res.write(line + '\n');
       line_number++;
-    }else{
+    } else {
       rl.close();
-     }
+    }
   });
   rl.on('close', function() {
     res.end();
@@ -470,7 +470,7 @@ app.get('/download/tsv/:resultid', function(req, res){
 
     var client = shib.client();
     var file = client.generatePath(req.params.resultid);
-    if(!fs.existsSync(file)){
+    if (! fs.existsSync(file)) {
       res.send(null);
       res.end();
       client.end();
@@ -488,7 +488,6 @@ app.get('/download/tsv/:resultid', function(req, res){
     res.on('drain', function(){
       rStream.resume();
     });
-
   });
 });
 
@@ -504,7 +503,7 @@ app.get('/download/csv/:resultid', function(req, res){
 
     var client = shib.client();
     var file = client.generatePath(req.params.resultid);
-    if(!fs.existsSync(file)){
+    if (! fs.existsSync(file)) {
       res.send(null);
       res.end();
       client.end();
@@ -523,7 +522,6 @@ app.get('/download/csv/:resultid', function(req, res){
     res.on('resume', function(){
       rl.resume();
     });
-
   });
 });
 
