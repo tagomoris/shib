@@ -417,9 +417,7 @@ app.get('/show/full/:resultid', function(req, res){
   var rStream = fs.createReadStream(file);
   rStream.on('data', function(chunk) {
     rStream.pause();
-    process.nextTick(function(){
-      res.write(chunk);
-    });
+    res.write(chunk);
   });
   rStream.on('end', function(){
     res.end();
@@ -481,9 +479,7 @@ app.get('/download/tsv/:resultid', function(req, res){
     var rStream = fs.createReadStream(file);
     rStream.on('data', function(chunk){
       rStream.pause();
-      process.nextTick(function(){
-        res.write(chunk);
-      });
+      res.write(chunk);
     });
     rStream.on('end', function(){
       res.end();
