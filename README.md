@@ -322,11 +322,27 @@ executer: {
 ## Monitors
 
 `monitor` configurations are used to get query status and to kill queries.
-  * `hiveserver` has no monitoring features
-  * `hiveserver2` monitor is under development
-  * `presto` monitor is under development
 
-### Huahin Manager
+### JobTracker (MRv1)
+
+`jobtracker` monitor is available in MRv1 environment (w/ both of hiveserver and hiveserver2).
+
+```js
+monitor: {
+  name: 'jobtracker',
+  host: 'jobtracker.hostname.local',
+  port: 50030,
+  mapred: '/usr/bin/mapred' // 'mapred' in PATH by default
+}
+```
+
+For this feature, shib should be executed by a user who can execute command `mapred job -kill JOB_ID`.
+
+### ResourceManager (MRv2)
+
+Under development.
+
+### Huahin Manager (obsolete)
 
 For monitors in CDH4 + MRv1 environment, Huahin manager is available.
 
