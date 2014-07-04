@@ -12,6 +12,7 @@ var test_database = ''
 var use_database_statement = "use " + test_database;
 
 var executer = new Executer({
+  name: 'hiveserver2',
   host: host,
   port: port,
   username: username,

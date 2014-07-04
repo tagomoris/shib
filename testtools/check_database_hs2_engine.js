@@ -10,6 +10,7 @@ var test_database = ''
   , test_table = '';
 
 var executer = new Executer({
+  name: 'hiveserver2',
   host: host,
   port: port,
   username: username,
