@@ -15,8 +15,6 @@ Some extension features are supported:
 
 * Setup queries: options to specify queries executed before main query, like 'create functions ...'
 * Default Database: option to specify default database for Hive 0.6 or later
-* Huahin-Manager (Job Controller Proxy with HTTP API) support: Kill hive mapreduce job correctly from shib, with Huahin-Manager
-  * see: http://huahin.github.com/huahin-manager/
 
 ### Versions
 
@@ -338,9 +336,20 @@ monitor: {
 
 For this feature, shib should be executed by a user who can execute command `mapred job -kill JOB_ID`.
 
-### ResourceManager (MRv2)
+### YARN (MRv2)
 
-Under development.
+`yarn` monitor is available in MRv2 environment (w/ both of hiveserver and hiveserver2).
+
+```js
+monitor: {
+  name: 'yarn',
+  host: 'resourcemanager.hostname.local',
+  port: 8088,
+  yarn: '/usr/bin/yarn' // 'yarn' in PATH by default
+}
+```
+
+For this feature, shib should be executed by a user who can execute command `yarn application -kill APP_ID`.
 
 ### Huahin Manager (obsolete)
 
