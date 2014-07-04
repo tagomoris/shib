@@ -39,12 +39,6 @@ async.series([
     });
   },
   function(cb){
-    executer.partitions2(test_database, test_table, function(err, result){
-      console.log({label:"RESULT partitions2()", result:result});
-      cb();
-    });
-  },
-  function(cb){
     executer.partitions(test_database, test_table, function(err, result){
       console.log({label:"RESULT partitions()", result:result});
       cb();
