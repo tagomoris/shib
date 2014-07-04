@@ -47,7 +47,6 @@ For Hive queries, shib requires HiveServer or HiveServer2. Setup and run these.
 * For HiveServer2
   * Configure `hive.server2.authentication` as `NOSASL`
     * Strongly recommended to configure `hive.support.concurrency` as `false`
-  * Database selection is not supported now
 
 For Presto, shib is tested with Presto version 0.57.
 
@@ -100,7 +99,7 @@ var servers = exports.servers = {
         host: 'hs2.mycluster1.local',
         port: 10000,
         usename: 'hive',
-        support_database: false
+        support_database: true
       },
       monitor: null
     },
@@ -131,7 +130,7 @@ var servers = exports.servers = {
         name: 'hiveserver2',
         host: 'hs2.mycluster1.local',
         port: 10000,
-        support_database: false
+        support_database: true
       },
       monitor: null
     },
@@ -235,7 +234,7 @@ var servers = exports.servers = {
         name: 'hiveserver2',
         host: 'master.a.cluster.local',
         port: 10000,
-        support_database: false
+        support_database: true
       },
       monitor: null
     },
