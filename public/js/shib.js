@@ -11,8 +11,11 @@ var shib_RUNNING_QUERY_UPDATE_INTERVAL = 15000;
 var shib_RUNNING_QUERY_LOAD_INITIALY = 2000;
 
 var engineInfo = null;
+var authInfo = null;
 
 $(function(){
+  check_auth_initial();
+
   load_tabs({callback:function(){
     follow_current_uri();
     setInterval(check_selected_running_query_state, shib_QUERY_STATUS_CHECK_INTERVAL);
@@ -35,7 +38,7 @@ $(function(){
     $('#table_pairs').change(function(event){show_tables_dialog();});
     $('#describe_diag').click(function(event){show_describe_dialog();});
     $('#desc_pairs').change(function(event){show_describe_dialog();});
-    $('#taglist_diag').click(function(event){show_taglist_dialog();})
+    $('#taglist_diag').click(function(event){show_taglist_dialog();});
     $('#tables_diag,#describe_diag,#taglist_diag')
         .css('text-decoration', '')
         .css('cursor', 'pointer');
@@ -46,6 +49,7 @@ $(function(){
   $('#clip_button').click(clip_selected_query);
   $('#unclip_button').click(unclip_selected_query);
 
+  $('#auth_button').click(show_auth_dialog);
   $('#execute_button').click(execute_query);
   $('#giveup_button').click(giveup_query);
   $('#status_button').click(show_status_query);
@@ -58,6 +62,7 @@ $(function(){
   $('#edit_tag_button').click(show_edit_tag_dialog);
   $('#add_tag_submit').click(execute_add_tag);
   $('#remove_tag_submit').click(execute_remove_tag);
+  $('#auth_submit').click(check_auth);
 });
 
 /* engine/database pairs list loading (just after page loading) */
@@ -81,6 +86,26 @@ function load_pairs(callback) {
     callback();
   });
 };
+
+/* authentication check initially */
+
+function check_auth_initial() {
+  $.ajax({
+    type: "POST",
+    url: '/auth',
+    data: {},
+    cache: false,
+    success: function(){
+      authInfo = true;
+      // show execute button instead of auth button
+      if ($('#auth_button:visible').size() > 0)
+        show_editbox_buttons(['execute_button']);
+    },
+    error: function(jqXHR, textStatus, errorThrown){
+      authInfo = null;
+    }
+  });
+}
 
 /* basic data operations */
 
@@ -589,6 +614,10 @@ function execute_remove_tag(){
   });
 }
 
+function show_auth_dialog(){
+  $('#authinputdiag').dialog({modal:true, resizable:false, height:150, width:200});
+}
+
 /* right pane operations */
 
 function update_tabs(reloading, taginfo) {
@@ -859,7 +888,11 @@ function update_editbox(query, optional_state) {
   case undefined:
   case null:
     $('#engineselector').show();
-    show_editbox_buttons(['execute_button']);
+    if (authInfo) {
+      show_editbox_buttons(['execute_button']);
+    } else {
+      show_editbox_buttons(['auth_button']);
+    }
     change_editbox_querystatus_style(query, 'not executed');
     show_editbox_querytags(null);
     break;
@@ -895,7 +928,7 @@ function update_editbox(query, optional_state) {
 
 function show_editbox_buttons(buttons){
   var allbuttons = [
-    'execute_button', 'giveup_button', 'status_button', 'delete_button',
+    'auth_button', 'execute_button', 'giveup_button', 'status_button', 'delete_button',
     'display_full_button', 'display_head_button', 'download_tsv_button', 'download_csv_button'
   ];
   if (! buttons)
@@ -1107,7 +1140,36 @@ function update_running_queries(event){
 
 /* left pane interactions (user-operation interactions) */
 
+function check_auth(e) {
+  e.preventDefault();
+
+  var username = $('#username').val();
+  var password = $('#password').val();
+  $.ajax({
+    type: "POST",
+    url: '/auth',
+    data: {username: username, password: password},
+    cache: false,
+    success: function(){
+      authInfo = true;
+      if ($('#auth_button:visible').size() > 0)
+        show_editbox_buttons(['execute_button']);
+      $('#authinputdiag').dialog('close');
+      show_info('User/Pass check', 'success');
+    },
+    error: function(jqXHR, textStatus, errorThrown){
+      authInfo = null;
+      $('#authinputdiag').dialog('close');
+      show_error('User/Pass check', 'failed', 10);
+    }
+  });
+}
+
 function execute_query() {
+  if (! authInfo) {
+    show_error('UI Bug', 'check authentication at first!');
+    return;
+  }
   if (shibselectedquery) {
     show_error('UI Bug', 'execute_query should be enable with not-saved-query objects');
     return;

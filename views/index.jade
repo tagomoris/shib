@@ -62,6 +62,16 @@ html
           option not loaded
         button#remove_tag_submit
           | Remove
+    #authinputdiag(title="username/password check", style="display:none;")
+      form
+        div
+          | Username:
+          input#username(type="text", size="16", placeholder="username")
+        div
+          | Password:
+          input#password(type="password", size="16", placeholder="password")
+        button#auth_submit(type="submit")
+          | Check username/password
     #mainarea
       table
         tr
@@ -99,7 +109,10 @@ html
                   select#exec_pairs(style="width: 300")
                     option not loaded
                 ul.operationitems.ui-widget.ui-helper-clearfix
-                  li#execute_button.ui-state-default.ui-corner-all
+                  li#auth_button.ui-state-default.ui-corner-all
+                    span.ui-icon.ui-icon-play
+                    | ...execute
+                  li#execute_button.ui-state-default.ui-corner-all(style="display: none;")
                     span.ui-icon.ui-icon-play
                     | execute
                   li#giveup_button.ui-state-default.ui-corner-all(style="display: none;")

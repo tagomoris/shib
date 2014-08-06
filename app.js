@@ -78,6 +78,25 @@ app.get('/', function(req, res){
   client.end();
 });
 
+app.post('/auth', function(req, res){
+  var auth = shib.auth();
+  if (auth === null) {
+    res.send(200);
+    return;
+  }
+
+  var username = req.body.username;
+  var password = req.body.password;
+  auth.check(username, password, function(err, result){
+    if (err) { error_handle(req, res, err); return; }
+    if (result) {
+      res.send(200);
+    } else {
+      res.send(403);
+    }
+  });
+});
+
 app.get('/q/:queryid', function(req, res){
   // Only this request handler is for permalink request from browser URL bar.
   var client = shib.client();
