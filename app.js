@@ -80,17 +80,15 @@ app.get('/', function(req, res){
 
 app.post('/auth', function(req, res){
   var auth = shib.auth();
-  if (auth === null) {
-    res.send(200);
-    return;
-  }
 
   var username = req.body.username;
   var password = req.body.password;
   auth.check(username, password, function(err, result){
     if (err) { error_handle(req, res, err); return; }
     if (result) {
-      res.send(200);
+      // if auth module is dumb, username becomes String('undefined') and password becomes String('undefined')
+      var authInfo = auth.crypto(username, password);
+      res.send(200, authInfo);
     } else {
       res.send(403);
     }
@@ -253,13 +251,25 @@ app.post('/execute', function(req, res){
 
   var query = req.body.querystring;
   var scheduled = req.body.scheduled;
+
+  var authInfo = req.body.authInfo;
+  if (authInfo) {
+    var userdata = shib.auth().decrypt(authInfo);
+    if (!userdata) {
+      //TODO: log unauthorized execution
+      res.send(400, "failed to execute: reload page (after copy your query)");
+      return;
+    }
+    //TODO: log authorized execution w/ username
+  }
+
   client.createQuery(engineLabel, dbname, query, function(err, query){
     if (err) {
       if (err.error) {
         err = err.error;
       }
       if (err instanceof InvalidQueryError) {
-        res.send(err, 400);
+        res.send(400, err);
         this.end();
         return;
       }
@@ -544,6 +554,7 @@ app.get('/download/csv/:resultid', function(req, res){
   });
 });
 
+shib.auth(); // to initialize and check auth module
 shib.client().end(); // to initialize sqlite3 database
 
 console.log((new Date()).toString() + ': Starting shib.');
