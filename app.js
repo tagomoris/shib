@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'production') {
 shib.init(servers);
 
 function shutdown(signal){
-  console.log((new Date()).toString() + ': Shutdown by signal, ' + signal);
+  shib.logger().info('Shutdown by signal', {signal: signal});
   process.exit();
 };
 process.on('SIGINT', function(){ shutdown('SIGINT'); });
@@ -30,8 +30,8 @@ process.on('SIGTERM', function(){ shutdown('SIGTERM'); });
 var runningQueries = {};
 
 function error_handle(req, res, err){
-  console.log(err);
-  console.log(err.stack);
+  shib.logger().error('Error in app', err);
+  shib.logger().error(err.stack);
   res.send(err, 500);
 };
 
@@ -53,7 +53,7 @@ app.use(function(err, req, res, next){
     next();
   }
   else {
-    console.log(err);
+    shib.logger().error('Error response generator', err);
     if (err instanceof Object)
       res.send(500, JSON.stringify(err));
     else
@@ -256,11 +256,11 @@ app.post('/execute', function(req, res){
   if (authInfo) {
     var userdata = shib.auth().decrypt(authInfo);
     if (!userdata) {
-      //TODO: log unauthorized execution
+      shib.logger().warn('User fails to check authInfo', {query: query});
       res.send(400, "failed to execute: reload page (after copy your query)");
       return;
     }
-    //TODO: log authorized execution w/ username
+    shib.logger().info('User try to execute query', {username: userdata.username, query: query});
   }
 
   client.createQuery(engineLabel, dbname, query, function(err, query){
@@ -557,7 +557,7 @@ app.get('/download/csv/:resultid', function(req, res){
 shib.auth(); // to initialize and check auth module
 shib.client().end(); // to initialize sqlite3 database
 
-console.log((new Date()).toString() + ': Starting shib.');
+shib.logger().info('Starting shib.');
 
 var d = require('domain').create();
 d.on('error', function(err){
@@ -565,9 +565,9 @@ d.on('error', function(err){
   // This may occur by communication errors w/ servers
   if (err.code === 'ECONNREFUSED') {
     var e = err.domainEmitter;
-    console.log((new Date()).toString() + ': Connection refused, host "' + e.host + '", port ' + e.port);
+    shib.logger().error('Connection refused', {host: e.host, port: e.port});
   } else {
-    console.log((new Date()).toString() + ': ' + err.toString());
+    shib.logger().error('In domain creation', err);
   }
   process.exit();
 });
