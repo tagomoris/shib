@@ -18,7 +18,7 @@ Some extension features are supported:
 
 ### Versions
 
-Latest version of 'shib' is v0.3.3.
+Latest version of 'shib' is v0.3.5.
 
 'shib' versions are:
 
@@ -29,6 +29,7 @@ Latest version of 'shib' is v0.3.3.
   * storages of v0.3.x are compatible with v0.2
   * database/table access controls
   * tagging for executed queries
+  * authentication / logging for query execution
 * v0.2 series
   * current status of master branch
   * uses local filesystem instead of KT, depends on latest node (v0.8.x, v0.10.x)
@@ -367,6 +368,45 @@ monitor: {
   port: 9010
 }
 ```
+
+## Query execution Logging with username
+
+Shib have authentication to log who execute queries:
+
+```js
+var servers = exports.servers = {
+  listen: 3000,
+  fetch_lines: 1000,   // lines per fetch in shib
+  query_timeout: null, // shib waits queries forever
+  setup_queries: [],
+  storage: {
+    datadir: './var'
+  },
+  auth: {
+    type: 'http_basic_auth',
+    url: 'http://your.internal.protected.service.example.com/',
+    realm: '@your.service.example.com'
+  },
+  engines: [
+    { label: 'mycluster1',
+      executer: {
+        name: 'hiveserver2',
+        host: 'hs2.mycluster1.local',
+        port: 10000,
+        usename: 'hive',
+        support_database: true
+      },
+      monitor: null
+    },
+  ],
+};
+```
+
+**This feature is very weak**. Users can bypass by userscripts or raw http requests.
+
+### http_basic_auth
+
+With configuration above, shib shows dialog to input username/password, and delegate input data to the webpage specified by `url`, which is protected by HTTP basic authentication.
 
 ## As HTTP Proxy for query engines
 
