@@ -36,7 +36,6 @@ function error_handle(req, res, err){
 };
 
 app.configure(function(){
-  app.use(express.logger('default'));
   app.use(express.methodOverride());
   app.use(express.urlencoded());
   app.use(express.json());
@@ -53,11 +52,11 @@ app.use(function(err, req, res, next){
     next();
   }
   else {
-    shib.logger().error('Error response generator', err);
-    if (err instanceof Object)
-      res.send(500, JSON.stringify(err));
-    else
-      res.send(500, err);
+    shib.logger().error('ServerError', err);
+    err.stack.split("\n").forEach(function(line){
+      shib.logger().error(line);
+    });
+    res.send(500, 'Server Error');
   }
 });
 
@@ -67,6 +66,7 @@ app.configure('development', function(){
 });
 
 app.configure('production', function(){
+  app.use(express.logger('default'));
   var onehour = 3600;
   app.use(express.static(__dirname + '/public', { maxAge: onehour }));
   app.use(express.errorHandler());
@@ -88,9 +88,9 @@ app.post('/auth', function(req, res){
     if (result) {
       // if auth module is dumb, username becomes String('undefined') and password becomes String('undefined')
       var authInfo = auth.crypto(username, password);
-      res.send(200, authInfo);
+      res.send(200, {authInfo: authInfo, realm: auth.realm, enabled: auth.enabled});
     } else {
-      res.send(403);
+      res.send(403, {authInfo: null, realm: auth.realm, enabled: auth.enabled});
     }
   });
 });
@@ -254,7 +254,7 @@ app.post('/execute', function(req, res){
 
   var authInfo = req.body.authInfo;
   if (authInfo) {
-    var userdata = shib.auth().decrypt(authInfo);
+    var userdata = shib.auth().decrypto(authInfo);
     if (!userdata) {
       shib.logger().warn('User fails to check authInfo', {query: query});
       res.send(400, "failed to execute: reload page (after copy your query)");

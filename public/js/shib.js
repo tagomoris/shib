@@ -12,6 +12,7 @@ var shib_RUNNING_QUERY_LOAD_INITIALY = 2000;
 
 var engineInfo = null;
 var authInfo = null;
+var authEnabled = false;
 
 $(function(){
   check_auth_initial();
@@ -95,14 +96,19 @@ function check_auth_initial() {
     url: '/auth',
     data: {},
     cache: false,
-    success: function(){
-      authInfo = true;
+    success: function(data){
+      authInfo = data.authInfo;
+      authEnabled = data.enabled;
       // show execute button instead of auth button
       if ($('#auth_button:visible').size() > 0)
         show_editbox_buttons(['execute_button']);
+      $('span#authRealm').text(data.realm);
     },
     error: function(jqXHR, textStatus, errorThrown){
       authInfo = null;
+      var data = JSON.parse(jqXHR.responseText);
+      authEnabled = data.enabled;
+      $('span#authRealm').text(data.realm);
     }
   });
 }
@@ -615,7 +621,7 @@ function execute_remove_tag(){
 }
 
 function show_auth_dialog(){
-  $('#authinputdiag').dialog({modal:true, resizable:false, height:150, width:200});
+  $('#authinputdiag').dialog({modal:true, resizable:false, height:150, width:400});
 }
 
 /* right pane operations */
@@ -1150,8 +1156,8 @@ function check_auth(e) {
     url: '/auth',
     data: {username: username, password: password},
     cache: false,
-    success: function(){
-      authInfo = true;
+    success: function(data, textStatus, jqXHR){
+      authInfo = data.authInfo;
       if ($('#auth_button:visible').size() > 0)
         show_editbox_buttons(['execute_button']);
       $('#authinputdiag').dialog('close');
@@ -1179,15 +1185,16 @@ function execute_query() {
   var dbname = selected.data('database');
 
   var querystring = $('#queryeditor').val();
+  var postdata = { engineLabel: engine, dbname: dbname, querystring: querystring };
+  if (authEnabled)
+    postdata['authInfo'] = authInfo;
 
   $.ajax({
     url: '/execute',
     type: 'POST',
     dataType: 'json',
-    data: { engineLabel: engine, dbname: dbname, querystring: querystring },
+    data: postdata,
     error: function(jqXHR, textStatus, err){
-      console.log(jqXHR);
-      console.log(textStatus);
       var msg = null;
       try {
         msg = JSON.parse(jqXHR.responseText).message;
