@@ -72,7 +72,7 @@ And run.
 
 Shib listens on port 3000. see http://localhost:3000/
 
-You can also run shib with command below for 'production' environment, with production configuration file 'production.js':
+To switch environments for each shib instance, use `NODE_ENV` environment variable. (ex: `production.js` will be used with `NODE_ENV=production`)
 
     $ NODE_ENV=production NODE_PATH=lib node app.js
 

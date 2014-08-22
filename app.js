@@ -10,12 +10,15 @@ var SHOW_RESULT_HEAD_LINES = 20;
 var InvalidQueryError = require('shib/query').InvalidQueryError;
 var SimpleCSVBuilder = require('shib/simple_csv_builder').SimpleCSVBuilder;
 
-var shib = require('shib'),
-    servers = require('./config').servers;
+var shib = require('shib');
+var config_package = {};
 
-if (process.env.NODE_ENV === 'production') {
-  servers = require('./production').servers;
+if (process.env.NODE_ENV) {
+  config_package = require('./' + process.env.NODE_ENV);
+} else {
+  config_package = require('./config');
 }
+var servers = config_package.servers;
 shib.init(servers);
 
 function shutdown(signal){
