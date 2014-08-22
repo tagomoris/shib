@@ -253,7 +253,13 @@ app.post('/execute', function(req, res){
   var scheduled = req.body.scheduled;
 
   var authInfo = req.body.authInfo;
-  if (authInfo) {
+  if (shib.auth().require_always || authInfo) {
+    if (!authInfo) {
+      shib.logger().warn('This shib requires authentication to execute queries, but there are no authInfo', {query: query});
+      res.send(403, "Authentication failed");
+      return;
+    }
+
     var userdata = shib.auth().decrypto(authInfo);
     if (!userdata) {
       shib.logger().warn('User fails to check authInfo', {query: query});

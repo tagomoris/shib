@@ -369,7 +369,9 @@ monitor: {
 }
 ```
 
-## Query execution Logging with username
+## Authentication
+
+### Query execution Logging with username
 
 Shib have authentication to log who execute queries:
 
@@ -402,7 +404,22 @@ var servers = exports.servers = {
 };
 ```
 
-**This feature is very weak**. Users can bypass by userscripts or raw http requests.
+**This feature is very weak**. Users can bypass by userscripts or raw http requests. Consider `require_always` for more safe configuration.
+
+### Require authentication for query execution (including non-browsers)
+
+To enforce authentication to execute queries, specify `require_always: true` in `auth` section.
+
+```js
+  auth: {
+    require_always: true,
+    type: 'http_basic_auth',
+    url: 'http://your.internal.protected.service.example.com/',
+    realm: '@your.service.example.com'
+  },
+```
+
+**Query result data are NOT protected by this setting**. Use reverse proxy server and its authentication to protect result data.
 
 ### http_basic_auth
 
