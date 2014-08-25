@@ -38,6 +38,10 @@ function error_handle(req, res, err){
   res.send(err, 500);
 };
 
+function shibclient(req){
+  return shib.client({credential: shib.auth().credential(req)});
+}
+
 app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.urlencoded());
@@ -76,7 +80,7 @@ app.configure('production', function(){
 });
 
 app.get('/', function(req, res){
-  var client = shib.client();
+  var client = shibclient(req);
   res.render(__dirname + '/views/index.jade');
   client.end();
 });
@@ -84,13 +88,11 @@ app.get('/', function(req, res){
 app.post('/auth', function(req, res){
   var auth = shib.auth();
 
-  var username = req.body.username;
-  var password = req.body.password;
-  auth.check(username, password, function(err, result){
+  auth.check(req, function(err, result){
     if (err) { error_handle(req, res, err); return; }
     if (result) {
       // if auth module is dumb, username becomes String('undefined') and password becomes String('undefined')
-      var authInfo = auth.crypto(username, password);
+      var authInfo = auth.crypto(result.username);
       res.send(200, {authInfo: authInfo, realm: auth.realm, enabled: auth.enabled});
     } else {
       res.send(403, {authInfo: null, realm: auth.realm, enabled: auth.enabled});
@@ -100,14 +102,14 @@ app.post('/auth', function(req, res){
 
 app.get('/q/:queryid', function(req, res){
   // Only this request handler is for permalink request from browser URL bar.
-  var client = shib.client();
+  var client = shibclient(req);
   res.render(__dirname + '/views/index.jade');
   client.end();
 });
 
 app.get('/t/:tag', function(req, res){
   // Only this request handler is for permalink request from browser URL bar.
-  var client = shib.client();
+  var client = shibclient(req);
   res.render(__dirname + '/views/index.jade');
   client.end();
 });
@@ -141,12 +143,23 @@ app.get('/engines', function(req, res){
     monitor: { label: bool }
   }
    */
+
+  // If authentications are always required, database list cannot be cached.
+  if (shib.auth().require_always) {
+    shibclient(req).engineInfo(function(err, info){
+      if (err) { error_handle(req, res, err); this.end(); return; }
+      res.send(info);
+      this.end();
+    });
+    return;
+  }
+
   var info = enginesCache;
   if (info) {
     res.send(info);
   }
   else {
-    shib.client().engineInfo(function(err, info){
+    shibclient(req).engineInfo(function(err, info){
       if (err) { error_handle(req, res, err); this.end(); return; }
       enginesCache = info;
       res.send(info);
@@ -156,7 +169,7 @@ app.get('/engines', function(req, res){
 });
 
 app.get('/tables', function(req, res){
-  var client = shib.client();
+  var client = shibclient(req);
   var engineLabel = req.query.engine;
   var database = req.query.db;
   client.tables(engineLabel, database, function(err, result){
@@ -174,7 +187,7 @@ app.get('/partitions', function(req, res){
     error_handle(req, res, {message: 'invalid tablename for show partitions: ' + tablename});
     return;
   }
-  var client = shib.client();
+  var client = shibclient(req);
   client.partitions(engineLabel, database, tablename, function(err, results){
     if (err) { error_handle(req, res, err); client.end(); return; }
     res.send(results);
@@ -193,7 +206,7 @@ app.get('/describe', function(req, res){
     return;
   }
   var fn = jade.compile(describe_node_template);
-  var client = shib.client();
+  var client = shibclient(req);
   client.describe(engineLabel, database, tablename, function(err, result){
     if (err) { error_handle(req, res, err); client.end(); return; }
     var response_html = '<tr><th>col_name</th><th>type</th><th>comment</th></tr>';
@@ -206,7 +219,7 @@ app.get('/describe', function(req, res){
 });
 
 app.get('/summary_bulk', function(req, res){
-  var client = shib.client();
+  var client = shibclient(req);
 
   if (shib.setting('disable_history')) {
     res.send({disabled: true});
@@ -249,7 +262,9 @@ app.get('/summary_bulk', function(req, res){
 });
   
 app.post('/execute', function(req, res){
-  var client = shib.client();
+  var auth = shib.auth();
+
+  var client = shibclient(req);
   var engineLabel = req.body.engineLabel;
   var dbname = req.body.dbname;
   if (!engineLabel || !dbname) {
@@ -260,20 +275,14 @@ app.post('/execute', function(req, res){
   var query = req.body.querystring;
   var scheduled = req.body.scheduled;
 
-  var authInfo = req.body.authInfo;
-  if (shib.auth().require_always || authInfo) {
-    if (!authInfo) {
-      shib.logger().warn('This shib requires authentication to execute queries, but there are no authInfo', {query: query});
-      res.send(403, "Authentication failed");
-      return;
-    }
+  var userdata = auth.userdata(req);
 
-    var userdata = shib.auth().decrypto(authInfo);
-    if (!userdata) {
-      shib.logger().warn('User fails to check authInfo', {query: query});
-      res.send(400, "failed to execute: reload page (after copy your query)");
-      return;
-    }
+  if (auth.require_always && !userdata) {
+    shib.logger().warn('This shib requires authentication to execute queries, but there are no authInfo', {query: query});
+    res.send(403, "Authentication failed");
+    return;
+  }
+  if (userdata) {
     shib.logger().info('User try to execute query', {username: userdata.username, query: query});
   }
 
@@ -304,7 +313,7 @@ app.post('/execute', function(req, res){
 
 app.post('/giveup', function(req, res){
   var targetid = req.body.queryid;
-  var client = shib.client();
+  var client = shibclient(req);
   client.query(targetid, function(err, query){
     client.giveup(query, function(err, query) {
       delete runningQueries[query.queryid];
@@ -316,7 +325,7 @@ app.post('/giveup', function(req, res){
 
 app.post('/delete', function(req, res){
   var targetid = req.body.queryid;
-  var client = shib.client();
+  var client = shibclient(req);
   client.deleteRecent(targetid, function(err){
     if (err) {error_handle(req, res, err); client.end(); return;}
     delete runningQueries[targetid];
@@ -329,7 +338,7 @@ app.post('/delete', function(req, res){
 });
 
 app.get('/query/:queryid', function(req, res){
-  shib.client().query(req.params.queryid, function(err, query){
+  shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(query);
     this.end();
@@ -337,7 +346,7 @@ app.get('/query/:queryid', function(req, res){
 });
 
 app.post('/queries', function(req, res){
-  shib.client().queries(req.body.ids, function(err, queries){
+  shibclient(req).queries(req.body.ids, function(err, queries){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({queries:queries});
     this.end();
@@ -345,7 +354,7 @@ app.post('/queries', function(req, res){
 });
 
 app.get('/tags/:queryid', function(req, res){
-  shib.client().tags(req.params.queryid, function(err, tags){
+  shibclient(req).tags(req.params.queryid, function(err, tags){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(tags);
     this.end();
@@ -358,7 +367,7 @@ app.post('/addtag', function(req, res){
     error_handle(req, res, {message: 'invalid tag length [1-16]'});
     return;
   }
-  shib.client().addTag(req.body.queryid, tag, function(err){
+  shibclient(req).addTag(req.body.queryid, tag, function(err){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({result:'ok'});
     this.end();
@@ -366,7 +375,7 @@ app.post('/addtag', function(req, res){
 });
 
 app.post('/deletetag', function(req, res){
-  shib.client().deleteTag(req.body.queryid, req.body.tag, function(err){
+  shibclient(req).deleteTag(req.body.queryid, req.body.tag, function(err){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({result:'ok'});
     this.end();
@@ -374,7 +383,7 @@ app.post('/deletetag', function(req, res){
 });
 
 app.get('/tagged/:tag', function(req, res){
-  shib.client().taggedQueries(req.params.tag, function(err, queryids){
+  shibclient(req).taggedQueries(req.params.tag, function(err, queryids){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(queryids);
     this.end();
@@ -382,7 +391,7 @@ app.get('/tagged/:tag', function(req, res){
 });
 
 app.get('/taglist', function(req, res){
-  shib.client().tagList(function(err, tags){
+  shibclient(req).tagList(function(err, tags){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(tags);
     this.end();
@@ -390,7 +399,7 @@ app.get('/taglist', function(req, res){
 });
 
 app.get('/status/:queryid', function(req, res){
-  shib.client().query(req.params.queryid, function(err, query){
+  shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
     this.status(query, function(state){
       res.send(state);
@@ -400,7 +409,7 @@ app.get('/status/:queryid', function(req, res){
 });
 
 app.get('/detailstatus/:queryid', function(req, res){
-  shib.client().query(req.params.queryid, function(err, query){
+  shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
     this.detailStatus(query, function(err, data){
       if (err) { error_handle(req, res, err); this.end(); return; }
@@ -414,7 +423,7 @@ app.get('/detailstatus/:queryid', function(req, res){
 });
 
 app.get('/lastresult/:queryid', function(req, res){
-  shib.client().query(req.params.queryid, function(err, query){
+  shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
     if (query === null) {
       res.send('query not found', 404);
@@ -433,7 +442,7 @@ app.get('/lastresult/:queryid', function(req, res){
 });
 
 app.get('/result/:resultid', function(req, res){
-  shib.client().result(req.params.resultid, function(err, result){
+  shibclient(req).result(req.params.resultid, function(err, result){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send(result);
     this.end();
@@ -441,7 +450,7 @@ app.get('/result/:resultid', function(req, res){
 });
 
 app.post('/results', function(req, res){
-  shib.client().results(req.body.ids, function(err, results){
+  shibclient(req).results(req.body.ids, function(err, results){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({results: results});
     this.end();
@@ -449,7 +458,7 @@ app.post('/results', function(req, res){
 });
 
 app.get('/show/full/:resultid', function(req, res){
-  var client = shib.client();
+  var client = shibclient(req);
   var file = client.generatePath(req.params.resultid);
   if (! fs.existsSync(file)) {
     res.send(null);
@@ -472,7 +481,7 @@ app.get('/show/full/:resultid', function(req, res){
 });
 
 app.get('/show/head/:resultid', function(req, res){
-  var client = shib.client();
+  var client = shibclient(req);
   var file = client.generatePath(req.params.resultid);
   if (! fs.existsSync(file)) {
     res.send(null);
@@ -502,7 +511,7 @@ app.get('/show/head/:resultid', function(req, res){
 });
 
 app.get('/download/tsv/:resultid', function(req, res){
-  shib.client().result(req.params.resultid, function(err, result){
+  shibclient(req).result(req.params.resultid, function(err, result){
     if (err) { error_handle(req, res, err); this.end(); return; }
 
     res.attachment(req.params.resultid + '.tsv');
@@ -535,7 +544,7 @@ app.get('/download/tsv/:resultid', function(req, res){
 });
 
 app.get('/download/csv/:resultid', function(req, res){
-  shib.client().result(req.params.resultid, function(err, result){
+  shibclient(req).result(req.params.resultid, function(err, result){
     if (err) { error_handle(req, res, err); this.end(); return; }
 
     res.attachment(req.params.resultid + '.csv');
@@ -573,28 +582,31 @@ shib.client().end(); // to initialize sqlite3 database
 
 shib.logger().info('Starting shib.');
 
-var d = require('domain').create();
-d.on('error', function(err){
-  // Failed to update engine cache
-  // This may occur by communication errors w/ servers
-  if (err.code === 'ECONNREFUSED') {
-    var e = err.domainEmitter;
-    shib.logger().error('Connection refused', {host: e.host, port: e.port});
-  } else {
-    shib.logger().error('In domain creation', err);
-  }
-  process.exit();
-});
-d.run(function(){
-  var enginesCacheUpdate = function(){
-    shib.client().engineInfo(function(err, info){
-      if (!err && info)
-        enginesCache = info;
-      this.end();
-    });
-  };
-  setInterval(enginesCacheUpdate, 60*60*1000); // cache update per hour
-  enginesCacheUpdate();
-});
+if (! shib.auth().require_always){
+  var d = require('domain').create();
+  d.on('error', function(err){
+    // Failed to update engine cache
+    // This may occur by communication errors w/ servers
+    if (err.code === 'ECONNREFUSED') {
+      var e = err.domainEmitter;
+      shib.logger().error('Connection refused', {host: e.host, port: e.port});
+    } else {
+      shib.logger().error('In domain creation', err);
+    }
+    process.exit();
+  });
+  d.run(function(){
+    var enginesCacheUpdate = function(){
+      var AccessControl = require('shib/access_control').AccessControl;
+      shib.client({credential: AccessControl.defaultAllowDelegator()}).engineInfo(function(err, info){
+        if (!err && info)
+          enginesCache = info;
+        this.end();
+      });
+    };
+    setInterval(enginesCacheUpdate, 60*60*1000); // cache update per hour
+    enginesCacheUpdate();
+  });
+}
 
 app.listen(app.get('port'));
