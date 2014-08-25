@@ -208,6 +208,11 @@ app.get('/describe', function(req, res){
 app.get('/summary_bulk', function(req, res){
   var client = shib.client();
 
+  if (shib.setting('disable_history')) {
+    res.send({disabled: true});
+    return;
+  }
+
   var history_queries;
   var history = [];     /* ["201302", "201301", "201212", "201211"] */
   var history_ids = {}; /* {"201302":[query_ids], "201301":[query_ids], ...} */

@@ -406,6 +406,12 @@ var servers = exports.servers = {
 
 **This feature is very weak**. Users can bypass by userscripts or raw http requests. Consider `require_always` for more safe configuration.
 
+### http_basic_auth
+
+With configuration above, shib shows dialog to input username/password, and delegate input data to the webpage specified by `url`, which is protected by HTTP basic authentication.
+
+## Miscellaneous configurations
+
 ### Require authentication for query execution (including non-browsers)
 
 To enforce authentication to execute queries, specify `require_always: true` in `auth` section.
@@ -421,9 +427,21 @@ To enforce authentication to execute queries, specify `require_always: true` in 
 
 **Query result data are NOT protected by this setting**. Use reverse proxy server and its authentication to protect result data.
 
-### http_basic_auth
+### Disable "history" tab
 
-With configuration above, shib shows dialog to input username/password, and delegate input data to the webpage specified by `url`, which is protected by HTTP basic authentication.
+Specify `disable_history: true` on `servers`.
+
+```js
+var servers = exports.servers = {
+  listen: 3000,
+  fetch_lines: 1000,
+  query_timeout: null, // seconds. (null:shib will wait query response infinitely).
+  setup_queries: [],
+  disable_history: true,
+  storage: {
+    datadir: './var'
+  },
+```
 
 ## As HTTP Proxy for query engines
 

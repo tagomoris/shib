@@ -626,7 +626,7 @@ function show_auth_dialog(){
 
 /* right pane operations */
 
-function update_tabs(reloading, taginfo) {
+function update_tabs(reloading, taginfo, history_disabled) {
   if (reloading) {
     $('#listSelector').tabs('destroy');
     if (window.localStorage) {
@@ -648,8 +648,12 @@ function update_tabs(reloading, taginfo) {
     $('#index-bookmark,#tab-bookmark').remove();
   }
 
-  update_history_tab(reloading);
-  $("#tab-history").accordion({header:"h3", autoHeight:false});
+  if (history_disabled) {
+    $('#tab-history').empty();
+  } else {
+    update_history_tab(reloading);
+    $("#tab-history").accordion({header:"h3", autoHeight:false});
+  }
 
   if (taginfo) {
     if ($('#listSelector ul li#index-tag').size() === 0){
@@ -668,20 +672,27 @@ function update_tabs(reloading, taginfo) {
 };
 
 function load_tabs(opts) {
+  var history_disabled = false;
   var callback = function() {
-    update_tabs(opts.reload, opts.taginfo);
+    update_tabs(opts.reload, opts.taginfo, history_disabled);
     if (opts.callback)
       opts.callback();
   };
+
+  shibdata.query_cache = {};
+  shibdata.query_state_cache = {};
+  shibdata.result_cache = {};
+
   $.getJSON('/summary_bulk', function(data){
-    shibdata.history = data.history; /* ["201302", "201301", "201212", "201211"] */
-    shibdata.history_ids = data.history_ids; /* {"201302":[query_ids], "201301":[query_ids], ...} */
-    shibdata.query_cache = {};
-    shibdata.query_state_cache = {};
-    shibdata.result_cache = {};
+    if (data.disabled) {
+      history_disabled = true;
+    } else {
+      shibdata.history = data.history; /* ["201302", "201301", "201212", "201211"] */
+      shibdata.history_ids = data.history_ids; /* {"201302":[query_ids], "201301":[query_ids], ...} */
+    }
 
     /* data.query_ids is sum of values of history_ids */
-    var queryids = data.query_ids.concat( execute_query_list() ).concat( bookmark_query_list() );
+    var queryids = (data.query_ids || []).concat( execute_query_list() ).concat( bookmark_query_list() );
     load_query_tree(queryids, callback);
   });
 };
