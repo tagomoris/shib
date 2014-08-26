@@ -14,6 +14,33 @@ var engineInfo = null;
 var authInfo = null;
 var authEnabled = false;
 
+function authAjax(req){
+  if (authInfo)
+    req['headers'] = { 'X-Shib-AuthInfo': authInfo };
+  $.ajax(req);
+}
+
+function authGet(url, callback){
+  var req = {
+    url: url,
+    success: callback
+  };
+  if (authInfo)
+    req['headers'] = { 'X-Shib-AuthInfo': authInfo };
+  $.ajax(req);
+}
+
+function authGetJSON(url, callback){
+  var req = {
+    dataType: "json",
+    url: url,
+    success: callback
+  };
+  if (authInfo)
+    req['headers'] = { 'X-Shib-AuthInfo': authInfo };
+  $.ajax(req);
+}
+
 $(function(){
   check_auth_initial();
 
@@ -71,7 +98,7 @@ $(function(){
 $.template("pairTemplate",
            '<option data-engine="${Engine}" data-database="${Dbname}" value="${Engine}/${Dbname}">${Engine} - ${Dbname}</option>');
 function load_pairs(callback) {
-  $.get('/engines?=' + (new Date()).getTime(), function(data){
+  authGet('/engines?=' + (new Date()).getTime(), function(data){
     engineInfo = data;
 
     $('select#table_pairs,select#desc_pairs,select#exec_pairs').empty();
@@ -91,7 +118,7 @@ function load_pairs(callback) {
 /* authentication check initially */
 
 function check_auth_initial() {
-  $.ajax({
+  authAjax({
     type: "POST",
     url: '/auth',
     data: {},
@@ -268,7 +295,7 @@ function follow_current_uri_query(queryid){
     return;
   }
 
-  $.ajax({
+  authAjax({
     url: '/query/' + queryid,
     type: 'GET',
     cache: false,
@@ -279,7 +306,7 @@ function follow_current_uri_query(queryid){
       query = data;
       shibdata.query_cache[queryid] = query;
       var resultids = data.results.map(function(v){return v.resultid;});
-      $.ajax({
+      authAjax({
         url: '/results',
         type: 'POST',
         dataType: 'json',
@@ -298,7 +325,7 @@ function follow_current_uri_query(queryid){
 }
 
 function follow_current_uri_tag(tag){
-  $.ajax({
+  authAjax({
     url: '/tagged/' + tag,
     type: 'GET',
     cache: false,
@@ -404,7 +431,7 @@ function show_tables_dialog() {
   var dbname = selected.data('database');
 
   var get_path = '/tables?engine=' + encodeURIComponent(engine) + '&db=' + encodeURIComponent(dbname);
-  $.get(get_path, function(data){
+  authGet(get_path, function(data){
     $('#tablesdiag .loadingimg').hide();
     $('#tables')
       .show()
@@ -438,7 +465,7 @@ function show_describe_dialog() {
   var dbname = selected.data('database');
 
   var get_path = '/tables?engine=' + encodeURIComponent(engine) + '&db=' + encodeURIComponent(dbname);
-  $.get(get_path, function(data){
+  authGet(get_path, function(data){
     $('#describediag .loadingimg').hide();
     $('#describes')
       .show()
@@ -467,7 +494,7 @@ function show_taglist_dialog() {
   $('#taglistdiag').dialog({modal:false, resizable:true, height:400, width:400, maxHeight:650, maxWidth:950});
   $('#taglistdiag .loadingimg').show();
 
-  $.getJSON('/taglist', function(tags){
+  authGetJSON('/taglist', function(tags){
     $.tmpl("tagForTagListTemplate", tags.map(function(t){return {Tag:t};}))
      .appendTo('ul#taglist');
     $('#taglistdiag .loadingimg').hide();
@@ -495,7 +522,7 @@ function show_status_dialog(target) {
   $('#detailstatus').empty().hide();
   $('#detailstatusdiag').dialog({modal:true, resizable:false, height:200, width:600, maxHeight:200, maxWidth:950});
   $('#detailstatusdiag .loadingimg').show();
-  $.ajax({
+  authAjax({
     url: '/detailstatus/' + target.queryid,
     type: 'GET',
     cache: false,
@@ -552,7 +579,7 @@ function show_edit_tag_dialog(){
   $('select#remove_tag_list').empty();
   $('#removeTagPart').hide();
 
-  $.ajax({
+  authAjax({
     url: '/tags/' + query.queryid,
     type: 'GET',
     cache: false,
@@ -578,7 +605,7 @@ function show_edit_tag_dialog(){
 
 function execute_add_tag(){
   var query = shibselectedquery;
-  $.ajax({
+  authAjax({
     url: '/addtag',
     type: 'POST',
     cache: false,
@@ -600,7 +627,7 @@ function execute_add_tag(){
 
 function execute_remove_tag(){
   var query = shibselectedquery;
-  $.ajax({
+  authAjax({
     url: '/deletetag',
     type: 'POST',
     cache: false,
@@ -683,7 +710,7 @@ function load_tabs(opts) {
   shibdata.query_state_cache = {};
   shibdata.result_cache = {};
 
-  $.getJSON('/summary_bulk', function(data){
+  authGetJSON('/summary_bulk', function(data){
     if (data.disabled) {
       history_disabled = true;
     } else {
@@ -1023,7 +1050,7 @@ function show_editbox_querytags(query){
   }
 
   $('ul#querytags').show();
-  $.ajax({
+  authAjax({
     url: '/tags/' + query.queryid,
     type: 'GET',
     cache: false,
@@ -1062,7 +1089,7 @@ function load_queries(queryids, callback){
   if (queryids.length < 1) {
     callback(null, []); return;
   }
-  $.ajax({
+  authAjax({
     url: '/queries',
     type: 'POST',
     dataType: 'json',
@@ -1081,7 +1108,7 @@ function load_results(resultids, callback){
   if (resultids.length < 1) {
     callback(null, []); return;
   }
-  $.ajax({
+  authAjax({
     url: '/results',
     type: 'POST',
     dataType: 'json',
@@ -1117,16 +1144,16 @@ function update_query_display(query) {
 function update_query(query){
   if (! query)
     return;
-  $.get('/status/' + query.queryid, function(data){
+  authGet('/status/' + query.queryid, function(data){
     if (query_current_state(query) == data)
       return;
 
     shibdata.query_state_cache[query.queryid] = data;
 
-    $.get('/query/' + query.queryid, function(new_query){
+    authGet('/query/' + query.queryid, function(new_query){
       shibdata.query_cache[new_query.queryid] = new_query;
       if (new_query.results.length > 0) {
-        $.get('/lastresult/' + new_query.queryid, function(new_result){
+        authGet('/lastresult/' + new_query.queryid, function(new_result){
           shibdata.result_cache[new_result.resultid] = new_result;
           update_query_display(new_query);
         });
@@ -1142,7 +1169,7 @@ $.template("runningsTemplate",
            '<div><a href="/q/${QueryId}">${QueryId}</a> ${Runnings}</div>');
 
 function update_running_queries(event){
-  $.get('/runnings', function(data){
+  authGet('/runnings', function(data){
     $('#runnings').empty();
     if (data.length < 1) {
       $('<div>no running queries</div>').appendTo('#runnings');
@@ -1162,7 +1189,7 @@ function check_auth(e) {
 
   var username = $('#username').val();
   var password = $('#password').val();
-  $.ajax({
+  authAjax({
     type: "POST",
     url: '/auth',
     data: {username: username, password: password},
@@ -1196,11 +1223,14 @@ function execute_query() {
   var dbname = selected.data('database');
 
   var querystring = $('#queryeditor').val();
-  var postdata = { engineLabel: engine, dbname: dbname, querystring: querystring };
-  if (authEnabled)
-    postdata['authInfo'] = authInfo;
+  var postdata = {
+    engineLabel: engine,
+    dbname: dbname,
+    querystring: querystring,
+    authInfo: authInfo
+  };
 
-  $.ajax({
+  authAjax({
     url: '/execute',
     type: 'POST',
     dataType: 'json',
@@ -1233,7 +1263,7 @@ function giveup_query() {
     show_error('UI Bug', 'giveup_query should be enable with non-saved-query objects');
     return;
   }
-  $.ajax({
+  authAjax({
     url: '/giveup',
     type: 'POST',
     dataType: 'json',
@@ -1274,7 +1304,7 @@ function delete_query(event) {
   if (! shibselectedquery)
     return;
   var target = shibselectedquery;
-  $.ajax({
+  authAjax({
     url: '/delete',
     type: 'POST',
     dataType: 'json',
@@ -1308,7 +1338,7 @@ function show_result_query(opts) { /* opts: {range:full/head} */
     size = 'head';
     height = 200;
   }
-  $.get('/show/' + size + '/' + query_last_done_result(shibselectedquery).resultid, function(data){
+  authGet('/show/' + size + '/' + query_last_done_result(shibselectedquery).resultid, function(data){
     $('pre#resultdisplay').text(data);
     $('#resultdiag').dialog({modal:true, resizable:true, height:400, width:600, maxHeight:650, maxWidth:950});
   });
