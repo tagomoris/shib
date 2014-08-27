@@ -598,6 +598,8 @@ if (! shib.auth().require_always){
   d.run(function(){
     var enginesCacheUpdate = function(){
       var AccessControl = require('shib/access_control').AccessControl;
+      // generate cache w/ all engines and databases forcely
+      //  this cache isn't used for the situation configured as auth:require_always
       shib.client({credential: AccessControl.defaultAllowDelegator()}).engineInfo(function(err, info){
         if (!err && info)
           enginesCache = info;
