@@ -111,7 +111,8 @@ function load_pairs(callback) {
     $.tmpl('pairTemplate',
         engineInfo.pairs.map(function(pair){ return { Engine:pair[0], Dbname:pair[1] }; })
     ).appendTo('select#exec_pairs');
-    callback();
+    if (callback)
+      callback();
   });
 };
 
@@ -1200,6 +1201,7 @@ function check_auth(e) {
         show_editbox_buttons(['execute_button']);
       $('#authinputdiag').dialog('close');
       show_info('User/Pass check', 'success');
+      load_pairs(); // reload engine-database pairs w/ authenticated username
     },
     error: function(jqXHR, textStatus, errorThrown){
       authInfo = null;
