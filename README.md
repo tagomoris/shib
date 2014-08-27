@@ -27,9 +27,10 @@ Latest version of 'shib' is v0.3.5.
   * multi engines/databases support
   * presto support
   * storages of v0.3.x are compatible with v0.2
-  * database/table access controls
+  * engine-wide database/table access controls
   * tagging for executed queries
   * authentication / logging for query execution
+  * access controls based on authentication
 * v0.2 series
   * current status of master branch
   * uses local filesystem instead of KT, depends on latest node (v0.8.x, v0.10.x)
@@ -317,6 +318,8 @@ executer: {
 },
 ```
 
+For more details, see [wiki: Access Control](https://github.com/tagomoris/shib/wiki/Access-Control).
+
 ## Monitors
 
 `monitor` configurations are used to get query status and to kill queries.
@@ -371,9 +374,7 @@ monitor: {
 
 ## Authentication
 
-### Query execution Logging with username
-
-Shib have authentication to log who execute queries:
+Shib have authentication to log who execute queries and to control accesses:
 
 ```js
 var servers = exports.servers = {
@@ -404,28 +405,9 @@ var servers = exports.servers = {
 };
 ```
 
-**This feature is very weak**. Users can bypass by userscripts or raw http requests. Consider `require_always` for more safe configuration.
-
-### http_basic_auth
-
-With configuration above, shib shows dialog to input username/password, and delegate input data to the webpage specified by `url`, which is protected by HTTP basic authentication.
+For more details, see [wiki: Authentication](https://github.com/tagomoris/shib/wiki/Authentication).
 
 ## Miscellaneous configurations
-
-### Require authentication for query execution (including non-browsers)
-
-To enforce authentication to execute queries, specify `require_always: true` in `auth` section.
-
-```js
-  auth: {
-    require_always: true,
-    type: 'http_basic_auth',
-    url: 'http://your.internal.protected.service.example.com/',
-    realm: '@your.service.example.com'
-  },
-```
-
-**Query result data are NOT protected by this setting**. Use reverse proxy server and its authentication to protect result data.
 
 ### Disable "history" tab
 
@@ -530,8 +512,7 @@ These HTTP requests/response are same with that javascript on browser does.
 
 ## TODO
 
-* Monitor support of `hiveserver2` and `presto`
-* 'hiveserver2' database support (for Hive 0.13 or later?)
+* Paches are welcome!
 
 ## License
 
