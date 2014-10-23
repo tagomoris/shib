@@ -446,6 +446,12 @@ Specify `engineLabel` and `dbname` for non-default query engines and databases:
 curl -s -X POST -F "engineLabel=presto" -F "dbname=testing" -F "querystring=SELECT COUNT(*) AS cnt FROM yourtable WHERE field='value'" http://shib.server.local:3000/execute
 ```
 
+If you want not to add your query into history tab, specify 'scheduled':
+
+```
+curl -s -X POST -F "scheduled=true" -F "querystring=SELECT COUNT(*) AS cnt FROM yourtable WHERE field='value'" http://shib.server.local:3000/execute
+```
+
 Then, fetch query's status whenever you want.
 
 ```
