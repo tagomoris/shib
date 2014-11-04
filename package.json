@@ -23,14 +23,16 @@
     "config.js"
   ],
   "dependencies": {
-    "node-thrift": ">= 1.0.0-dev",
-    "sqlite3": ">= 2.1.5",
-    "csv": ">= 0.0.13",
     "async": ">= 0.1.22",
+    "bignumber.js": ">= 1.4.1",
+    "cheerio": ">= 0.17.0",
+    "csv": ">= 0.0.13",
     "express": "~> 3.1.1",
     "jade": ">= 0.26.1",
-    "cheerio": ">= 0.17.0",
-    "presto-client": ">= 0.0.6"
+    "json-bigint": ">= 0.1.4",
+    "node-thrift": ">= 1.0.0-dev",
+    "presto-client": ">= 0.1.0",
+    "sqlite3": ">= 2.1.5"
   },
   "repository": {
     "type": "git",
