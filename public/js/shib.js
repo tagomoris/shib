@@ -21,24 +21,15 @@ function authAjax(req){
 }
 
 function authGet(url, callback){
-  var req = {
-    url: url,
-    success: callback
-  };
-  if (authInfo)
-    req['headers'] = { 'X-Shib-AuthInfo': authInfo };
-  $.ajax(req);
+  authAjax({url: url, success: callback});
 }
 
 function authGetJSON(url, callback){
-  var req = {
-    dataType: "json",
-    url: url,
-    success: callback
-  };
-  if (authInfo)
-    req['headers'] = { 'X-Shib-AuthInfo': authInfo };
-  $.ajax(req);
+  authAjax({url: url, success: callback, dataType: "json"});
+}
+
+function authGetText(url, callback){
+  authAjax({url: url, success: callback, dataType: "text"});
 }
 
 $(function(){
@@ -1340,7 +1331,7 @@ function show_result_query(opts) { /* opts: {range:full/head} */
     size = 'head';
     height = 200;
   }
-  authGet('/show/' + size + '/' + query_last_done_result(shibselectedquery).resultid, function(data){
+  authGetText('/show/' + size + '/' + query_last_done_result(shibselectedquery).resultid, function(data){
     $('pre#resultdisplay').text(data);
     $('#resultdiag').dialog({modal:true, resizable:true, height:400, width:600, maxHeight:650, maxWidth:950});
   });
