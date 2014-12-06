@@ -100,7 +100,7 @@ var servers = exports.servers = {
         name: 'hiveserver2',
         host: 'hs2.mycluster1.local',
         port: 10000,
-        usename: 'hive',
+        username: 'hive',
         support_database: true
       },
       monitor: null
@@ -396,7 +396,7 @@ var servers = exports.servers = {
         name: 'hiveserver2',
         host: 'hs2.mycluster1.local',
         port: 10000,
-        usename: 'hive',
+        username: 'hive',
         support_database: true
       },
       monitor: null
