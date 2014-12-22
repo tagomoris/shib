@@ -34,7 +34,8 @@ var runningQueries = {};
 
 function error_handle(req, res, err){
   shib.logger().error('Error in app', err);
-  shib.logger().error(err.stack);
+  if (err.stack)
+    shib.logger().error(err.stack);
   res.send(err, 500);
 };
 
