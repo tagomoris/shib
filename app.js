@@ -44,6 +44,7 @@ function shibclient(req){
 }
 
 app.configure(function(){
+  app.use(express.static(__dirname + '/public'));
   app.use(express.methodOverride());
   app.use(express.urlencoded());
   app.use(express.json());
