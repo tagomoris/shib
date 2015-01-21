@@ -316,11 +316,9 @@ app.post('/giveup', function(req, res){
   var targetid = req.body.queryid;
   var client = shibclient(req);
   client.query(targetid, function(err, query){
-    var delayedCallback = function(){
-      client.end();
-    };
-    client.giveup(query, delayedCallback, function(err, query, delayedCb) {
+    client.giveup(query, function(err, query) {
       if (err) {error_handle(req, res, err); client.end(); return;}
+      client.end(true); // half close
       delete runningQueries[query.queryid];
       res.send(query);
     });
