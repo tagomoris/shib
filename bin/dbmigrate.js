@@ -7,23 +7,23 @@ if (! target_db_path) {
   console.log("USAGE: bin/dbmigrate.js DATABASE_FILE_PATH");
   process.exit(0);
 }
-  
-
 var migrate_db_path = target_db_path + ".migrate";
 
+/*
 var SQLITE_TABLE_DEFINITIONS_v0 = [
   'CREATE TABLE IF NOT EXISTS queries (id VARCHAR(32) NOT NULL PRIMARY KEY, json TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS results (id VARCHAR(32) NOT NULL PRIMARY KEY, json TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY AUTOINCREMENT, yyyymm VARCHAR(6) NOT NULL, queryid VARCHAR(32) NOT NULL)',
   'CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY AUTOINCREMENT, queryid VARCHAR(32) NOT NULL, tag VARCHAR(16) NOT NULL)'
 ];
+*/
 
 var SQLITE_TABLE_DEFINITIONS_v1 = [
   'CREATE TABLE IF NOT EXISTS queries (autoid INTEGER PRIMARY KEY AUTOINCREMENT, id VARCHAR(32) NOT NULL UNIQUE, datetime TEXT NOT NULL, expression TEXT NOT NULL, result TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY AUTOINCREMENT, queryid VARCHAR(32) NOT NULL, tag VARCHAR(16) NOT NULL)'
 ];
 
-var on_connect = function(){
+var on_connect = function(cb){
   async.series(SQLITE_TABLE_DEFINITIONS_v1.map(function(sql){
 	return function(callback) {
       migrate.run(sql, function(error){
@@ -34,11 +34,24 @@ var on_connect = function(){
   }), function(err,results){
 	if (err)
       throw "failed to initialize new db file: " + migrate_db_path;
+    cb();
   });
 };
 
-var original = new sqlite3.Database(target_db_path, sqlite3.OPEN_READONLY)
-  , migrate = new sqlite3.Database(migrate_db_path, (sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE), on_connect);
+var original;
+var migrate;
+
+var open_original = function(cb){
+  original = new sqlite3.Database(target_db_path, sqlite3.OPEN_READONLY, function(){
+    cb(null);
+  });
+};
+
+var open_migrate = function(cb){
+  migrate = new sqlite3.Database(migrate_db_path, (sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE), function(){
+    on_connect(function(){ cb(null); });
+  });
+};
 
 var migrate_tags = function(cb){
   original.all('SELECT queryid, tag FROM tags ORDER BY id', function(err, rows){
@@ -112,6 +125,8 @@ var migrate_queries = function(cb){
 };
 
 async.series([
+  open_original,
+  open_migrate,
   migrate_tags,
   store_results,
   migrate_queries
