@@ -233,21 +233,25 @@ app.get('/summary_bulk', function(req, res){
   var history_ids = {}; /* {"201302":[query_ids], "201301":[query_ids], ...} */
   var query_ids = [];   /* [query_ids of all months] */
   var fetchRecent = function(cb){
-    client.recentQueries(RECENT_FETCHES, function(err, list){ // list: [{yyyymm:...., queryid:....}]
+    client.recentQueries(RECENT_FETCHES, function(err, list){ // list: [Query, ...]
       if (err) { cb(err); return; }
       history_queries = list;
       cb(null);
     });
   };
   var bundleMonths = function(cb){ // [{yyyymm:...,queryid:....}] => {yyyymm:[queryids], yyyymm:[queryids]}
-    history_queries.forEach(function(row){
-      var month = row.yyyymm;
+    var pad = function(n){return n < 10 ? '0'+n : n;};
+    var historyKey = function(date){
+      return '' + date.getFullYear() + pad(date.getMonth() + 1);
+    };
+    history_queries.forEach(function(query){
+      var month = historyKey(query.datetime);
       if (history.indexOf(month) < 0)
         history.push(month);
       if (! history_ids[month])
         history_ids[month] = [];
-      history_ids[month].push(row.queryid);
-      query_ids.push(row.queryid);
+      history_ids[month].push(query.queryid);
+      query_ids.push(query.queryid);
     });
     cb(null);
   };
@@ -300,7 +304,7 @@ app.post('/execute', function(req, res){
       }
       error_handle(req, res, err); return;
     }
-    res.send(query);
+    res.send(query); //TODO: check protocol for user side js
     var queryid = query.queryid;
     this.execute(query, {
       scheduled: scheduled,
@@ -321,7 +325,7 @@ app.post('/giveup', function(req, res){
       if (err) {error_handle(req, res, err); client.end(); return;}
       client.end(true); // half close
       delete runningQueries[query.queryid];
-      res.send(query);
+      res.send(query); //TODO: check protocol for user side js
     });
   });
 });
@@ -329,21 +333,18 @@ app.post('/giveup', function(req, res){
 app.post('/delete', function(req, res){
   var targetid = req.body.queryid;
   var client = shibclient(req);
-  client.deleteRecent(targetid, function(err){
+  delete runningQueries[targetid];
+  client.deleteQuery(targetid, function(err){
     if (err) {error_handle(req, res, err); client.end(); return;}
-    delete runningQueries[targetid];
-    client.deleteQuery(targetid, function(err){
-      if (err) {error_handle(req, res, err); client.end(); return;}
-      res.send({result:'ok'});
-      client.end();
-    });
+    res.send({result:'ok'});
+    client.end();
   });
 });
 
 app.get('/query/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(query);
+    res.send(query); //TODO: check protocol for user side js
     this.end();
   });
 });
@@ -351,7 +352,7 @@ app.get('/query/:queryid', function(req, res){
 app.post('/queries', function(req, res){
   shibclient(req).queries(req.body.ids, function(err, queries){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send({queries:queries});
+    res.send({queries:queries}); //TODO: check protocol for user side js
     this.end();
   });
 });
@@ -404,10 +405,8 @@ app.get('/taglist', function(req, res){
 app.get('/status/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    this.status(query, function(state){
-      res.send(state);
-      this.end();
-    });
+    res.send(query.state); //TODO: check executed -> done (and w/o re-running)
+    this.end();
   });
 });
 
@@ -433,26 +432,25 @@ app.get('/lastresult/:queryid', function(req, res){
       this.end();
       return;
     }
-    this.getLastResult(query, function(err, result){
-      if (err) { error_handle(req, res, err); this.end(); return; }
-      if (result === null)
-        res.send('result not found', 404);
-      else
-        res.send(result);
-      this.end();
-    });
-  });
-});
-
-app.get('/result/:resultid', function(req, res){
-  shibclient(req).result(req.params.resultid, function(err, result){
-    if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(result);
+    res.send(query.result); //TODO: check user side js
     this.end();
   });
 });
 
+//TODO: remove?
+app.get('/result/:resultid', function(req, res){
+  shibclient(req).getQueryByResultId(req.params.resultid, function(err, query){
+    if (err) { error_handle(req, res, err); this.end(); return; }
+    res.send(query.result); //TOOD:?
+    this.end();
+  });
+});
+
+//TODO: remove?
 app.post('/results', function(req, res){
+  /*
+   * CHECK to be removed
+   */
   shibclient(req).results(req.body.ids, function(err, results){
     if (err) { error_handle(req, res, err); this.end(); return; }
     res.send({results: results});
@@ -514,14 +512,14 @@ app.get('/show/head/:resultid', function(req, res){
 });
 
 app.get('/download/tsv/:resultid', function(req, res){
-  shibclient(req).result(req.params.resultid, function(err, result){
+  shibclient(req).getQueryByResultId(req.params.resultid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
 
     res.attachment(req.params.resultid + '.tsv');
-    res.set('X-Shib-Query-ID', result.queryid);
-    res.set('X-Shib-Result-ID', result.resultid);
-    res.set('X-Shib-Executed-At', result.executed_msec || 0);
-    res.set('X-Shib-Completed-At', result.completed_msec || 0);
+    res.set('X-Shib-Query-ID', query.queryid);
+    res.set('X-Shib-Result-ID', query.resultid);
+    res.set('X-Shib-Executed-At', new Date(query.datetime).getTime());
+    res.set('X-Shib-Completed-At', query.result.completed_msec || 0);
 
     var client = shib.client();
     var file = client.generatePath(req.params.resultid);
@@ -547,14 +545,14 @@ app.get('/download/tsv/:resultid', function(req, res){
 });
 
 app.get('/download/csv/:resultid', function(req, res){
-  shibclient(req).result(req.params.resultid, function(err, result){
+  shibclient(req).getQueryByResultId(req.params.resultid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
 
     res.attachment(req.params.resultid + '.csv');
-    res.set('X-Shib-Query-ID', result.queryid);
-    res.set('X-Shib-Result-ID', result.resultid);
-    res.set('X-Shib-Executed-At', result.executed_msec || 0);
-    res.set('X-Shib-Completed-At', result.completed_msec || 0);
+    res.set('X-Shib-Query-ID', query.queryid);
+    res.set('X-Shib-Result-ID', query.resultid);
+    res.set('X-Shib-Executed-At', new Date(query.datetime).getTime());
+    res.set('X-Shib-Completed-At', query.result.completed_msec || 0);
 
     var client = shib.client();
     var file = client.generatePath(req.params.resultid);
