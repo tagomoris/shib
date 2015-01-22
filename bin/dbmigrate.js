@@ -104,10 +104,13 @@ var migrate_queries = function(cb){
     }).map(function(row){
       var obj = JSON.parse(row.json);
       var result = obj.results.pop();
+      var result_obj = JSON.parse(results[result.resultid]);
+      delete result_obj['queryid'];
+      delete result_obj['resultid'];
       return {
         id: row.id,
         expression: obj.querystring,
-        result_json: results[result.resultid],
+        result_json: JSON.stringify(result_obj),
         date: new Date(result.executed_at).toJSON()
       };
     });
