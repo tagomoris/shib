@@ -19,7 +19,7 @@ var SQLITE_TABLE_DEFINITIONS_v0 = [
 */
 
 var SQLITE_TABLE_DEFINITIONS_v1 = [
-  'CREATE TABLE IF NOT EXISTS queries (autoid INTEGER PRIMARY KEY AUTOINCREMENT, id VARCHAR(32) NOT NULL UNIQUE, datetime TEXT NOT NULL, expression TEXT NOT NULL, state VARCHAR(32) NOT NULL, resultid VARCHAR(32) DEFAULT NULL, result DEFAULT NULL)',
+  'CREATE TABLE IF NOT EXISTS queries (autoid INTEGER PRIMARY KEY AUTOINCREMENT, id VARCHAR(32) NOT NULL UNIQUE, datetime TEXT NOT NULL, engine TEXT DEFAULT NULL, dbname DEFAULT NULL, expression TEXT NOT NULL, state VARCHAR(32) NOT NULL, resultid VARCHAR(32) DEFAULT NULL, result DEFAULT NULL)',
   'CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY AUTOINCREMENT, queryid VARCHAR(32) NOT NULL, tag VARCHAR(16) NOT NULL)'
 ];
 
@@ -119,6 +119,8 @@ var migrate_queries = function(cb){
       delete result_obj['resultid'];
       return {
         id: row.id,
+        engine: obj.engine,
+        dbname: obj.dbname,
         expression: obj.querystring,
         state: state,
         resultid: result.resultid,
@@ -130,8 +132,8 @@ var migrate_queries = function(cb){
     async.series(rows.map(function(obj){
       return function(cb) {
         migrate.run(
-            'INSERT INTO queries (id,datetime,expression,state,resultid,result) VALUES (?,?,?,?,?,?)',
-            [obj.id, obj.date, obj.expression, obj.state, obj.resultid, obj.result_json],
+            'INSERT INTO queries (id,datetime,engine,dbname,expression,state,resultid,result) VALUES (?,?,?,?,?,?,?,?)',
+            [obj.id, obj.date, obj.engine, obj.dbname, obj.expression, obj.state, obj.resultid, obj.result_json],
             function(err){ cb(err); }
         );
       };
