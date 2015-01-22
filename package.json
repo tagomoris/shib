@@ -48,7 +48,8 @@
   ],
   "scripts": {
     "start": "NODE_PATH=lib node app.js",
-    "test": "NODE_PATH=lib node_modules/nodeunit/bin/nodeunit test/*.js"
+    "test": "NODE_PATH=lib node_modules/nodeunit/bin/nodeunit test/*.js",
+    "migrate": "node bin/dbmigrate.js var/database.sqlite3"
   },
   "main": "app.js",
   "devDependencies": {

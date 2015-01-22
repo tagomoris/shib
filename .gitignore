@@ -1,4 +1,5 @@
 var/database.sqlite3
+var/database.sqlite3.v0
 var/results
 node_modules
 npm-debug.log
