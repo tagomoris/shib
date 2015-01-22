@@ -47,10 +47,18 @@ var open_original = function(cb){
   });
 };
 
+var close_original = function(cb){
+  original.close(function(){ cb(null); });
+};
+
 var open_migrate = function(cb){
   migrate = new sqlite3.Database(migrate_db_path, (sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE), function(){
     on_connect(function(){ cb(null); });
   });
+};
+
+var close_migrate = function(cb){
+  migrate.close(function(){ cb(null); });
 };
 
 var migrate_tags = function(cb){
@@ -132,10 +140,14 @@ async.series([
   open_migrate,
   migrate_tags,
   store_results,
-  migrate_queries
+  migrate_queries,
+  close_original,
+  close_migrate
 ], function(err, results){
   if (err) {
     console.log(err);
     throw "failed to migrate database...";
   }
+  fs.renameSync(target_db_path, target_db_path + ".v0");
+  fs.renameSync(migrate_db_path, target_db_path);
 });
