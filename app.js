@@ -268,6 +268,20 @@ app.get('/summary_bulk', function(req, res){
   });
 });
   
+// generate pseudo result object (simulate v0 result)
+function pseudo_query_data(query){
+  var q = {};
+  q['queryid'] = q.queryid;
+  q['engine'] = q.engine;
+  q['dbname'] = q.dbname;
+  q['querystring'] = q.querystring;
+  q['results'] = [];
+  if (query.state !== "running") {
+    q['results'][0] = {resultid: query.resultid, executed_at: new Date(q.datetime).toLocaleString()};
+  }
+  return q;
+}
+
 app.post('/execute', function(req, res){
   var auth = shib.auth();
 
@@ -306,7 +320,7 @@ app.post('/execute', function(req, res){
       }
       error_handle(req, res, err); return;
     }
-    res.send(query);
+    res.send(pseudo_query_data(query));
     var queryid = query.queryid;
     this.execute(query, {
       prepare: function(){ runningQueries[queryid] = new Date(); },
@@ -326,7 +340,7 @@ app.post('/giveup', function(req, res){
       if (err) {error_handle(req, res, err); client.end(); return;}
       client.end(true); // half close
       delete runningQueries[query.queryid];
-      res.send(query);
+      res.send(pseudo_query_data(query));
     });
   });
 });
@@ -342,10 +356,12 @@ app.post('/delete', function(req, res){
   });
 });
 
+//TODO: any APIs w/o pseudo_query_data ?
+
 app.get('/query/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(query);
+    res.send(pseudo_query_data(query));
     this.end();
   });
 });
@@ -353,7 +369,7 @@ app.get('/query/:queryid', function(req, res){
 app.post('/queries', function(req, res){
   shibclient(req).queries(req.body.ids, function(err, queries){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send({queries:queries});
+    res.send({queries: queries.map(function(q){ return pseudo_query_data(q); })});
     this.end();
   });
 });
@@ -403,10 +419,23 @@ app.get('/taglist', function(req, res){
   });
 });
 
+function pseudo_status(query_state){
+   /*
+    running: newest-and-only query running, and result not stored yet.
+    executed (done): newest query executed, and result stored.
+    error: newest query executed, but done with error.
+   */
+  switch (query_state) {
+    case 'running': return "running";
+    case 'error': return "error";
+    default: return "executed";
+  }
+}
+
 app.get('/status/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(query.state);
+    res.send(pseudo_status(query.state));
     this.end();
   });
 });

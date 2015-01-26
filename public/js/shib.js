@@ -200,19 +200,64 @@ function push_bookmark_query_list(queryid) {
   set_bookmark_query_list(list);
 };
 
+function query_last_result(query) {
+  var obj = null;
+  if (query && query.results && query.results.length > 0 && query.results[query.results.length - 1])
+    if ((obj = shibdata.result_cache[query.results[query.results.length - 1].resultid]) !== null)
+      return obj;
+  return null;
+};
+function query_second_last_result(query) {
+  var obj = null;
+  if (query && query.results && query.results.length > 1 && query.results[query.results.length - 2])
+    if ((obj = shibdata.result_cache[query.results[query.results.length - 2].resultid]) !== null)
+      return obj;
+  return null;
+};
+function query_last_done_result(query) {
+  var last = query_last_result(query);
+  if (last && last.state == 'done')
+    return last;
+  return query_second_last_result(query);
+}
+
 function query_result_schema_label(result){
   return 'fields: ' + result.schema.map(function(field){return field.name + '(' + field.type + ')';}).join(', ');
+};
+
+function query_current_state(query) {
+  if (!query)
+    return null;
+  if (query && (! query.queryid))
+    show_error('UI Bug', 'query id unknown', 5, query);
+
+  if (shibdata.query_state_cache[query.queryid])
+    return shibdata.query_state_cache[query.queryid];
+
+  var state = null;
+  var lastresult = query_last_result(query);
+  if (! lastresult)
+    state = 'running';
+  else if (lastresult.state === 'running') {
+    var secondlast = query_second_last_result(query);
+    if (secondlast && secondlast.state === 'done')
+      state = 're-running';
+    else
+      state = 'running';
+  }
+  else if (lastresult.state === 'error')
+    state = 'error';
+  else
+    state = 'executed';
+
+  shibdata.query_state_cache[query.queryid] = state;
+  return state;
 };
 
 function timelabel_elapsed(completed_at, executed_at){
   if (!completed_at || !executed_at)
     return 'unknown times';
-  if (! (completed_at instanceof Date))
-    completed_at = new Date(completed_at);
-  if (! (executed_at instanceof Date))
-    executed_at = new Date(executed_at);
-
-  var seconds = Math.floor((completed_at - executed_at) / 1000);
+  var seconds = Math.floor(((new Date(completed_at)) - (new Date(executed_at))) / 1000);
   if (seconds < 60)
     return seconds + ' seconds';
   var minutes = Math.floor(seconds / 60);
@@ -252,7 +297,21 @@ function follow_current_uri_query(queryid){
     success: function(data, textStatus, jqXHR){
       query = data;
       shibdata.query_cache[queryid] = query;
-      update_mainview(query);
+      var resultids = data.results.map(function(v){return v.resultid;});
+      authAjax({
+        url: '/results',
+        type: 'POST',
+        dataType: 'json',
+        data: {ids: resultids},
+        success: function(data){
+          data.results.forEach(function(result1){
+            if (! result1)
+              return;
+            shibdata.result_cache[result1.resultid] = result1;
+          });
+          update_mainview(query);
+        }
+      });
     }
   });
 }
@@ -271,7 +330,7 @@ function follow_current_uri_tag(tag){
       show_error('Failed to get detail status', msg);
     },
     success: function(queryids) {
-      load_queries(queryids, function(){
+      load_query_tree(queryids, function(){
         update_tabs(true, {tag:tag, queryids:queryids});
       });
     }
@@ -641,6 +700,7 @@ function load_tabs(opts) {
 
   shibdata.query_cache = {};
   shibdata.query_state_cache = {};
+  shibdata.result_cache = {};
 
   authGetJSON('/summary_bulk', function(data){
     if (data.disabled) {
@@ -652,8 +712,7 @@ function load_tabs(opts) {
 
     /* data.query_ids is sum of values of history_ids */
     var queryids = (data.query_ids || []).concat( execute_query_list() ).concat( bookmark_query_list() );
-
-    load_queries(queryids, callback);
+    load_query_tree(queryids, callback);
   });
 };
 
@@ -675,24 +734,19 @@ function create_queryitem_object(queryid, id_prefix){
   var query = shibdata.query_cache[queryid];
   if (! query)
     return '';
-  var executed_at = query.datetime;
-
-  var etcLabel = 'waiting';
-  if (query.result.completed_at) {
-    var result = query.result;
-    etcLabel = timelabel_elapsed(result.completed_at, query.datetime);
-    if (result.bytes && result.lines) {
-      etcLabel = etcLabel + (', ' + result.bytes + ' bytes, ' + result.lines + ' lines');
-    }
-  }
-
+  var lastresult = query_last_result(query);
+  var executed_at = (lastresult && lastresult.executed_at) || '-';
   return {
     QueryKey: query.queryid,
     QueryId: (id_prefix || '') + query.queryid,
-    Information: new Date(executed_at).toLocaleString(),
+    Information: executed_at,
     Statement: query.querystring,
-    Status: query.state,
-    Etc: etcLabel
+    Status: query_current_state(query),
+    Etc: lastresult ?
+      (timelabel_elapsed(lastresult.completed_at, lastresult.executed_at) +
+       ((lastresult && lastresult.bytes && lastresult.lines &&
+         (', ' + lastresult.bytes + ' bytes, ' + lastresult.lines + ' lines')) || '')
+      ) : 'not started'
   };
 };
 
@@ -864,7 +918,7 @@ function update_editbox(query, optional_state) {
 
   show_query_exec_pairs(query);
 
-  var state = optional_state || (query && query.state);
+  var state = optional_state || query_current_state(query);
   switch (state) {
   case 'not executed':
   case undefined:
@@ -894,13 +948,13 @@ function update_editbox(query, optional_state) {
     $('#engineselector').hide();
     show_editbox_buttons(['delete_button', 'display_full_button', 'display_head_button',
                           'download_tsv_button', 'download_csv_button']);
-    change_editbox_querystatus_style(query, 'executed');
+    change_editbox_querystatus_style(query, 'executed', query_last_result(query));
     show_editbox_querytags(query);
     break;
   case 'error':
     $('#engineselector').hide();
     show_editbox_buttons(['delete_button']);
-    change_editbox_querystatus_style(query, 'error');
+    change_editbox_querystatus_style(query, 'error', query_last_result(query));
     show_editbox_querytags(null);
     break;
   default:
@@ -936,36 +990,36 @@ function show_query_exec_pairs(query){
   }
 }
 
-function change_editbox_querystatus_style(query, state){
+function change_editbox_querystatus_style(query, state, result){
   var allstates = {
     'not executed':{classname:'status_not_executed', result:false},
     'running':{classname:'status_running', result:false},
     'executed':{classname:'status_executed', result:true},
-    'error':{classname:'status_error', result:true}
+    'error':{classname:'status_error', result:true},
+    're-running':{classname:'status_re-running', result:true}
   };
   if (state === 'done')
     state = 'executed';
 
   if (allstates[state]) {
-    var allclasses = 'status_not_executed status_running status_executed status_error';
+    var allclasses = 'status_not_executed status_running status_executed status_error status_re-running';
     $('span#querystatus')
       .removeClass(allclasses)
       .addClass((allstates[state]).classname)
       .text(state);
 
-    if (allstates[state]['result']) {
-      var result = query.result;
+    if (allstates[state]['result'] && result) {
       $('#queryresult').show();
       if (result.error) {
         $('span#queryresultlines').text(result.error);
         $('span#queryresultbytes').text("");
-        $('#queryresultelapsed').text(timelabel_elapsed(result.completed_at, query.datetime));
+        $('#queryresultelapsed').text(timelabel_elapsed(result.completed_at, result.executed_at));
         $('#queryresultschema').text('');
       }
       else {
         $('span#queryresultlines').text(" " + result.lines + " lines, ");
         $('span#queryresultbytes').text(" " + result.bytes + " bytes");
-        $('#queryresultelapsed').text(timelabel_elapsed(result.completed_at, query.datetime));
+        $('#queryresultelapsed').text(timelabel_elapsed(result.completed_at, result.executed_at));
         $('#queryresultschema').text(query_result_schema_label(result));
       }
     }
@@ -1009,6 +1063,20 @@ function show_editbox_querytags(query){
 }
 
 
+/* query and result load/reload/caching */
+
+function load_query_tree(queryids, callback){
+  load_queries(queryids, function(err, queries){
+    var resultids = [];
+    queries.forEach(function(v){
+      if (v.results && v.results.length > 0)
+        resultids = resultids.concat(v.results.map(function(r){return r && r.resultid;}));
+    });
+    // load_results does not call ajax when argument is empty
+    load_results(resultids, function(err, results){callback();});
+  });
+}
+
 function load_queries(queryids, callback){
   if (queryids.length < 1) {
     callback(null, []); return;
@@ -1028,12 +1096,33 @@ function load_queries(queryids, callback){
   });
 };
 
+function load_results(resultids, callback){
+  if (resultids.length < 1) {
+    callback(null, []); return;
+  }
+  authAjax({
+    url: '/results',
+    type: 'POST',
+    dataType: 'json',
+    data: {ids: resultids},
+    success: function(data){
+      data.results.forEach(function(result1){
+        if (! result1)
+          return;
+        shibdata.result_cache[result1.resultid] = result1;
+      });
+      if (callback)
+        callback(null, data.results);
+    }
+  });
+};
+
 /* query status auto-updates */
 
 function check_selected_running_query_state(event){ /* event object is not used */
   if (! shibselectedquery)
     return;
-  var s = shibselectedquery.state;
+  var s = query_current_state(shibselectedquery);
   if (s === 'running' || s === 're-running')
     update_query(shibdata.query_cache[shibselectedquery.queryid]);
 };
@@ -1048,14 +1137,22 @@ function update_query(query){
   if (! query)
     return;
   authGet('/status/' + query.queryid, function(data){
-    if (query.state == data)
+    if (query_current_state(query) == data)
       return;
 
     shibdata.query_state_cache[query.queryid] = data;
 
     authGet('/query/' + query.queryid, function(new_query){
       shibdata.query_cache[new_query.queryid] = new_query;
-      update_query_display(new_query);
+      if (new_query.results.length > 0) {
+        authGet('/lastresult/' + new_query.queryid, function(new_result){
+          shibdata.result_cache[new_result.resultid] = new_result;
+          update_query_display(new_query);
+        });
+      }
+      else {
+        update_query_display(new_query);
+      }
     });
   });
 };
@@ -1180,7 +1277,10 @@ function giveup_query() {
       show_info('Query gived-up', '');
       shibdata.query_cache[query.queryid] = query;
       shibdata.query_state_cache[query.queryid] = 'error';
-      update_mainview(query);
+      load_results(query.results.map(function(v){return v.resultid;}), function(err){
+        update_mainview(query);
+        load_tabs({reload:true});
+      });
     }
   });
 };
@@ -1231,7 +1331,7 @@ function show_result_query(opts) { /* opts: {range:full/head} */
     size = 'head';
     height = 200;
   }
-  authGetText('/show/' + size + '/' + shibselectedquery.resultid, function(data){
+  authGetText('/show/' + size + '/' + query_last_done_result(shibselectedquery).resultid, function(data){
     $('pre#resultdisplay').text(data);
     $('#resultdiag').dialog({modal:true, resizable:true, height:400, width:600, maxHeight:650, maxWidth:950});
   });
@@ -1242,5 +1342,5 @@ function download_result_query(opts) { /* opts: {format:tsv/csv} */
   if (opts.format == 'csv') {
     format = 'csv';
   }
-  window.location = '/download/' + format + '/' + shibselectedquery.resultid;
+  window.location = '/download/' + format + '/' + query_last_done_result(shibselectedquery).resultid;
 };
