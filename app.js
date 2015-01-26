@@ -293,7 +293,7 @@ app.post('/execute', function(req, res){
     shib.logger().info('User try to execute query', {username: userdata.username, query: querystring});
   }
 
-  client.createQuery(engineLabel, dbname, querystring, function(err, query){
+  client.createQuery(engineLabel, dbname, querystring, scheduled, function(err, query){
     if (err) {
       if (err.error) {
         err = err.error;
@@ -309,7 +309,6 @@ app.post('/execute', function(req, res){
     res.send(query);
     var queryid = query.queryid;
     this.execute(query, {
-      scheduled: scheduled,
       prepare: function(){ runningQueries[queryid] = new Date(); },
       stopCheck: function(){ return (! runningQueries[queryid]); },
       stop:    function(){ client.end(); },

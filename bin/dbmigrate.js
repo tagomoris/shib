@@ -21,7 +21,7 @@ var SQLITE_TABLE_DEFINITIONS_v0 = [
 */
 
 var SQLITE_TABLE_DEFINITIONS_v1 = [
-  'CREATE TABLE IF NOT EXISTS queries (autoid INTEGER PRIMARY KEY AUTOINCREMENT, id VARCHAR(32) NOT NULL UNIQUE, datetime TEXT NOT NULL, engine TEXT DEFAULT NULL, dbname DEFAULT NULL, expression TEXT NOT NULL, state VARCHAR(32) NOT NULL, resultid VARCHAR(32) NOT NULL UNIQUE, result DEFAULT NULL)',
+  'CREATE TABLE IF NOT EXISTS queries (autoid INTEGER PRIMARY KEY AUTOINCREMENT, id VARCHAR(32) NOT NULL UNIQUE, datetime TEXT NOT NULL, scheduled INTEGER DEFAULT NULL, engine TEXT DEFAULT NULL, dbname DEFAULT NULL, expression TEXT NOT NULL, state VARCHAR(32) NOT NULL, resultid VARCHAR(32) NOT NULL UNIQUE, result DEFAULT NULL)',
   'CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY AUTOINCREMENT, queryid VARCHAR(32) NOT NULL, tag VARCHAR(16) NOT NULL)'
 ];
 
@@ -83,18 +83,31 @@ var migrate_tags = function(cb){
   });
 };
 
+var history = {}; // queryid => true
+
+var store_history = function(cb){
+  // 'CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY AUTOINCREMENT, yyyymm VARCHAR(6) NOT NULL, queryid VARCHAR(32) NOT NULL)',
+  original.all('SELECT yyyymm, queryid FROM history', function(err, rows){
+    if (err) { cb(err); return; }
+    var size = rows.length - 1;
+    for (var i = 0 ; i < size ; i++){
+      history[rows[i].queryid] = true;
+    }
+    cb(null);
+  });
+};
+
 var results = {}; // resultid -> obj
 
 var store_results = function(cb){
-  'CREATE TABLE IF NOT EXISTS results (id VARCHAR(32) NOT NULL PRIMARY KEY, json TEXT NOT NULL)',
   original.all('SELECT id, json FROM results', function(err, rows){
-    if (err) {
-      cb(err);
-      return;
-    }
-    rows.forEach(function(row){
+    if (err) { cb(err); return; }
+    var size = rows.length - 1;
+    var row = null;
+    for (var i = 0 ; i < size ; i++){
+      row = rows[i];
       results[row.id] = row.json;
-    });
+    };
     cb(null);
   });
 };
@@ -123,6 +136,7 @@ var migrate_queries = function(cb){
       delete result_obj['resultid'];
       return {
         id: row.id,
+        scheduled: (history[row.id] ? 1 : null),
         engine: obj.engine,
         dbname: obj.dbname,
         expression: obj.querystring,
@@ -136,8 +150,8 @@ var migrate_queries = function(cb){
     async.series(rows.map(function(obj){
       return function(cb) {
         migrate.run(
-            'INSERT INTO queries (id,datetime,engine,dbname,expression,state,resultid,result) VALUES (?,?,?,?,?,?,?,?)',
-            [obj.id, obj.date, obj.engine, obj.dbname, obj.expression, obj.state, obj.resultid, obj.result_json],
+            'INSERT INTO queries (id,datetime,scheduled,engine,dbname,expression,state,resultid,result) VALUES (?,?,?,?,?,?,?,?,?)',
+            [obj.id, obj.date, obj.scheduled, obj.engine, obj.dbname, obj.expression, obj.state, obj.resultid, obj.result_json],
             function(err){ cb(err); }
         );
       };
@@ -149,6 +163,7 @@ async.series([
   open_original,
   open_migrate,
   migrate_tags,
+  store_history,
   store_results,
   migrate_queries,
   close_original,
