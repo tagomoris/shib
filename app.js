@@ -458,7 +458,9 @@ app.get('/detailstatus/:queryid', function(req, res){
 function pseudo_result_data(query){
   var r = query.result;
   r['resultid'] = query.resultid;
-  r['executed_at'] = query.datetime;
+  r['executed_at'] = new Date(query.datetime).toLocaleString();
+  if (r['completed_at'])
+    r['completed_at'] = new Date(r['completed_at']).toLocaleString();
   r['state'] = query.state;
   return r;
 }
