@@ -746,7 +746,7 @@ function create_queryitem_object(queryid, id_prefix){
       (timelabel_elapsed(lastresult.completed_at, lastresult.executed_at) +
        ((lastresult && lastresult.bytes && lastresult.lines &&
          (', ' + lastresult.bytes + ' bytes, ' + lastresult.lines + ' lines')) || '')
-      ) : 'not started'
+      ) : 'waiting'
   };
 };
 
