@@ -677,7 +677,7 @@ function create_queryitem_object(queryid, id_prefix){
     return '';
   var executed_at = query.datetime;
 
-  var etcLabel = 'not started';
+  var etcLabel = 'waiting';
   if (query.result.completed_at) {
     var result = query.result;
     etcLabel = timelabel_elapsed(result.completed_at, query.datetime);
