@@ -271,13 +271,13 @@ app.get('/summary_bulk', function(req, res){
 // generate pseudo result object (simulate v0 result)
 function pseudo_query_data(query){
   var q = {};
-  q['queryid'] = q.queryid;
-  q['engine'] = q.engine;
-  q['dbname'] = q.dbname;
-  q['querystring'] = q.querystring;
+  q['queryid'] = query.queryid;
+  q['engine'] = query.engine;
+  q['dbname'] = query.dbname;
+  q['querystring'] = query.querystring;
   q['results'] = [];
   if (query.state !== "running") {
-    q['results'][0] = {resultid: query.resultid, executed_at: new Date(q.datetime).toLocaleString()};
+    q['results'] = [{resultid: query.resultid, executed_at: new Date(query.datetime).toLocaleString()}];
   }
   return q;
 }
