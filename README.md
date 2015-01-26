@@ -22,6 +22,8 @@ Latest version of 'shib' is v0.3.8.
 
 'shib' versions are:
 
+* v1.0 series
+  * metadata of v1.0 is **NOT compatible with v0.3**, so migration required
 * v0.3 series
   * use latest node (`~> v0.10.26`)
   * multi engines/databases support

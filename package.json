@@ -1,6 +1,6 @@
 {
   "name": "shib",
-  "version": "0.3.8",
+  "version": "1.0.0",
   "engines": {
     "node": ">= 0.8"
   },
