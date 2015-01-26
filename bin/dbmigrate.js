@@ -4,7 +4,9 @@ var async = require('async')
 
 var target_db_path = process.argv[2];
 if (! target_db_path) {
-  console.log("USAGE: bin/dbmigrate.js DATABASE_FILE_PATH");
+  console.log("USAGE: npm run migrate");
+  console.log("   OR: npm run dbmigrate -- DATABASE_FILE_PATH");
+  console.log("     : node bin/dbmigrate.js DATABASE_FILE_PATH (if your npm --version is 1.x)");
   process.exit(0);
 }
 var migrate_db_path = target_db_path + ".migrate";
@@ -42,7 +44,8 @@ var original;
 var migrate;
 
 var open_original = function(cb){
-  original = new sqlite3.Database(target_db_path, sqlite3.OPEN_READONLY, function(){
+  original = new sqlite3.Database(target_db_path, sqlite3.OPEN_READONLY, function(err){
+    if (err) { cb(err); return; }
     cb(null);
   });
 };
@@ -52,7 +55,8 @@ var close_original = function(cb){
 };
 
 var open_migrate = function(cb){
-  migrate = new sqlite3.Database(migrate_db_path, (sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE), function(){
+  migrate = new sqlite3.Database(migrate_db_path, (sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE), function(err){
+    if (err) { cb(err); return; }
     on_connect(function(){ cb(null); });
   });
 };
