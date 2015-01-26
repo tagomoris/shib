@@ -268,7 +268,7 @@ app.get('/summary_bulk', function(req, res){
   });
 });
   
-// generate pseudo result object (simulate v0 result)
+// generate pseudo query object (simulate v0 query)
 function pseudo_query_data(query){
   var q = {};
   q['queryid'] = query.queryid;
@@ -419,6 +419,7 @@ app.get('/taglist', function(req, res){
   });
 });
 
+// convert query.state into status label (simulate v0 Client.prototype.status)
 function pseudo_status(query_state){
    /*
     running: newest-and-only query running, and result not stored yet.
