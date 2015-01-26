@@ -253,6 +253,7 @@ app.get('/summary_bulk', function(req, res){
       history_ids[month].push(query.queryid);
       query_ids.push(query.queryid);
     });
+    history.sort().reverse();
     cb(null);
   };
   var queryUnique = function(cb){
@@ -278,33 +279,34 @@ app.post('/execute', function(req, res){
     dbname = enginesCache.pairs[0][1];
   }
 
-  var query = req.body.querystring;
+  var querystring = req.body.querystring;
   var scheduled = req.body.scheduled;
 
   var userdata = auth.userdata(req);
 
   if (auth.require_always && !userdata) {
-    shib.logger().warn('This shib requires authentication to execute queries, but there are no authInfo', {query: query});
+    shib.logger().warn('This shib requires authentication to execute queries, but there are no authInfo', {query: querystring});
     res.send(403, "Authentication failed");
     return;
   }
   if (userdata) {
-    shib.logger().info('User try to execute query', {username: userdata.username, query: query});
+    shib.logger().info('User try to execute query', {username: userdata.username, query: querystring});
   }
 
-  client.createQuery(engineLabel, dbname, query, function(err, query){
+  client.createQuery(engineLabel, dbname, querystring, function(err, query){
     if (err) {
       if (err.error) {
         err = err.error;
       }
       if (err instanceof InvalidQueryError) {
-        res.send(400, err);
+        shib.logger().warn('Invalid query submitted', {query: querystring, err: err.message});
+        res.send(400, err.message);
         this.end();
         return;
       }
       error_handle(req, res, err); return;
     }
-    res.send(query); //TODO: check protocol for user side js
+    res.send(query);
     var queryid = query.queryid;
     this.execute(query, {
       scheduled: scheduled,
@@ -325,7 +327,7 @@ app.post('/giveup', function(req, res){
       if (err) {error_handle(req, res, err); client.end(); return;}
       client.end(true); // half close
       delete runningQueries[query.queryid];
-      res.send(query); //TODO: check protocol for user side js
+      res.send(query);
     });
   });
 });
@@ -344,7 +346,7 @@ app.post('/delete', function(req, res){
 app.get('/query/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(query); //TODO: check protocol for user side js
+    res.send(query);
     this.end();
   });
 });
@@ -352,7 +354,7 @@ app.get('/query/:queryid', function(req, res){
 app.post('/queries', function(req, res){
   shibclient(req).queries(req.body.ids, function(err, queries){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send({queries:queries}); //TODO: check protocol for user side js
+    res.send({queries:queries});
     this.end();
   });
 });
@@ -405,7 +407,7 @@ app.get('/taglist', function(req, res){
 app.get('/status/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(query.state); //TODO: check executed -> done (and w/o re-running)
+    res.send(query.state);
     this.end();
   });
 });
@@ -424,6 +426,15 @@ app.get('/detailstatus/:queryid', function(req, res){
   });
 });
 
+// generate pseudo result object (simulate v0 result)
+function pseudo_result_data(query){
+  var r = query.result;
+  r['resultid'] = query.resultid;
+  r['executed_at'] = query.datetime;
+  r['state'] = query.state;
+  return r;
+}
+
 app.get('/lastresult/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
@@ -432,29 +443,36 @@ app.get('/lastresult/:queryid', function(req, res){
       this.end();
       return;
     }
-    res.send(query.result); //TODO: check user side js
+    res.send(pseudo_result_data(query));
     this.end();
   });
 });
 
-//TODO: remove?
 app.get('/result/:resultid', function(req, res){
   shibclient(req).getQueryByResultId(req.params.resultid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
-    res.send(query.result); //TOOD:?
+    res.send(pseudo_result_data(query));
     this.end();
   });
 });
 
-//TODO: remove?
 app.post('/results', function(req, res){
   /*
-   * CHECK to be removed
+   * obsolete: bad implementation for API compatibility
    */
-  shibclient(req).results(req.body.ids, function(err, results){
-    if (err) { error_handle(req, res, err); this.end(); return; }
+  var client = shibclient(req);
+  var fetchers = req.body.ids.map(function(resultid){
+    return function(cb){
+      client.getQueryByResultId(resultid, function(err, query){
+        if (err) { cb(err); return; }
+        cb(null, pseudo_result_data(query));
+      });
+    };
+  });
+  async.series(fetchers, function(err, results){
+    if (err) { error_handle(req, res, err); client.end(); return; }
     res.send({results: results});
-    this.end();
+    client.end();
   });
 });
 
