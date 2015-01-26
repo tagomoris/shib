@@ -49,6 +49,7 @@
   "scripts": {
     "start": "NODE_PATH=lib node app.js",
     "test": "NODE_PATH=lib node_modules/nodeunit/bin/nodeunit test/*.js",
+    "purge": "node bin/purge.js var/database.sqlite3",
     "migrate": "node bin/dbmigrate.js var/database.sqlite3"
   },
   "main": "app.js",
