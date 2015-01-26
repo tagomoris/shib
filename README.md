@@ -77,6 +77,17 @@ To switch environments for each shib instance, use `NODE_ENV` environment variab
 
     $ NODE_ENV=production NODE_PATH=lib node app.js
 
+## Migrate metadata database from v0 to v1
+
+Migration operation required to execute shib v1, with data in v0 era.
+
+1. Stop shib process
+2. Update shib code to v1
+3. Execute `npm run migrate` (for `var/database.sqlite3` file)
+  * This operation requires 5 minutes 30 seconds for 220MB database
+  * Backup v0 database file is `var/database.sqlite3.v0`
+4. Start shib
+
 ## Configuration
 
 Shib can have 2 or more query executor engines.
