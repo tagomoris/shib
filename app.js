@@ -492,7 +492,7 @@ app.post('/results', function(req, res){
    * obsolete: bad implementation for API compatibility
    */
   var client = shibclient(req);
-  var fetchers = req.body.ids.map(function(resultid){
+  var fetchers = (req.body.ids || []).map(function(resultid){
     return function(cb){
       client.getQueryByResultId(resultid, function(err, query){
         if (err) { cb(err); return; }
