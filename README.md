@@ -200,6 +200,7 @@ var servers = exports.servers = {
         name: 'presto',
         host: 'coordinator.mycluster2.local',
         port: 8080,
+        user: 'shib',
         catalog: 'hive',  // required configuration argument
         support_database: true,
         default_database: 'mylogs1'
@@ -268,6 +269,7 @@ var servers = exports.servers = {
         name: 'presto',
         host: 'coordinator.p.cluster.local',
         port: 8080,
+        user: 'shib',
         catalog: 'hive',
         support_database: true,
         default_database: 'mylogs1',
@@ -281,6 +283,7 @@ var servers = exports.servers = {
         name: 'presto',
         host: 'coordinator.p.cluster.local',
         port: 8080,
+        user: 'shib',
         catalog: 'hive2',  // one engine config per catalogs
         support_database: true,
         default_database: 'default',
