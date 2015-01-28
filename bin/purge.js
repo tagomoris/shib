@@ -34,7 +34,7 @@ var close_db = function(cb){
 };
 
 var delete_rows = function(cb){
-  var purge_threshold_datetime = new Date(new Date() - 1000 * 86400).toJSON();
+  var purge_threshold_datetime = new Date(new Date() - purge_days_before * 1000 * 86400).toJSON();
   db.run('DELETE FROM queries WHERE datetime < ?', [purge_threshold_datetime], function(err){ cb(err); });
 };
 
