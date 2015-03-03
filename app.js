@@ -361,6 +361,11 @@ app.post('/delete', function(req, res){
 app.get('/query/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
+    if (query === null) {
+      res.send('query not found', 404);
+      this.end();
+      return;
+    }
     res.send(pseudo_query_data(query));
     this.end();
   });
