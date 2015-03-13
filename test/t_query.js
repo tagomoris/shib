@@ -50,6 +50,8 @@ module.exports = testCase({
     test.throws(function(){Query.checkQueryString("insert overwrite into hoge\nselect col1,col2 from hoge where moge='pos'");});
     test.doesNotThrow(function(){Query.checkQueryString("select field1,field2,count(*) as cnt from hoge_table where yyyymmdd=today()");});
     test.doesNotThrow(function(){Query.checkQueryString(" select field1,field2,count(*) as cnt from hoge_table where yyyymmdd=today()");});
+    test.doesNotThrow(function(){Query.checkQueryString("with tbl as (select id from source where id > 10) select count(id) from tbl");});
+    test.doesNotThrow(function(){Query.checkQueryString(" with tbl as (select id from source where id > 10) select count(id) from tbl");});
     test.throws(function(){
       Query.checkQueryString("select field1,field2,count(*) as cnt from hoge_table where yyyymmdd=today(); drop table hoge_table");
     });
