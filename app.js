@@ -581,7 +581,7 @@ app.get('/download/tsv/:resultid', function(req, res){
 
     if (query === null) {
       res.send(null);
-      res.end();
+      this.end();
       return;
     }
 
@@ -620,7 +620,7 @@ app.get('/download/csv/:resultid', function(req, res){
 
     if (query === null) {
       res.send(null);
-      res.end();
+      this.end();
       return;
     }
 
