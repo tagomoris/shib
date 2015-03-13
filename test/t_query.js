@@ -2,6 +2,20 @@ var testCase = require('nodeunit').testCase;
 var query = require('shib/query'),
     Query = query.Query;
 
+var convertSerializedQueryToArgs = function(array){
+  var obj = {
+    id: array[0],
+    datetime: array[1],
+    scheduled: array[2],
+    engine: array[3] || null,
+    dbname: array[4] || null,
+    querystring: array[5],
+    state: array[6],
+    resultid: array[7],
+    result: array[8]
+  };
+  return obj;
+};
 
 module.exports = testCase({
   /*
@@ -70,37 +84,79 @@ module.exports = testCase({
     var q1 = new Query({querystring:'select f1,f2 from hoge_table'});
     test.equals(q1.queryid, Query.generateQueryId('select f1,f2 from hoge_table'));
     test.equals(q1.querystring, 'select f1,f2 from hoge_table');
-    test.deepEqual(q1.results, []);
+    test.deepEqual(q1.result, Query.generateResult(null));
 
     var q2 = new Query({querystring:'select f1,f2 from hoge_table where service="news"'});
     test.equals(q2.queryid, Query.generateQueryId('select f1,f2 from hoge_table where service="news"'));
     test.equals(q2.querystring, 'select f1,f2 from hoge_table where service="news"');
-    test.deepEqual(q2.results, []);
+    test.deepEqual(q2.result, Query.generateResult(null));
 
     var q3 = new Query({querystring:'select f1,f2 from hoge_table where service="news"', seed:'201108'});
     test.equals(q3.queryid, Query.generateQueryId('select f1,f2 from hoge_table where service="news"', '201108'));
     test.equals(q3.querystring, 'select f1,f2 from hoge_table where service="news"');
-    test.deepEqual(q3.results, []);
+    test.deepEqual(q3.result, Query.generateResult(null));
 
     test.done();
   },
   serialized: function(test) {
+    // id,datetime,engine,dbname,expression,state,resultid,result
+
     var q1 = new Query({querystring:'select f1,f2 from hoge_table'});
-    test.deepEqual(q1.serialized(),
-                   '{"querystring":"select f1,f2 from hoge_table","results":[],"queryid":"c148cdb90a70ef34dab88d8e1af967a6"}');
-    var q1x = new Query({json:q1.serialized()});
+    test.deepEqual(
+        q1.serialized(),
+        [
+          "c148cdb90a70ef34dab88d8e1af967a6",
+          q1.datetime.toJSON(),
+          null,
+          undefined,
+          undefined,
+          "select f1,f2 from hoge_table",
+          'running',
+          Query.generateResultId("c148cdb90a70ef34dab88d8e1af967a6", q1.datetime.toLocaleString()),
+          '{"error":"","lines":null,"bytes":null,"completed_at":null,"completed_msec":null,"schema":[]}'
+        ]
+    );
+    var q1x = new Query(convertSerializedQueryToArgs(q1.serialized()));
     test.equals(q1x.queryid, q1.queryid);
     test.equals(q1x.querystring, q1.querystring);
-    test.deepEqual(q1x.results, q1.results);
+    test.equals(q1x.state, q1.state);
+    test.equals(q1x.resultid, q1.resultid); // resultid depends on executed_at (default, current time)
+    test.deepEqual(q1x.result, q1.result);
 
     var q2 = new Query({querystring:'select f1,f2 from hoge_table where service="news"'});
-    test.deepEqual(q2.serialized(),
-                   '{"querystring":"select f1,f2 from hoge_table where service=\\"news\\"","results":[],"queryid":"2734efa50f0dff08129e3485b523f782"}');
-    var q2x = new Query({json:q2.serialized()});
+    test.deepEqual(
+        q2.serialized(),
+        [
+          "2734efa50f0dff08129e3485b523f782",
+          q2.datetime.toJSON(),
+          null,
+          undefined,
+          undefined,
+          'select f1,f2 from hoge_table where service="news"',
+          'running',
+          Query.generateResultId("2734efa50f0dff08129e3485b523f782", q2.datetime.toLocaleString()),
+          '{"error":"","lines":null,"bytes":null,"completed_at":null,"completed_msec":null,"schema":[]}'
+        ]
+    );
+    var q2x = new Query(convertSerializedQueryToArgs(q2.serialized()));
     test.equals(q2x.queryid, q2.queryid);
     test.equals(q2x.querystring, q2.querystring);
-    test.deepEqual(q2x.results, q2.results);
+    test.equals(q2x.state, q2.state);
+    test.equals(q2x.resultid, q2.resultid);
+    test.deepEqual(q2x.result, q2.result);
     
+    test.done();
+  },
+  serializedForUpdate: function(test){
+    var data = (new Query({querystring:'select f1,f2 from hoge_table'})).serializedForUpdate();
+    test.deepEqual(
+        data,
+        [
+          'running',
+          '{"error":"","lines":null,"bytes":null,"completed_at":null,"completed_msec":null,"schema":[]}',
+          "c148cdb90a70ef34dab88d8e1af967a6"
+        ]
+    );
     test.done();
   },
   composed: function(test) {
