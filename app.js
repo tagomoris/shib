@@ -441,6 +441,11 @@ function pseudo_status(query_state){
 app.get('/status/:queryid', function(req, res){
   shibclient(req).query(req.params.queryid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
+    if (query === null) {
+      res.send('query not found', 404);
+      this.end();
+      return;
+    }
     res.send(pseudo_status(query.state));
     this.end();
   });
@@ -487,6 +492,11 @@ app.get('/lastresult/:queryid', function(req, res){
 app.get('/result/:resultid', function(req, res){
   shibclient(req).getQueryByResultId(req.params.resultid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
+    if (query === null) {
+      res.send('query not found', 404);
+      this.end();
+      return;
+    }
     res.send(pseudo_result_data(query));
     this.end();
   });
@@ -569,6 +579,12 @@ app.get('/download/tsv/:resultid', function(req, res){
   shibclient(req).getQueryByResultId(req.params.resultid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
 
+    if (query === null) {
+      res.send(null);
+      this.end();
+      return;
+    }
+
     res.attachment(req.params.resultid + '.tsv');
     res.set('X-Shib-Query-ID', query.queryid);
     res.set('X-Shib-Result-ID', query.resultid);
@@ -601,6 +617,12 @@ app.get('/download/tsv/:resultid', function(req, res){
 app.get('/download/csv/:resultid', function(req, res){
   shibclient(req).getQueryByResultId(req.params.resultid, function(err, query){
     if (err) { error_handle(req, res, err); this.end(); return; }
+
+    if (query === null) {
+      res.send(null);
+      this.end();
+      return;
+    }
 
     res.attachment(req.params.resultid + '.csv');
     res.set('X-Shib-Query-ID', query.queryid);
