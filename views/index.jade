@@ -33,13 +33,13 @@ html
     #resultdiag(title="show result", style="display:none;")
       pre#resultdisplay
     #tablesdiag(title="tables status", style="display:none;")
-      select#table_pairs(style="width: 300;")
+      select#table_pairs(style="width: 300px;")
         option not loaded
       .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
       #tables(style="display: none;")
     #describediag(title="table schema", style="display:none;")
-      select#desc_pairs(style="width: 300;")
+      select#desc_pairs(style="width: 300px;")
         option not loaded
       .loadingimg(style="display:none; padding-top: 2em; text-align: center; vertical-align: center;")
         image(src="/image/ajax-loader.gif")
@@ -108,7 +108,7 @@ html
                 textarea#queryeditor(rows="14")
               #editbox.ui-corner-all
                 #engineselector
-                  select#exec_pairs(style="width: 300")
+                  select#exec_pairs(style="width: 300px;")
                     option not loaded
                 ul.operationitems.ui-widget.ui-helper-clearfix
                   li#auth_button.ui-state-default.ui-corner-all
