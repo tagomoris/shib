@@ -7,11 +7,16 @@ var servers = exports.servers = {
     datadir: './var'
   },
   executer: {
-    name: 'hiveserver', // or 'hiveserver2', 'presto'
+    name: 'hiveserver', // or 'hiveserver2', 'presto', 'bigquery'
     host: 'localhost',
     port: 10000,
     support_database: true,
     default_database: 'default'
+    /*
+    // If you use 'bigquery' executer, set following values
+    project_id: 'project_id',
+    key_filename: '/path/to/keyfile.json'
+    */
   },
   monitor: null
   /*

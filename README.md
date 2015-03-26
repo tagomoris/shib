@@ -8,6 +8,7 @@
 Shib is web client application for SQL-like query engines, written in Node.js, supporting
  * Hive (hiveserver, hiveserver2)
  * Facebook Presto
+ * Google BigQuery
 
 Once configured, we can switch query engines per executions.
 
@@ -210,6 +211,34 @@ var servers = exports.servers = {
   ],
 };
 ```
+
+### BigQuery
+
+For BigQuery, use `bigquery` executer.
+
+```js
+var servers = exports.servers = {
+  listen: 3000,
+  fetch_lines: 1000,
+  query_timeout: 30, // 30 seconds for BigQuery query timeouts (it will fail)
+  storage: {
+    datadir: './var'
+  },
+  engines: [
+    { label: 'bigquery',
+      executer: {
+        name: 'bigquery',
+        default_database: 'mylogs1',
+        project_id: 'gcp-project-id',
+        key_filename: '/path/to/keyfile.json'
+      },
+      monitor: null
+    }
+  ]
+};
+```
+ 
+For more detail about `project_id` and `key_filename` config, see https://github.com/GoogleCloudPlatform/gcloud-node#authorization .
 
 ### Multi clusters and engines
 
