@@ -510,6 +510,11 @@ app.post('/results', function(req, res){
   var fetchers = (req.body.ids || []).map(function(resultid){
     return function(cb){
       client.getQueryByResultId(resultid, function(err, query){
+        if (query === null) {
+          res.send('query not found', 404);
+          this.end();
+          return;
+        }
         if (err) { cb(err); return; }
         cb(null, pseudo_result_data(query));
       });
