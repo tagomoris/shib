@@ -267,7 +267,7 @@ app.get('/summary_bulk', function(req, res){
     res.send({history: history, history_ids: history_ids, query_ids: query_ids});
   });
 });
-  
+
 // generate pseudo query object (simulate v0 query)
 function pseudo_query_data(query){
   var q = {};
@@ -536,18 +536,7 @@ app.get('/show/full/:resultid', function(req, res){
     client.end();
     return;
   }
-  var rStream = fs.createReadStream(file);
-  rStream.on('data', function(chunk) {
-    rStream.pause();
-    res.write(chunk);
-  });
-  rStream.on('end', function(){
-    res.end();
-    client.end();
-  });
-  res.on('drain', function(){
-    rStream.resume();
-  });
+  res.sendfile(file)
 });
 
 app.get('/show/head/:resultid', function(req, res){
@@ -604,18 +593,7 @@ app.get('/download/tsv/:resultid', function(req, res){
       client.end();
       return;
     }
-    var rStream = fs.createReadStream(file);
-    rStream.on('data', function(chunk){
-      rStream.pause();
-      res.write(chunk);
-    });
-    rStream.on('end', function(){
-      res.end();
-      client.end();
-    });
-    res.on('drain', function(){
-      rStream.resume();
-    });
+    res.sendfile(file)
   });
 });
 
