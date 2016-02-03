@@ -395,6 +395,17 @@ monitor: {
   port: 8088
 }
 ```
+In this case, shib kills query with Resource Manager REST API.
+
+If you specify yarn command description, shib kills query with `yarn application -kill APP_ID`.
+```js
+monitor: {
+  name: 'yarn',
+  host: 'resourcemanager.hostname.local',
+  port: 8088,
+  yarn: '/usr/bin/yarn' // 'yarn' in PATH by default
+}
+```
 
 ### Huahin Manager (obsolete)
 
