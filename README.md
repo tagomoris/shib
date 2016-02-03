@@ -403,7 +403,7 @@ monitor: {
   name: 'yarn',
   host: 'resourcemanager.hostname.local',
   port: 8088,
-  yarn: '/usr/bin/yarn' // 'yarn' in PATH by default
+  yarn: '/usr/bin/yarn'
 }
 ```
 
