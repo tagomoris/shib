@@ -392,12 +392,9 @@ For this feature, shib should be executed by a user who can execute command `map
 monitor: {
   name: 'yarn',
   host: 'resourcemanager.hostname.local',
-  port: 8088,
-  yarn: '/usr/bin/yarn' // 'yarn' in PATH by default
+  port: 8088
 }
 ```
-
-For this feature, shib should be executed by a user who can execute command `yarn application -kill APP_ID`.
 
 ### Huahin Manager (obsolete)
 
