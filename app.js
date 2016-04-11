@@ -307,7 +307,7 @@ app.post('/execute', function(req, res){
     shib.logger().info('User try to execute query', {username: userdata.username, query: querystring});
   }
 
-  client.createQuery(engineLabel, dbname, querystring, scheduled, function(err, query){
+  client.createQuery(engineLabel, dbname, querystring, scheduled, userdata, function(err, query){
     if (err) {
       if (err.error) {
         err = err.error;

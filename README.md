@@ -428,6 +428,7 @@ monitor: {
 ## Authentication
 
 Shib have authentication to log who execute queries and to control accesses:
+setup_queries_auth option means to specify queries executed before main query when authentication is required.
 
 ```js
 var servers = exports.servers = {
@@ -435,6 +436,7 @@ var servers = exports.servers = {
   fetch_lines: 1000,   // lines per fetch in shib
   query_timeout: null, // shib waits queries forever
   setup_queries: [],
+  setup_queries_auth: ["set hive.mapred.mode=strict"],
   storage: {
     datadir: './var'
   },
